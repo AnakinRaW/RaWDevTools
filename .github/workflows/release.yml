@@ -8,8 +8,8 @@ on:
     
 env:
   TOOL_PROJ_PATH: ./src/DevLauncher/DevLauncher.csproj
-  CREATOR_PROJ_PATH: ./src/ModdingToolBase/src/AnakinApps/ApplicationManifestCreator/ApplicationManifestCreator.csproj
-  UPLOADER_PROJ_PATH: ./src/ModdingToolBase/src/AnakinApps/FtpUploader/FtpUploader.csproj
+  CREATOR_PROJ_PATH: ./ModdingToolBase/src/AnakinApps/ApplicationManifestCreator/ApplicationManifestCreator.csproj
+  UPLOADER_PROJ_PATH: ./ModdingToolBase/src/AnakinApps/FtpUploader/FtpUploader.csproj
   TOOL_EXE: RaW-DevLauncher.exe
   UPDATER_EXE: AnakinRaW.ExternalUpdater.exe
   MANIFEST_CREATOR: AnakinRaW.ApplicationManifestCreator.dll
