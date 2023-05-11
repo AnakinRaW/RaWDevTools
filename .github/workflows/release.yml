@@ -14,7 +14,7 @@ env:
   UPDATER_EXE: AnakinRaW.ExternalUpdater.exe
   MANIFEST_CREATOR: AnakinRaW.ApplicationManifestCreator.dll
   SFTP_UPLOADER: AnakinRaW.FtpUploader.dll
-  ORIGIN_BASE: https://republicatwar.com/downloads/DevLauncher
+  ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher
 
 jobs:
 
