@@ -9,6 +9,8 @@ namespace RepublicAtWar.DevLauncher;
 
 internal class Program : CliBootstrapper
 {
+    protected override bool AutomaticUpdate => true;
+
     public static int Main(string[] args)
     {
         return new Program().Run(args);
