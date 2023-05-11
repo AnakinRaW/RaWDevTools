@@ -1,5 +1,7 @@
 <Project>
 
+	<Import Project="../Directory.Build.props" />
+
 	<PropertyGroup>
 		<Copyright>Copyright © AnakinRaW 2023</Copyright>
 		<Authors>AnakinRaW</Authors>
