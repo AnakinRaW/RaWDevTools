@@ -1,0 +1,87 @@
+name: Releasing Republic at War Developer Launcher
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    
+env:
+  TOOL_PROJ_PATH: ./src/DevLauncher/DevLauncher.csproj
+  CREATOR_PROJ_PATH: ./ModdingToolBase/src/AnakinApps/ApplicationManifestCreator/ApplicationManifestCreator.csproj
+  UPLOADER_PROJ_PATH: ./ModdingToolBase/src/AnakinApps/FtpUploader/FtpUploader.csproj
+  TOOL_EXE: RaW-DevLauncher.exe
+  UPDATER_EXE: AnakinRaW.ExternalUpdater.exe
+  MANIFEST_CREATOR: AnakinRaW.ApplicationManifestCreator.dll
+  SFTP_UPLOADER: AnakinRaW.FtpUploader.dll
+  ORIGIN_BASE: https://republicatwar.com/downloads/DevLauncher
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: windows-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+            dotnet-version: 7.0.x
+      - name: Build
+        run: dotnet build ${{ env.TOOL_PROJ_PATH }} --configuration Release --output ./binaries
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Build Artifacts
+          path: |
+            binaries/${{env.TOOL_EXE}}
+            binaries/${{env.UPDATER_EXE}}
+          retention-days: 1
+
+  deploy:
+    name: Deploy
+    if: |
+      github.ref == 'refs/heads/main' &&  github.event_name == 'push'
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+            dotnet-version: 7.0.x
+      - uses: actions/download-artifact@v3
+        with:
+          name: Build Artifacts
+          path: binaries
+      - name: Build Creator
+        run: dotnet build ${{env.CREATOR_PROJ_PATH}} --configuration Release --output ./dev
+      - name: Build Uploader
+        run: dotnet build ${{env.UPLOADER_PROJ_PATH}} --configuration Release --output ./dev
+      - name: Create Manifest
+        run: dotnet ./dev/${{env.MANIFEST_CREATOR}} -a binaries/${{env.TOOL_EXE}} --appDataFiles binaries/${{env.UPDATER_EXE}} --origin ${{env.ORIGIN_BASE}} -o ./binaries
+      - name: Upload Build
+        run: dotnet ./dev/${{env.SFTP_UPLOADER}} -h $host --port $port -u ${{secrets.SFTP_USER}} -p ${{secrets.SFTP_PASSWORD}} --base $base_path -s $source
+        env:
+          host: republicatwar.com
+          port: 1579
+          base_path: downloads/TestTool/
+          source: ./binaries
+
+      - uses: dotnet/nbgv@v0.4.0
+        id: nbgv
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.nbgv.outputs.SemVer2 }}
+          tag_name: v${{ steps.nbgv.outputs.SemVer2 }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: false

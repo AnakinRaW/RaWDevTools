@@ -1,0 +1,26 @@
+name: Build & Test
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: windows-latest
+        
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - uses: actions/setup-dotnet@v3
+        with:
+           dotnet-version: 7.0.x
+        
+      - name: Build in Release Mode
+        run: dotnet build --configuration Release --logger "GitHubActions"
