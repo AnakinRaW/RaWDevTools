@@ -15,6 +15,7 @@ env:
   MANIFEST_CREATOR: AnakinRaW.ApplicationManifestCreator.dll
   SFTP_UPLOADER: AnakinRaW.FtpUploader.dll
   ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher
+  ORIGIN_BASE_PART: downloads/RawDevLauncher/
 
 jobs:
 
@@ -73,7 +74,7 @@ jobs:
         env:
           host: republicatwar.com
           port: 1579
-          base_path: downloads/TestTool/
+          base_path: ${{env.ORIGIN_BASE_PART}}
           source: ./binaries
 
       - uses: dotnet/nbgv@v0.4.0
