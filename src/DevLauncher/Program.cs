@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using PetroGlyph.Games.EawFoc.Clients.Steam;
 using PetroGlyph.Games.EawFoc.Clients;
 using PetroGlyph.Games.EawFoc;
+using PetroGlyph.Games.EawFoc.Clients.Arguments;
 using PetroGlyph.Games.EawFoc.Games;
 using PetroGlyph.Games.EawFoc.Services;
 using PetroGlyph.Games.EawFoc.Services.Dependencies;
@@ -65,16 +66,15 @@ internal class Program : CliBootstrapper
 
         var gameFactory = new GameFactory(services);
         var game = gameFactory.CreateGame(detectedGame);
+
+        var rawId = new ModReference(currentDirectory.FullName, ModType.Default);
+
+        var raw = new ModFactory(services).FromReference(game, rawId, false);
+        game.AddMod(raw);
+
         
-        var rawDevRef = new ModReference(currentDirectory.FullName, ModType.Default);
-
-        var mf = new ModFactory(services).FromReference(game, rawDevRef, true);
-        
-        game.AddMod(mf);
-
-        var client = services.GetRequiredService<IGameClientFactory>().CreateClient(game.Platform, services);
-
-        client.Play(mf);
+        var gameLauncher = new GameLauncher(raw, services);
+        gameLauncher.Launch();
 
         return 0;
     }
@@ -87,12 +87,15 @@ internal class Program : CliBootstrapper
 
         serviceCollection.AddTransient<IGameDetector>(sp => new SteamPetroglyphStarWarsGameDetector(sp));
         serviceCollection.AddTransient<IGameFactory>(sp => new GameFactory(sp));
+        
         serviceCollection.AddTransient<IModReferenceFinder>(sp => new FileSystemModFinder(sp));
         serviceCollection.AddTransient<IModFactory>(sp => new ModFactory(sp));
         serviceCollection.AddTransient<IModReferenceLocationResolver>(sp => new ModReferenceLocationResolver(sp));
         serviceCollection.AddTransient<IModNameResolver>(sp => new DirectoryModNameResolver(sp));
         serviceCollection.AddTransient<IDependencyResolver>(sp => new ModDependencyResolver(sp));
         serviceCollection.AddTransient<IGameClientFactory>(sp => new DefaultGameClientFactory(sp));
+        serviceCollection.AddTransient<IModArgumentListFactory>(sp => new ModArgumentListFactory(sp));
+        serviceCollection.AddTransient<IArgumentCollectionBuilder>(_ => new KeyBasedArgumentCollectionBuilder());
 
         return serviceCollection.BuildServiceProvider();
     }
