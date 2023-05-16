@@ -5,7 +5,6 @@
 		<Description>Launches the developer's version of Republic at War</Description>
 	</PropertyGroup>
 
-
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net48</TargetFramework>
@@ -14,9 +13,25 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Include="RAW.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Costura.Fody" Version="5.7.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
+		<PackageReference Include="AnakinRaW.CommonUtilities.Registry.Windows" Version="8.0.1" />
+		<PackageReference Include="PetroGlyph.Games.EawFoc.Clients.Steam.Windows" Version="2.0.12" />
 	</ItemGroup>
+	
+	<ItemGroup>
+	  <ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CLI\ApplicationBase.CLI.csproj" />
+	  <ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" />
+	</ItemGroup>
+	
+	<PropertyGroup>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ApplicationIcon>RAW.ico</ApplicationIcon>
+	</PropertyGroup>
 
 </Project>

@@ -23,4 +23,4 @@ jobs:
            dotnet-version: 7.0.x
         
       - name: Build in Release Mode
-        run: dotnet build --configuration Release --logger "GitHubActions"
+        run: dotnet build --configuration Release
