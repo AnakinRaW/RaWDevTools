@@ -8,13 +8,13 @@ using PetroGlyph.Games.EawFoc.Clients.Arguments.GameArguments;
 using PetroGlyph.Games.EawFoc.Mods;
 using Validation;
 
-namespace RepublicAtWar.DevLauncher.Tasks;
+namespace RepublicAtWar.DevLauncher.Steps;
 
-internal class LaunchTask : PipelineStep
+internal class LaunchStep : PipelineStep
 {
     private readonly IMod _mod;
 
-    public LaunchTask(IMod mod, IServiceProvider serviceProvider) : base(serviceProvider)
+    public LaunchStep(IMod mod, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         Requires.NotNull(mod, nameof(mod));
         _mod = mod;

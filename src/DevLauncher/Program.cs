@@ -1,23 +1,20 @@
 ﻿using System;
-using System.IO.Abstractions;
 using System.Reflection;
 using AnakinRaW.ApplicationBase;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
 using AnakinRaW.CommonUtilities.SimplePipeline;
-using EawModinfo.Model;
-using EawModinfo.Spec;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PetroGlyph.Games.EawFoc.Clients.Steam;
 using PetroGlyph.Games.EawFoc.Clients;
 using PetroGlyph.Games.EawFoc;
 using PetroGlyph.Games.EawFoc.Clients.Arguments;
-using PetroGlyph.Games.EawFoc.Games;
 using PetroGlyph.Games.EawFoc.Services;
 using PetroGlyph.Games.EawFoc.Services.Dependencies;
 using PetroGlyph.Games.EawFoc.Services.Detection;
 using PetroGlyph.Games.EawFoc.Services.Name;
+using RepublicAtWar.DevLauncher.Services;
 
 namespace RepublicAtWar.DevLauncher;
 
@@ -43,35 +40,8 @@ internal class Program : CliBootstrapper
     protected override int ExecuteAfterUpdate(string[] args, IServiceCollection serviceCollection)
     {
         var services = CreateServices(serviceCollection);
-
-        var fileSystem = services.GetRequiredService<IFileSystem>();
         var logger = services.GetService<ILoggerFactory>()?.CreateLogger(GetType());
-
-        var currentDirectory = fileSystem.DirectoryInfo.New(Environment.CurrentDirectory);
-       
-        // Assuming the currentDir is inside a Mod's directory, we need to go up two level (Game/Mods/ModDir)
-        var potentialGameDirectory = currentDirectory.Parent?.Parent;
-        if (potentialGameDirectory is null)
-            throw new GameException("Unable to find game installation: Wrong install path?");
-
-        var gd = new DirectoryGameDetector(potentialGameDirectory, services);
-        var detectedGame = gd.Detect(new GameDetectorOptions(GameType.Foc));
-
-        if (detectedGame.GameLocation is null)
-            throw new GameException("Unable to find game installation: Wrong install path?");
-
-        if (detectedGame.Error is not null)
-            throw new GameException($"Unable to find game installation: {detectedGame.Error.Message}", detectedGame.Error);
-
-        logger?.LogInformation($"Found game {detectedGame.GameIdentity} at '{detectedGame.GameLocation.FullName}'");
-
-        var gameFactory = new GameFactory(services);
-        var game = gameFactory.CreateGame(detectedGame);
-
-        var rawId = new ModReference(currentDirectory.FullName, ModType.Default);
-
-        var raw = new ModFactory(services).FromReference(game, rawId, false);
-        game.AddMod(raw);
+        var raw = new ModFinderService(services).FindAndAddModInCurrentDirectory();
 
         try
         {

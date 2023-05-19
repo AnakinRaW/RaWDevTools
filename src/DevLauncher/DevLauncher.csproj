@@ -30,6 +30,12 @@
 	  <ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" />
 	</ItemGroup>
 	
+	<ItemGroup>
+	  <Reference Include="Alamo-CLI">
+	    <HintPath>..\..\lib\Alamo-CLI.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+	
 	<PropertyGroup>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<ApplicationIcon>RAW.ico</ApplicationIcon>
