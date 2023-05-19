@@ -1,9 +1,8 @@
 ﻿using System;
-using EawModinfo.Model;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PetroGlyph.Games.EawFoc.Clients;
 using PetroGlyph.Games.EawFoc.Clients.Arguments;
-using PetroGlyph.Games.EawFoc.Clients.Arguments.GameArguments;
 using PetroGlyph.Games.EawFoc.Clients.Steam;
 using PetroGlyph.Games.EawFoc.Games;
 using PetroGlyph.Games.EawFoc.Mods;
@@ -16,6 +15,7 @@ internal class GameLauncher
     private readonly IMod _republicAtWar;
     private readonly IServiceProvider _serviceProvider;
     private readonly IGameClientFactory _clientFactory;
+    private readonly ILogger? _logger;
 
     public GameLauncher(IMod rawDevMod, IServiceProvider serviceProvider)
     {
@@ -24,36 +24,27 @@ internal class GameLauncher
         _republicAtWar = rawDevMod;
         _serviceProvider = serviceProvider;
         _clientFactory = serviceProvider.GetRequiredService<IGameClientFactory>();
+        _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }
 
-    public void Launch()
+    public void Launch(IArgumentCollection gameArguments)
     {
         var game = _republicAtWar.Game;
         if (game.Platform == GamePlatform.SteamGold)
             StartSteam();
 
-        var gameArgs = CreateGameArgs();
-
         var client = _clientFactory.CreateClient(_republicAtWar.Game.Platform, _serviceProvider);
-        client.Play(_republicAtWar, gameArgs);
-    }
-
-    private IArgumentCollection CreateGameArgs()
-    {
-        var modArgFactory = _serviceProvider.GetRequiredService<IModArgumentListFactory>();
-        var modArgs = modArgFactory.BuildArgumentList(_republicAtWar, false);
-        var gameArgsBuilder = _serviceProvider.GetRequiredService<IArgumentCollectionBuilder>();
-        gameArgsBuilder
-            .Add(new WindowedArgument())
-            .Add(new LanguageArgument(LanguageInfo.Default))
-            .Add(modArgs);
-        
-        return gameArgsBuilder.Build();
+        _logger?.LogInformation("Starting Game...");
+        //client.Play(_republicAtWar, gameArguments);
     }
 
     private void StartSteam()
     {
         var steam = _serviceProvider.GetRequiredService<ISteamWrapper>();
+        if (steam.IsRunning)
+            return;
+        _logger?.LogInformation("Waiting for Steam...");
         steam.WaitSteamRunningAndLoggedInAsync(true).Wait();
+        _logger?.LogInformation("Steam started.");
     }
 }

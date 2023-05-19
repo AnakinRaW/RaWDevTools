@@ -4,6 +4,7 @@ using System.Reflection;
 using AnakinRaW.ApplicationBase;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
+using AnakinRaW.CommonUtilities.SimplePipeline;
 using EawModinfo.Model;
 using EawModinfo.Spec;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,7 +63,7 @@ internal class Program : CliBootstrapper
         if (detectedGame.Error is not null)
             throw new GameException($"Unable to find game installation: {detectedGame.Error.Message}", detectedGame.Error);
 
-        logger?.LogInformation($"Found game {detectedGame.GameIdentity} at '{detectedGame.GameLocation}'");
+        logger?.LogInformation($"Found game {detectedGame.GameIdentity} at '{detectedGame.GameLocation.FullName}'");
 
         var gameFactory = new GameFactory(services);
         var game = gameFactory.CreateGame(detectedGame);
@@ -72,11 +73,17 @@ internal class Program : CliBootstrapper
         var raw = new ModFactory(services).FromReference(game, rawId, false);
         game.AddMod(raw);
 
-        
-        var gameLauncher = new GameLauncher(raw, services);
-        gameLauncher.Launch();
-
-        return 0;
+        try
+        {
+            var pipeline = new RawDevLauncherPipeline(raw, services);
+            pipeline.Run();
+            return 0;
+        }
+        catch (StepFailureException e)
+        {
+            logger?.LogError(e, $"Building Mod Failed: {e.Message}");
+            return e.HResult;
+        }
     }
 
     private static IServiceProvider CreateServices(IServiceCollection serviceCollection)
