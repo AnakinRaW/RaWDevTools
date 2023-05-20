@@ -8,7 +8,7 @@ using PetroGlyph.Games.EawFoc.Clients.Arguments.GameArguments;
 using PetroGlyph.Games.EawFoc.Mods;
 using Validation;
 
-namespace RepublicAtWar.DevLauncher.Steps;
+namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
 internal class LaunchStep : PipelineStep
 {

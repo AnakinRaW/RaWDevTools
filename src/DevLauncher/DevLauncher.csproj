@@ -17,11 +17,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="8.0.1" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="8.1.1" />
 		<PackageReference Include="Costura.Fody" Version="5.7.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="AnakinRaW.CommonUtilities.Registry.Windows" Version="8.0.1" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.Registry.Windows" Version="8.1.1" />
 		<PackageReference Include="PetroGlyph.Games.EawFoc.Clients.Steam.Windows" Version="2.0.12" />
 	</ItemGroup>
 	

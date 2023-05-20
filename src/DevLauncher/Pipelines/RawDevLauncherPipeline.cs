@@ -6,10 +6,10 @@ using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PetroGlyph.Games.EawFoc.Mods;
-using RepublicAtWar.DevLauncher.Steps;
+using RepublicAtWar.DevLauncher.Pipelines.Steps;
 using Validation;
 
-namespace RepublicAtWar.DevLauncher;
+namespace RepublicAtWar.DevLauncher.Pipelines;
 
 internal class RawDevLauncherPipeline : Pipeline
 {
@@ -33,7 +33,7 @@ internal class RawDevLauncherPipeline : Pipeline
 
     protected override bool PrepareCore()
     {
-        //_buildPipeline.Queue(new PackMegFileStep(, _serviceProvider));
+        _buildPipeline.Queue(new RunPipelineStep(new RawBuildPipeline(_republicAtWar, _serviceProvider), _serviceProvider));
         _buildPipeline.Queue(new LaunchStep(_republicAtWar, _serviceProvider));
         return true;
     }

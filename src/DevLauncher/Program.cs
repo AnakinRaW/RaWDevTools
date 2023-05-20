@@ -14,6 +14,7 @@ using PetroGlyph.Games.EawFoc.Services;
 using PetroGlyph.Games.EawFoc.Services.Dependencies;
 using PetroGlyph.Games.EawFoc.Services.Detection;
 using PetroGlyph.Games.EawFoc.Services.Name;
+using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Services;
 
 namespace RepublicAtWar.DevLauncher;
@@ -40,7 +41,8 @@ internal class Program : CliBootstrapper
     protected override int ExecuteAfterUpdate(string[] args, IServiceCollection serviceCollection)
     {
         var services = CreateServices(serviceCollection);
-        var logger = services.GetService<ILoggerFactory>()?.CreateLogger(GetType());
+        var logger = services.GetService<ILoggerFactory>()?.CreateLogger<Program>();
+
         var raw = new ModFinderService(services).FindAndAddModInCurrentDirectory();
 
         try
