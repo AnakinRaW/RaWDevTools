@@ -20,10 +20,13 @@ internal class RawBuildPipeline : ParallelPipeline
 
     protected override IList<IStep> BuildStepsOrdered()
     {
+        if (_republicAtWar is not IPhysicalMod physicalRaw)
+            throw new NotSupportedException("Mod must be physical!");
+
         return new List<IStep>
         {
-            new PackMegFileStep(new RawAiPackMegConfiguration(), ServiceProvider),
-            new PackMegFileStep(new RawCustomMapsPackMegConfiguration(), ServiceProvider)
+            new PackMegFileStep(new RawAiPackMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
+            new PackMegFileStep(new RawCustomMapsPackMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider)
         };
     }
 

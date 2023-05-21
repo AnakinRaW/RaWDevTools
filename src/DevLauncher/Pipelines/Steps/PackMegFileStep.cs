@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
+using Microsoft.Extensions.DependencyInjection;
 using RepublicAtWar.DevLauncher.Configuration;
+using RepublicAtWar.DevLauncher.Services;
 using Validation;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
@@ -18,6 +20,7 @@ internal class PackMegFileStep : SynchronizedStep
 
     protected override void SynchronizedInvoke(CancellationToken token)
     {
-        Console.WriteLine("Packing MEG");
+        using var packer = Services.GetRequiredService<IMegPackerService>();
+        packer.Pack(_config);
     }
 }

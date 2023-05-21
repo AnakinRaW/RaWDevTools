@@ -76,6 +76,8 @@ internal class Program : CliBootstrapper
         serviceCollection.AddTransient<IModArgumentListFactory>(sp => new ModArgumentListFactory(sp));
         serviceCollection.AddTransient<IArgumentCollectionBuilder>(_ => new KeyBasedArgumentCollectionBuilder());
 
+        serviceCollection.AddTransient<IMegPackerService>(sp => new MegPackerService(sp));
+
         return serviceCollection.BuildServiceProvider();
     }
 }
