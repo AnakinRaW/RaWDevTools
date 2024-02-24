@@ -35,7 +35,11 @@ internal class GameLauncher
 
         var client = _clientFactory.CreateClient(_republicAtWar.Game.Platform, _serviceProvider);
         _logger?.LogInformation("Starting Game...");
-        //client.Play(_republicAtWar, gameArguments);
+#if DEBUG
+        _logger?.LogInformation("Game will not start in DEBUG mode");
+#else 
+        client.Play(_republicAtWar, gameArguments);
+#endif
     }
 
     private void StartSteam()

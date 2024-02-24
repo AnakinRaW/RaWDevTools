@@ -36,6 +36,10 @@
 	  </Reference>
 	</ItemGroup>
 	
+	<ItemGroup>
+	  <PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
+	</ItemGroup>
+	
 	<PropertyGroup>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<ApplicationIcon>RAW.ico</ApplicationIcon>
