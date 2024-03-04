@@ -20,13 +20,18 @@
 		<PackageReference Include="Costura.Fody" Version="5.7.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="AnakinRaW.CommonUtilities.Registry.Windows" Version="8.0.1" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.Registry.Windows" Version="8.1.1" />
 		<PackageReference Include="PetroGlyph.Games.EawFoc.Clients.Steam.Windows" Version="2.0.12" />
 	</ItemGroup>
 	
 	<ItemGroup>
+	  <ProjectReference Include="..\..\AlamoEngineTools\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG.csproj" />
 	  <ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CLI\ApplicationBase.CLI.csproj" />
 	  <ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
 	</ItemGroup>
 	
 	<PropertyGroup>

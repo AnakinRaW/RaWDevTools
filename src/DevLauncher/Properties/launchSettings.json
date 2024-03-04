@@ -3,7 +3,7 @@
     "DevLauncher": {
       "commandName": "Project",
       "commandLineArgs": "--skipUpdate",
-      "workingDirectory": "D:\\Games\\SteamLibrary\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\Republic_at_War"
+      "workingDirectory": "C:\\Projekte\\republic-at-war"
     }
   }
 }
