@@ -399,3 +399,5 @@ FodyWeavers.xsd
 
 
 dev/*
+
+**/launchSettings.json
