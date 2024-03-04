@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "DevLauncher": {
+      "commandName": "Project",
+      "commandLineArgs": "--skipUpdate",
+      "workingDirectory": "C:\\Projekte\\republic-at-war"
+    }
+  }
+}
