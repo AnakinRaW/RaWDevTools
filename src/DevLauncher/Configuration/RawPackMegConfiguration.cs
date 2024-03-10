@@ -10,11 +10,10 @@ namespace RepublicAtWar.DevLauncher.Configuration;
 internal abstract class RawPackMegConfiguration : IPackMegConfiguration
 {
     protected readonly IFileSystem FileSystem;
-
-    public abstract IEnumerable<IDirectoryInfo> InputDirectories { get; }
-    public abstract IEnumerable<IFileInfo> InputFiles { get; }
-    public abstract IFileInfo Output { get; }
-    public abstract bool IncludeSubDirectories { get; }
+    
+    public abstract IEnumerable<string> FilesToPack { get; }
+    public abstract string FileName { get; }
+    public virtual bool FileNamesOnly => false;
 
     public IDirectoryInfo? VirtualRootDirectory { get; }
 

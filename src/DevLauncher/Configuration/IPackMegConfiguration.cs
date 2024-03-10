@@ -5,13 +5,11 @@ namespace RepublicAtWar.DevLauncher.Configuration;
 
 internal interface IPackMegConfiguration
 {
-    public IEnumerable<IDirectoryInfo> InputDirectories { get; }
+    IEnumerable<string> FilesToPack { get; }
 
-    public IEnumerable<IFileInfo> InputFiles { get; }
+    public string FileName { get; }
 
-    public IFileInfo Output { get; }
+    public bool FileNamesOnly { get; }
 
-    public bool IncludeSubDirectories { get; }
-
-    public IDirectoryInfo? VirtualRootDirectory { get; }
+    public IDirectoryInfo VirtualRootDirectory { get; }
 }

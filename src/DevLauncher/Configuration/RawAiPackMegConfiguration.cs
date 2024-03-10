@@ -1,27 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Abstractions;
-using System.Linq;
 using PetroGlyph.Games.EawFoc;
 
 namespace RepublicAtWar.DevLauncher.Configuration;
 
-internal class RawAiPackMegConfiguration : RawPackMegConfiguration
+internal class RawAiPackMegConfiguration(IPhysicalPlayableObject? physicalGameObject, IServiceProvider serviceProvider)
+    : RawPackMegConfiguration(physicalGameObject, serviceProvider)
 {
-    public override IEnumerable<IFileInfo> InputFiles => Enumerable.Empty<IFileInfo>();
-
-    public override IEnumerable<IDirectoryInfo> InputDirectories => new List<IDirectoryInfo>
+    public override IEnumerable<string> FilesToPack { get; } = new List<string>()
     {
-        FileSystem.DirectoryInfo.New("Data/Scripts/AI"),
-        FileSystem.DirectoryInfo.New("Data/Xml/AI")
+        "Data\\XML\\AI\\**\\*.xml",
+        "Data\\SCRIPTS\\AI\\**\\*.lua"
     };
 
-    public override IFileInfo Output => FileSystem.FileInfo.New("Data/AIFiles.meg");
-
-    public override bool IncludeSubDirectories => true;
-
-    public RawAiPackMegConfiguration(IPhysicalPlayableObject? physicalGameObject, IServiceProvider serviceProvider)
-        : base(physicalGameObject, serviceProvider)
-    {
-    }
+    public override string FileName => "Data\\AIFiles.meg";
 }

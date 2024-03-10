@@ -14,6 +14,8 @@ using PetroGlyph.Games.EawFoc.Services;
 using PetroGlyph.Games.EawFoc.Services.Dependencies;
 using PetroGlyph.Games.EawFoc.Services.Detection;
 using PetroGlyph.Games.EawFoc.Services.Name;
+using PG.Commons.Hashing;
+using PG.StarWarsGame.Files.MEG;
 using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Services;
 
@@ -63,6 +65,10 @@ internal class Program : CliBootstrapper
         PetroglyphGameInfrastructureLibrary.InitializeLibraryWithDefaultServices(serviceCollection);
         PetroglyphClientsLibrary.InitializeLibraryWithDefaultServices(serviceCollection);
         PetroglyphWindowsSteamClientsLibrary.InitializeLibraryWithDefaultServices(serviceCollection);
+
+        MegDomain.RegisterServices(serviceCollection);
+
+        serviceCollection.AddSingleton<IChecksumService>(_ => new ChecksumService());
 
         serviceCollection.AddTransient<IGameDetector>(sp => new SteamPetroglyphStarWarsGameDetector(sp));
         serviceCollection.AddTransient<IGameFactory>(sp => new GameFactory(sp));

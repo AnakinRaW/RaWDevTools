@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AnakinRaW.CommonUtilities.SimplePipeline;
+using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using PetroGlyph.Games.EawFoc.Mods;
 using RepublicAtWar.DevLauncher.Configuration;
 using RepublicAtWar.DevLauncher.Pipelines.Steps;
@@ -8,7 +9,7 @@ using Validation;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
-internal class RawBuildPipeline : ParallelPipeline
+internal class RawBuildPipeline : SequentialPipeline
 {
     private readonly IMod _republicAtWar;
 
@@ -26,7 +27,9 @@ internal class RawBuildPipeline : ParallelPipeline
         return new List<IStep>
         {
             new PackMegFileStep(new RawAiPackMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
-            new PackMegFileStep(new RawCustomMapsPackMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider)
+            new PackMegFileStep(new RawCustomMapsPackMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
+            new PackMegFileStep(new RawEnglishSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
+            new PackMegFileStep(new RawGermanSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider)
         };
     }
 
