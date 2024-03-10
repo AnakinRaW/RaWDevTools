@@ -17,6 +17,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="8.1.1" />
 		<PackageReference Include="Costura.Fody" Version="5.7.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
@@ -28,6 +29,16 @@
 	  <ProjectReference Include="..\..\AlamoEngineTools\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG.csproj" />
 	  <ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CLI\ApplicationBase.CLI.csproj" />
 	  <ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <Reference Include="Alamo-CLI">
+	    <HintPath>..\..\lib\Alamo-CLI.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
 	</ItemGroup>
 	
 	<PropertyGroup>
