@@ -5,7 +5,7 @@ using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PetroGlyph.Games.EawFoc.Mods;
+using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Pipelines.Steps;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;

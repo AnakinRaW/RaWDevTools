@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using PetroGlyph.Games.EawFoc;
+using PG.StarWarsGame.Infrastructure;
 
 namespace RepublicAtWar.DevLauncher.Configuration;
 

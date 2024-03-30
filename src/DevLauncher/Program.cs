@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
 using AnakinRaW.CommonUtilities.Hashing;
 using AnakinRaW.CommonUtilities.Registry;
@@ -7,15 +8,13 @@ using AnakinRaW.CommonUtilities.Registry.Windows;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PetroGlyph.Games.EawFoc.Clients.Steam;
-using PetroGlyph.Games.EawFoc.Clients;
-using PetroGlyph.Games.EawFoc;
-using PetroGlyph.Games.EawFoc.Clients.Arguments;
-using PetroGlyph.Games.EawFoc.Services;
-using PetroGlyph.Games.EawFoc.Services.Dependencies;
-using PetroGlyph.Games.EawFoc.Services.Detection;
-using PetroGlyph.Games.EawFoc.Services.Name;
 using PG.Commons.Extensibility;
+using PG.StarWarsGame.Files.DAT.Services.Builder;
+using PG.StarWarsGame.Files.MEG.Data.Archives;
+using PG.StarWarsGame.Infrastructure;
+using PG.StarWarsGame.Infrastructure.Clients;
+using PG.StarWarsGame.Infrastructure.Clients.Steam;
+using PG.StarWarsGame.Infrastructure.Services.Detection;
 using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Services;
 
@@ -62,26 +61,19 @@ internal class Program : CliBootstrapper
 
     private static IServiceProvider CreateServices(IServiceCollection serviceCollection)
     {
-        PetroglyphGameInfrastructureLibrary.InitializeLibraryWithDefaultServices(serviceCollection);
-        PetroglyphClientsLibrary.InitializeLibraryWithDefaultServices(serviceCollection);
-        PetroglyphWindowsSteamClientsLibrary.InitializeLibraryWithDefaultServices(serviceCollection);
+        SteamAbstractionLayer.InitializeServices(serviceCollection);
+        PetroglyphGameClients.InitializeServices(serviceCollection);
+        PetroglyphGameInfrastructure.InitializeServices(serviceCollection);
+
+        Console.WriteLine(typeof(IDatBuilder));
+        Console.WriteLine(typeof(IMegArchive));
 
         serviceCollection.CollectPgServiceContributions();
 
         serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
 
         serviceCollection.AddTransient<IGameDetector>(sp => new SteamPetroglyphStarWarsGameDetector(sp));
-        serviceCollection.AddTransient<IGameFactory>(sp => new GameFactory(sp));
         
-        serviceCollection.AddTransient<IModReferenceFinder>(sp => new FileSystemModFinder(sp));
-        serviceCollection.AddTransient<IModFactory>(sp => new ModFactory(sp));
-        serviceCollection.AddTransient<IModReferenceLocationResolver>(sp => new ModReferenceLocationResolver(sp));
-        serviceCollection.AddTransient<IModNameResolver>(sp => new DirectoryModNameResolver(sp));
-        serviceCollection.AddTransient<IDependencyResolver>(sp => new ModDependencyResolver(sp));
-        serviceCollection.AddTransient<IGameClientFactory>(sp => new DefaultGameClientFactory(sp));
-        serviceCollection.AddTransient<IModArgumentListFactory>(sp => new ModArgumentListFactory(sp));
-        serviceCollection.AddTransient<IArgumentCollectionBuilder>(_ => new KeyBasedArgumentCollectionBuilder());
-
         serviceCollection.AddTransient<IMegPackerService>(sp => new MegPackerService(sp));
 
         return serviceCollection.BuildServiceProvider();

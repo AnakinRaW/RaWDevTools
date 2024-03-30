@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using PetroGlyph.Games.EawFoc;
+using PG.StarWarsGame.Infrastructure;
 
 namespace RepublicAtWar.DevLauncher.Configuration;
 

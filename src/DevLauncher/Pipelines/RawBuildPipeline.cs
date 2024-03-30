@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using AnakinRaW.CommonUtilities.SimplePipeline;
-using PetroGlyph.Games.EawFoc.Mods;
+using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Configuration;
 using RepublicAtWar.DevLauncher.Pipelines.Steps;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
 internal class RawBuildPipeline(IMod republicAtWar, IServiceProvider serviceProvider)
-    : SequentialPipeline(serviceProvider)
+    : ParallelPipeline(serviceProvider)
 {
     private readonly IMod _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
 
@@ -24,6 +24,8 @@ internal class RawBuildPipeline(IMod republicAtWar, IServiceProvider serviceProv
             new PackMegFileStep(new RawEnglishSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
             new PackMegFileStep(new RawGermanSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
             new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
+
+            new PackIconsStep(physicalRaw, ServiceProvider),
         };
     }
 

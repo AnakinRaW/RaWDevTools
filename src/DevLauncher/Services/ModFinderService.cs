@@ -4,10 +4,10 @@ using EawModinfo.Model;
 using EawModinfo.Spec;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PetroGlyph.Games.EawFoc.Games;
-using PetroGlyph.Games.EawFoc.Mods;
-using PetroGlyph.Games.EawFoc.Services;
-using PetroGlyph.Games.EawFoc.Services.Detection;
+using PG.StarWarsGame.Infrastructure.Games;
+using PG.StarWarsGame.Infrastructure.Mods;
+using PG.StarWarsGame.Infrastructure.Services;
+using PG.StarWarsGame.Infrastructure.Services.Detection;
 
 namespace RepublicAtWar.DevLauncher.Services;
 

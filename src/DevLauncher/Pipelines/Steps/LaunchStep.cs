@@ -3,9 +3,9 @@ using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using EawModinfo.Model;
 using Microsoft.Extensions.DependencyInjection;
-using PetroGlyph.Games.EawFoc.Clients.Arguments;
-using PetroGlyph.Games.EawFoc.Clients.Arguments.GameArguments;
-using PetroGlyph.Games.EawFoc.Mods;
+using PG.StarWarsGame.Infrastructure.Clients.Arguments;
+using PG.StarWarsGame.Infrastructure.Clients.Arguments.GameArguments;
+using PG.StarWarsGame.Infrastructure.Mods;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 

@@ -2,6 +2,7 @@
 using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
+using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Configuration;
 using RepublicAtWar.DevLauncher.Services;
 
@@ -16,5 +17,13 @@ internal class PackMegFileStep(IPackMegConfiguration config, IServiceProvider se
     {
         using var packer = Services.GetRequiredService<IMegPackerService>();
         packer.Pack(_config);
+    }
+}
+
+internal class PackIconsStep(IPhysicalMod mod, IServiceProvider serviceProvider) : SynchronizedStep(serviceProvider)
+{
+    protected override void SynchronizedInvoke(CancellationToken token)
+    {
+
     }
 }
