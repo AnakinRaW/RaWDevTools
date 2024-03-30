@@ -4,19 +4,13 @@ using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using RepublicAtWar.DevLauncher.Configuration;
 using RepublicAtWar.DevLauncher.Services;
-using Validation;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class PackMegFileStep : SynchronizedStep
+internal class PackMegFileStep(IPackMegConfiguration config, IServiceProvider serviceProvider)
+    : SynchronizedStep(serviceProvider)
 {
-    private readonly IPackMegConfiguration _config;
-
-    public PackMegFileStep(IPackMegConfiguration config, IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        Requires.NotNull(config, nameof(config));
-        _config = config;
-    }
+    private readonly IPackMegConfiguration _config = config ?? throw new ArgumentNullException(nameof(config));
 
     protected override void SynchronizedInvoke(CancellationToken token)
     {

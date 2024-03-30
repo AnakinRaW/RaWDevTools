@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PetroGlyph.Games.EawFoc.Mods;
 using RepublicAtWar.DevLauncher.Pipelines.Steps;
-using Validation;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
@@ -22,10 +21,8 @@ internal class RawDevLauncherPipeline : Pipeline
 
     public RawDevLauncherPipeline(IMod republicAtWar, IServiceProvider serviceProvider)
     {
-        Requires.NotNull(republicAtWar, nameof(republicAtWar));
-        Requires.NotNull(serviceProvider, nameof(serviceProvider));
-        _republicAtWar = republicAtWar;
-        _serviceProvider = serviceProvider;
+        _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _buildPipeline = new StepRunner(serviceProvider);
 
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());

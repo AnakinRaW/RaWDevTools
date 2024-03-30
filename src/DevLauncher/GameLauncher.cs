@@ -6,7 +6,6 @@ using PetroGlyph.Games.EawFoc.Clients.Arguments;
 using PetroGlyph.Games.EawFoc.Clients.Steam;
 using PetroGlyph.Games.EawFoc.Games;
 using PetroGlyph.Games.EawFoc.Mods;
-using Validation;
 
 namespace RepublicAtWar.DevLauncher;
 
@@ -19,10 +18,8 @@ internal class GameLauncher
 
     public GameLauncher(IMod rawDevMod, IServiceProvider serviceProvider)
     {
-        Requires.NotNull(rawDevMod, nameof(rawDevMod));
-        Requires.NotNull(serviceProvider, nameof(serviceProvider));
-        _republicAtWar = rawDevMod;
-        _serviceProvider = serviceProvider;
+        _republicAtWar = rawDevMod ?? throw new ArgumentNullException(nameof(rawDevMod));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _clientFactory = serviceProvider.GetRequiredService<IGameClientFactory>();
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }

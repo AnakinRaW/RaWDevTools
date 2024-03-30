@@ -8,7 +8,6 @@ using PetroGlyph.Games.EawFoc.Games;
 using PetroGlyph.Games.EawFoc.Mods;
 using PetroGlyph.Games.EawFoc.Services;
 using PetroGlyph.Games.EawFoc.Services.Detection;
-using Validation;
 
 namespace RepublicAtWar.DevLauncher.Services;
 
@@ -22,8 +21,7 @@ internal class ModFinderService
 
     public ModFinderService(IServiceProvider serviceProvider)
     {
-        Requires.NotNull(serviceProvider, nameof(serviceProvider));
-        _serviceProvider = serviceProvider;
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _fileSystem = _serviceProvider.GetRequiredService<IFileSystem>();
         _gameFactory = _serviceProvider.GetRequiredService<IGameFactory>();
         _modFactory = _serviceProvider.GetRequiredService<IModFactory>();

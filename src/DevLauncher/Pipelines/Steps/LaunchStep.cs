@@ -6,19 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 using PetroGlyph.Games.EawFoc.Clients.Arguments;
 using PetroGlyph.Games.EawFoc.Clients.Arguments.GameArguments;
 using PetroGlyph.Games.EawFoc.Mods;
-using Validation;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class LaunchStep : PipelineStep
+internal class LaunchStep(IMod mod, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
-    private readonly IMod _mod;
-
-    public LaunchStep(IMod mod, IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        Requires.NotNull(mod, nameof(mod));
-        _mod = mod;
-    }
+    private readonly IMod _mod = mod ?? throw new ArgumentNullException(nameof(mod));
 
     protected override void RunCore(CancellationToken token)
     {

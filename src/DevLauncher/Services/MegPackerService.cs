@@ -4,26 +4,16 @@ using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
 using PG.StarWarsGame.Files.MEG.Files;
-using PG.StarWarsGame.Files.MEG.Services;
 using PG.StarWarsGame.Files.MEG.Services.Builder;
 using RepublicAtWar.DevLauncher.Configuration;
-using Validation;
-using Vanara.PInvoke;
 using DirectoryInfoWrapper = Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoWrapper;
 
 namespace RepublicAtWar.DevLauncher.Services;
 
-internal class MegPackerService : IMegPackerService
+internal class MegPackerService(IServiceProvider serviceProvider) : IMegPackerService
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IFileSystem _fileSystem;
-
-    public MegPackerService(IServiceProvider serviceProvider)
-    {
-        Requires.NotNull(serviceProvider, nameof(serviceProvider));
-        _serviceProvider = serviceProvider;
-        _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-    }
+    private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
 
     public void Pack(IPackMegConfiguration configuration)
     {

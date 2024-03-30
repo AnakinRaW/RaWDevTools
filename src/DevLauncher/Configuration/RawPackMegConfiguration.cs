@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using PetroGlyph.Games.EawFoc;
-using Validation;
 
 namespace RepublicAtWar.DevLauncher.Configuration;
 
@@ -19,7 +18,7 @@ internal abstract class RawPackMegConfiguration : IPackMegConfiguration
 
     protected RawPackMegConfiguration(IPhysicalPlayableObject? physicalGameObject, IServiceProvider serviceProvider)
     {
-        Requires.NotNull(serviceProvider, nameof(serviceProvider));
+        if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
         FileSystem = serviceProvider.GetRequiredService<IFileSystem>();
         VirtualRootDirectory = physicalGameObject?.Directory;
     }
