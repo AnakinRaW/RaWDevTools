@@ -73,6 +73,8 @@ internal class Program : CliBootstrapper
         serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
 
         serviceCollection.AddTransient<IGameDetector>(sp => new SteamPetroglyphStarWarsGameDetector(sp));
+
+        serviceCollection.AddTransient<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(sp));
         
         serviceCollection.AddTransient<IMegPackerService>(sp => new MegPackerService(sp));
 

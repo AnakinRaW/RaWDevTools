@@ -26,7 +26,7 @@ internal class LaunchStep(IMod mod, IServiceProvider serviceProvider) : Pipeline
         var modArgs = modArgFactory.BuildArgumentList(_mod, false);
         var gameArgsBuilder = Services.GetRequiredService<IArgumentCollectionBuilder>();
         gameArgsBuilder
-            .Add(new WindowedArgument())
+            //.Add(new WindowedArgument())
             .Add(new LanguageArgument(LanguageInfo.Default))
             .Add(modArgs);
 
