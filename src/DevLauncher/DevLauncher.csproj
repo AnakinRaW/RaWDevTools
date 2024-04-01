@@ -13,8 +13,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="Localization\LocalizationGrammar.g4" />
 	  <None Remove="Resources\DummyMasterTextFile.xml" />
 	  <None Remove="Resources\ModCompile.exe" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Antlr4 Include="Localization\LocalizationGrammar.g4">
+			<Listener>false</Listener>
+			<Visitor>true</Visitor>
+			<GAtn>false</GAtn>
+			<Error>true</Error>
+		</Antlr4>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -29,6 +39,8 @@
 		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure.Clients" Version="3.0.1" />
 		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="3.0.1" />
 		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="10.1.2" />
+		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+		<PackageReference Include="Antlr4BuildTasks" Version="12.8.0" />
 		<PackageReference Include="Costura.Fody" Version="5.7.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
@@ -50,10 +62,6 @@
 	
 	<ItemGroup>
 	  <PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <Folder Include="Localization\" />
 	</ItemGroup>
 	
 	<ItemGroup>

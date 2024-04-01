@@ -15,7 +15,7 @@ using RepublicAtWar.DevLauncher.Services;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class PackIconsStep(IPhysicalMod mod, IServiceProvider serviceProvider) : SynchronizedStep(serviceProvider)
+internal class PackIconsStep(IPhysicalMod mod, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
@@ -32,7 +32,7 @@ internal class PackIconsStep(IPhysicalMod mod, IServiceProvider serviceProvider)
 
 
 
-    protected override void SynchronizedInvoke(CancellationToken token)
+    protected override void RunCore(CancellationToken token)
     {
         // TODO: Currently not required since ModTool.exe already does this
         //if (!RequiresBuild())

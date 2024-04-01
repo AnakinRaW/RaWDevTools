@@ -8,11 +8,11 @@ using RepublicAtWar.DevLauncher.Services;
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
 internal class PackMegFileStep(IPackMegConfiguration config, IServiceProvider serviceProvider)
-    : SynchronizedStep(serviceProvider)
+    : PipelineStep(serviceProvider)
 {
     private readonly IPackMegConfiguration _config = config ?? throw new ArgumentNullException(nameof(config));
 
-    protected override void SynchronizedInvoke(CancellationToken token)
+    protected override void RunCore(CancellationToken token)
     {
         using var packer = Services.GetRequiredService<IMegPackerService>();
         packer.Pack(_config);
