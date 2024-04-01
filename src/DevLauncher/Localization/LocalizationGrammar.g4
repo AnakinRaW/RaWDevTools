@@ -10,16 +10,22 @@ language            :  LANG_ID ;
 entryList			:  entry+ ;
 entry				:  key EQUALS value ;
 key                 :  IDENTIFIER ;
-value               :  ENTRY_VALUE;
+value               :  IDENTIFIER | DQSTRING;
 
 
 /*
  * Lexer Rules
  */
  
+ LINE_COMMENT
+     : '#' InputCharacter*
+     -> channel(HIDDEN);
+ 
  WHITESPACES
      : (WHITESPACE | NEWLINE)+
      -> channel(HIDDEN);
+     
+fragment InputCharacter: ~[\r\n]; // Anything but NewLine
 
 fragment SimpleEscapeSequence:
     '\\\''
@@ -40,14 +46,13 @@ EQUALS				    : '=' ;
 SEMICOLON               : ';';
 LANGUAGE			    : 'LANGUAGE' ;
 
+fragment ID_CHAR : ~['=\r\n\t\u0085\u2028\u2029] ;
 
-ID_CHAR : (UPPERCASE | LOWERCASE | NUMBER | ' ' | '.' | '_' | '-') ;
 IDENTIFIER : ID_CHAR+ ;
-
-ENTRY_VALUE :  IDENTIFIER | DQSTRING;
-DQSTRING : '"' (~["\\\r\n\u0085\u2028\u2029] | SimpleEscapeSequence)* '"' ;
 
 LANG_ID: '\'' [A-Z]* '\'' ;
 
 fragment NEWLINE: '\r\n' | '\r' | '\n';
 fragment WHITESPACE: [ \t];
+
+DQSTRING  : '"' (~'"' | ~[\t] | '""')* '"';
