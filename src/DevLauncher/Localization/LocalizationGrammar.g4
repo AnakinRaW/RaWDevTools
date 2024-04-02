@@ -27,32 +27,24 @@ value               :  IDENTIFIER | DQSTRING;
      
 fragment InputCharacter: ~[\r\n]; // Anything but NewLine
 
-fragment SimpleEscapeSequence:
-    '\\\''
-    | '\\"'
-    | '\\\\'
-    | '\\n'
-    | '\\r'
-    | '\\t'
-;
-    
 fragment UPPERCASE  : [A-Z] ;
 fragment LOWERCASE  : [a-z] ;
 fragment NUMBER    : [0-9] ;
 
-fragment EXTENDED_ID_CHAR    : [\u0080-\u00FF] ;
+LANGUAGE			    : 'LANGUAGE' ;
+
+LANG_ID: '\'' [A-Z]* '\'' ;
+
+// String is enclosed inn double-quotes. Allows doubble-double quotes ("") or escaped double-quote (\") inside.
+DQSTRING  : '"' (~'"' | '""' | '\\"')* '"';
 
 EQUALS				    : '=' ;
 SEMICOLON               : ';';
-LANGUAGE			    : 'LANGUAGE' ;
+
 
 fragment ID_CHAR : ~['=\r\n\t\u0085\u2028\u2029] ;
 
 IDENTIFIER : ID_CHAR+ ;
 
-LANG_ID: '\'' [A-Z]* '\'' ;
-
 fragment NEWLINE: '\r\n' | '\r' | '\n';
 fragment WHITESPACE: [ \t];
-
-DQSTRING  : '"' (~'"' | ~[\t] | '""')* '"';

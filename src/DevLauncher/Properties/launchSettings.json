@@ -1,9 +1,14 @@
 {
   "profiles": {
-    "DevLauncher": {
+    "Build & Run Mod": {
       "commandName": "Project",
       "commandLineArgs": "--skipUpdate",
-      "workingDirectory": "D:\\SteamLibrary\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
+      "workingDirectory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\Republic_at_War"
+    },
+    "DAT2LocFile": {
+      "commandName": "Project",
+      "commandLineArgs": "dat2loc --skipUpdate",
+      "workingDirectory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\Republic_at_War"
     }
   }
 }

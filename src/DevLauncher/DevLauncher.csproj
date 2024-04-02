@@ -12,6 +12,11 @@
 		<AssemblyName>RaW-DevLauncher</AssemblyName>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ApplicationIcon>RAW.ico</ApplicationIcon>
+	</PropertyGroup>
+
 	<ItemGroup>
 	  <None Remove="Localization\LocalizationGrammar.g4" />
 	  <None Remove="Resources\DummyMasterTextFile.xml" />
@@ -19,8 +24,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Resources\ModCompile.exe" />
+		<EmbeddedResource Include="Resources\DummyMasterTextFile.xml" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Antlr4 Include="Localization\LocalizationGrammar.g4">
-			<Listener>false</Listener>
+			<Listener>true</Listener>
 			<Visitor>true</Visitor>
 			<GAtn>false</GAtn>
 			<Error>true</Error>
@@ -29,10 +39,6 @@
 
 	<ItemGroup>
 	  <Content Include="RAW.ico" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Include="Resources\ModCompile.exe" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -53,24 +59,9 @@
 	  <ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CLI\ApplicationBase.CLI.csproj" />
 	  <ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
-	  <Reference Include="Alamo-CLI">
-	    <HintPath>..\..\lib\Alamo-CLI.dll</HintPath>
-	  </Reference>
+		<PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
 	</ItemGroup>
-	
-	<ItemGroup>
-	  <PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <EmbeddedResource Include="Resources\DummyMasterTextFile.xml" />
-	</ItemGroup>
-	
-	<PropertyGroup>
-		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-		<ApplicationIcon>RAW.ico</ApplicationIcon>
-	</PropertyGroup>
 
 </Project>

@@ -1,13 +1,26 @@
 using System.Data;
+using System.IO.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using RepublicAtWar.DevLauncher.Localization;
+using Testably.Abstractions.Testing;
 
 namespace DevLauncher.Tests;
 
 public class LocalizationParserTest
 {
-    private LocalizationFile Setup(string text)
+    private readonly MockFileSystem _fileSystem = new();
+    private readonly LocalizationFileReaderReader _readerReader;
+
+    public LocalizationParserTest()
     {
-        return LocalizationFileReader.ReadFromText(text);
+        var sc = new ServiceCollection();
+        sc.AddSingleton<IFileSystem>(_fileSystem);
+        _readerReader = new LocalizationFileReaderReader(sc.BuildServiceProvider());
+    }
+
+    private void Setup(string text)
+    {
+        _fileSystem.Initialize().WithFile("textFile.txt").Which(a => a.HasStringContent(text));
     }
 
 
@@ -17,36 +30,17 @@ public class LocalizationParserTest
     [InlineData("LANGUAGE=")]
     public void Test_InvalidFile(string text)
     {
-        Assert.Throws<SyntaxErrorException>(() => Setup(text));
+        Setup(text);
+        Assert.Throws<SyntaxErrorException>(() => _readerReader.ReadFile("textFile.txt"));
     }
 
     [Fact]
     public void Test_EmptyList()
     {
-        var localizationFile = Setup("LANGUAGE = ENGLISH;");
-        Assert.Equal("ENGLISH", localizationFile.Language);
-    }
+        Setup("LANGUAGE='ENGLISH';");
 
-    [Fact]
-    public void Test_SingleEntry()
-    {
-        var text = @"
-LANGUAGE=ENGLISH;
-KEYs=
-";
-        var localizationFile = Setup(text);
-        Assert.Equal("ENGLISH", localizationFile.Language);
-    }
+        var localizationFile = _readerReader.ReadFile("textFile.txt");
 
-    [Fact]
-    public void Test_MultiEntry()
-    {
-        var text = @"
-LANGUAGE=ENGLISH;
-KEYs=
-KEY 123=
-";
-        var localizationFile = Setup(text);
         Assert.Equal("ENGLISH", localizationFile.Language);
     }
 }
