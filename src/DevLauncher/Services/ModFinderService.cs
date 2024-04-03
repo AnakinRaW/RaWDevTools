@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using EawModinfo.Model;
 using EawModinfo.Spec;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PG.StarWarsGame.Infrastructure.Clients.Steam;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
 using PG.StarWarsGame.Infrastructure.Services;
@@ -37,7 +39,12 @@ internal class ModFinderService
         if (potentialGameDirectory is null)
             throw new GameException("Unable to find game installation: Wrong install path?");
 
-        var gd = new DirectoryGameDetector(potentialGameDirectory, _serviceProvider);
+        var gd = new CompositeGameDetector(new List<IGameDetector>
+        {
+            new DirectoryGameDetector(potentialGameDirectory, _serviceProvider),
+            new SteamPetroglyphStarWarsGameDetector(_serviceProvider)
+        }, _serviceProvider, true);
+
         var detectedGame = gd.Detect(new GameDetectorOptions(GameType.Foc));
 
         if (detectedGame.GameLocation is null)
