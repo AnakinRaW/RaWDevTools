@@ -126,8 +126,8 @@ internal class LocalizationFileWriter(IServiceProvider serviceProvider)
     {
         tw.WriteLine();
         WriteCommentLine(" Instructions how to use this file:", tw);
-        WriteCommentLine(" This is a simple key-value file holding localized game strings.", tw);
-        WriteCommentLine(" The format is always the same: KEY=\"Value\"", tw);
+        WriteCommentLine(" This is a simple key-value file holding localized game strings. Entries are not required to be sorted in this file.", tw);
+        WriteCommentLine(" The format of an entry is always: KEY=\"Value\"", tw);
         WriteCommentLine(" The key shall be UPPERCASE only. Other allowed characters are numbers and '_' and '-'", tw);
         WriteCommentLine(" The value shall be enclosed in double quotes '\"'. This way a value can have line breaks.", tw);
         WriteCommentLine(" If you wish to use a double quote inside the value either use '\"\"' [2 times double quote] or \\\" [backslash + double quote]", tw);
