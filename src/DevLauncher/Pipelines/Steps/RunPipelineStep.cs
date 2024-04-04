@@ -3,19 +3,12 @@ using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.Logging;
-using Validation;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class RunPipelineStep : PipelineStep
+internal class RunPipelineStep(IPipeline pipeline, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
-    private readonly IPipeline _pipeline;
-
-    public RunPipelineStep(IPipeline pipeline, IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        Requires.NotNull(pipeline, nameof(pipeline));
-        _pipeline = pipeline;
-    }
+    private readonly IPipeline _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
 
     protected override void RunCore(CancellationToken token)
     {

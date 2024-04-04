@@ -12,38 +12,56 @@
 		<AssemblyName>RaW-DevLauncher</AssemblyName>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ApplicationIcon>RAW.ico</ApplicationIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="Localization\LocalizationGrammar.g4" />
+	  <None Remove="Resources\DummyMasterTextFile.xml" />
+	  <None Remove="Resources\ModCompile.exe" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\ModCompile.exe" />
+		<EmbeddedResource Include="Resources\DummyMasterTextFile.xml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Antlr4 Include="Localization\LocalizationGrammar.g4">
+			<Listener>true</Listener>
+			<Visitor>true</Visitor>
+			<GAtn>false</GAtn>
+			<Error>true</Error>
+		</Antlr4>
+	</ItemGroup>
+
 	<ItemGroup>
 	  <Content Include="RAW.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="8.1.1" />
+		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure.Clients" Version="3.0.1" />
+		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="3.0.1" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="10.1.2" />
+		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+		<PackageReference Include="Antlr4BuildTasks" Version="12.8.0" />
 		<PackageReference Include="Costura.Fody" Version="5.7.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="AnakinRaW.CommonUtilities.Registry.Windows" Version="8.1.1" />
-		<PackageReference Include="PetroGlyph.Games.EawFoc.Clients.Steam.Windows" Version="2.0.12" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.Registry" Version="10.1.2" />
 	</ItemGroup>
 	
 	<ItemGroup>
+	  <ProjectReference Include="..\..\AlamoEngineTools\PG.StarWarsGame.Files.DAT\PG.StarWarsGame.Files.DAT\PG.StarWarsGame.Files.DAT.csproj" />
 	  <ProjectReference Include="..\..\AlamoEngineTools\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG.csproj" />
 	  <ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CLI\ApplicationBase.CLI.csproj" />
 	  <ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
-	  <Reference Include="Alamo-CLI">
-	    <HintPath>..\..\lib\Alamo-CLI.dll</HintPath>
-	  </Reference>
+		<PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
 	</ItemGroup>
-	
-	<ItemGroup>
-	  <PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
-	</ItemGroup>
-	
-	<PropertyGroup>
-		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-		<ApplicationIcon>RAW.ico</ApplicationIcon>
-	</PropertyGroup>
 
 </Project>

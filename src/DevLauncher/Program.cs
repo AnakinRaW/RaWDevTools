@@ -1,29 +1,35 @@
 ﻿using System;
+using System.IO.Abstractions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
+using AnakinRaW.ApplicationBase.Options;
+using AnakinRaW.CommonUtilities.Hashing;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
-using AnakinRaW.CommonUtilities.SimplePipeline;
+using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PetroGlyph.Games.EawFoc.Clients.Steam;
-using PetroGlyph.Games.EawFoc.Clients;
-using PetroGlyph.Games.EawFoc;
-using PetroGlyph.Games.EawFoc.Clients.Arguments;
-using PetroGlyph.Games.EawFoc.Services;
-using PetroGlyph.Games.EawFoc.Services.Dependencies;
-using PetroGlyph.Games.EawFoc.Services.Detection;
-using PetroGlyph.Games.EawFoc.Services.Name;
-using PG.Commons.Hashing;
-using PG.StarWarsGame.Files.MEG;
+using PG.Commons.Extensibility;
+using PG.StarWarsGame.Files.DAT.Services.Builder;
+using PG.StarWarsGame.Files.MEG.Data.Archives;
+using PG.StarWarsGame.Infrastructure;
+using PG.StarWarsGame.Infrastructure.Clients;
+using PG.StarWarsGame.Infrastructure.Mods;
+using RepublicAtWar.DevLauncher.Localization;
 using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Services;
+using RepublicAtWar.DevLauncher.Utilities;
 
 namespace RepublicAtWar.DevLauncher;
 
 internal class Program : CliBootstrapper
 {
     protected override bool AutomaticUpdate => true;
+
+    private bool HasErrors { get; set; }
+    private bool HasWarning { get; set; }
 
     public static int Main(string[] args)
     {
@@ -42,48 +48,130 @@ internal class Program : CliBootstrapper
 
     protected override int ExecuteAfterUpdate(string[] args, IServiceCollection serviceCollection)
     {
-        var services = CreateServices(serviceCollection);
-        var logger = services.GetService<ILoggerFactory>()?.CreateLogger<Program>();
+        Type[] optionTypes =
+        [
+            typeof(BuildAndRunOption), 
+            typeof(InitializeLocalizationOption),
+            typeof(UpdateLocalizationFilesOption),
+            typeof(ReleaseRepublicAtWarOption)
+        ];
 
-        var raw = new ModFinderService(services).FindAndAddModInCurrentDirectory();
+        var toolResult = 0;
+        Parser.Default.ParseArguments(args, optionTypes)
+            .WithParsed(o => { toolResult = Run((DevToolsOptionBase)o, serviceCollection); })
+            .WithNotParsed(_ => toolResult = 160);
+        return toolResult;
+    }
+
+    protected override void ConfigureLogging(ILoggingBuilder loggingBuilder, IFileSystem fileSystem,
+        IApplicationEnvironment applicationEnvironment)
+    {
+        base.ConfigureLogging(loggingBuilder, fileSystem, applicationEnvironment);
+
+        loggingBuilder.AddFilter(level =>
+        {
+            if (level is LogLevel.Warning) 
+                HasWarning = true;
+            if (level is LogLevel.Error or LogLevel.Critical)
+                HasErrors = true;
+            return true;
+        });
+    }
+
+    private int Run(DevToolsOptionBase options, IServiceCollection serviceCollection)
+    {
+        var services = CreateAppServices(options, serviceCollection);
+        var logger = services.GetService<ILoggerFactory>()?.CreateLogger(GetType());
 
         try
         {
-            var pipeline = new RawDevLauncherPipeline(raw, services);
-            pipeline.Run();
+            if (new ModFinderService(services).FindAndAddModInCurrentDirectory() is not IPhysicalMod raw)
+                throw new InvalidOperationException("Unable to find physical mod Republic at War");
+
+            switch (options)
+            {
+                case BuildAndRunOption runOptions:
+                    new RawDevLauncherPipeline(runOptions, raw, services).Run();
+                    break;
+                case InitializeLocalizationOption:
+                    new LocalizationFileService(options, services).InitializeFromDatFiles();
+                    break;
+                case UpdateLocalizationFilesOption:
+                    new LocalizationFileService(options, services).UpdateNonEnglishFiles();
+                    break;
+                default:
+                    throw new ArgumentException(nameof(options));
+            }
+
+            if (!HasErrors && !HasWarning)
+                logger?.LogInformation("DONE");
+            if (HasErrors && !HasWarning)
+                logger?.LogInformation("DONE with errors");
+            else if (HasWarning && !HasErrors)
+                logger?.LogInformation("DONE with warnings");
+
             return 0;
         }
-        catch (StepFailureException e)
+        catch (Exception e)
         {
-            logger?.LogError(e, $"Building Mod Failed: {e.Message}");
+            logger?.LogError(e.Message, e);
             return e.HResult;
+        }
+        finally
+        {
+            if (HasErrors || HasWarning)
+            {
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadLine();
+            }
         }
     }
 
-    private static IServiceProvider CreateServices(IServiceCollection serviceCollection)
+    private static IServiceProvider CreateAppServices(DevToolsOptionBase options, IServiceCollection serviceCollection)
     {
-        PetroglyphGameInfrastructureLibrary.InitializeLibraryWithDefaultServices(serviceCollection);
-        PetroglyphClientsLibrary.InitializeLibraryWithDefaultServices(serviceCollection);
-        PetroglyphWindowsSteamClientsLibrary.InitializeLibraryWithDefaultServices(serviceCollection);
+        SteamAbstractionLayer.InitializeServices(serviceCollection);
+        PetroglyphGameClients.InitializeServices(serviceCollection);
+        PetroglyphGameInfrastructure.InitializeServices(serviceCollection);
 
-        MegDomain.RegisterServices(serviceCollection);
+        RuntimeHelpers.RunClassConstructor(typeof(IDatBuilder).TypeHandle);
+        RuntimeHelpers.RunClassConstructor(typeof(IMegArchive).TypeHandle);
 
-        serviceCollection.AddSingleton<IChecksumService>(_ => new ChecksumService());
+        serviceCollection.CollectPgServiceContributions();
 
-        serviceCollection.AddTransient<IGameDetector>(sp => new SteamPetroglyphStarWarsGameDetector(sp));
-        serviceCollection.AddTransient<IGameFactory>(sp => new GameFactory(sp));
-        
-        serviceCollection.AddTransient<IModReferenceFinder>(sp => new FileSystemModFinder(sp));
-        serviceCollection.AddTransient<IModFactory>(sp => new ModFactory(sp));
-        serviceCollection.AddTransient<IModReferenceLocationResolver>(sp => new ModReferenceLocationResolver(sp));
-        serviceCollection.AddTransient<IModNameResolver>(sp => new DirectoryModNameResolver(sp));
-        serviceCollection.AddTransient<IDependencyResolver>(sp => new ModDependencyResolver(sp));
-        serviceCollection.AddTransient<IGameClientFactory>(sp => new DefaultGameClientFactory(sp));
-        serviceCollection.AddTransient<IModArgumentListFactory>(sp => new ModArgumentListFactory(sp));
-        serviceCollection.AddTransient<IArgumentCollectionBuilder>(_ => new KeyBasedArgumentCollectionBuilder());
+        serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
 
-        serviceCollection.AddTransient<IMegPackerService>(sp => new MegPackerService(sp));
+        serviceCollection.AddTransient<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(sp));
+
+        serviceCollection.AddTransient(sp => new MegPackerService(sp));
+
+        serviceCollection.AddTransient(sp => new LocalizationFileWriter(options.WarnAsError, sp));
+        serviceCollection.AddTransient(sp => new LocalizationFileReader(options.WarnAsError, sp));
 
         return serviceCollection.BuildServiceProvider();
     }
 }
+
+public abstract class DevToolsOptionBase : UpdaterCommandLineOptions
+{
+    [Option("warnAsError")]
+    public bool WarnAsError { get; init; }
+}
+
+[Verb("buildRun", true)]
+public sealed class BuildAndRunOption : DevToolsOptionBase
+{
+    [Option('w', "windowed", Default = false)]
+    public bool Windowed { get; init; }
+
+    [Option("skipRun")]
+    public bool SkipRun { get; init; }
+}
+
+[Verb("initLoc")]
+public sealed class InitializeLocalizationOption : DevToolsOptionBase;
+
+[Verb("updateLoc")]
+public sealed class UpdateLocalizationFilesOption : DevToolsOptionBase;
+
+[Verb("release")]
+public sealed class ReleaseRepublicAtWarOption : DevToolsOptionBase;

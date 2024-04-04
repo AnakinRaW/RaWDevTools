@@ -1,28 +1,27 @@
 ﻿using System;
+using AET.SteamAbstraction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PetroGlyph.Games.EawFoc.Clients;
-using PetroGlyph.Games.EawFoc.Clients.Arguments;
-using PetroGlyph.Games.EawFoc.Clients.Steam;
-using PetroGlyph.Games.EawFoc.Games;
-using PetroGlyph.Games.EawFoc.Mods;
-using Validation;
+using PG.StarWarsGame.Infrastructure.Clients;
+using PG.StarWarsGame.Infrastructure.Clients.Arguments;
+using PG.StarWarsGame.Infrastructure.Games;
+using PG.StarWarsGame.Infrastructure.Mods;
 
 namespace RepublicAtWar.DevLauncher;
 
 internal class GameLauncher
 {
+    private readonly BuildAndRunOption _options;
     private readonly IMod _republicAtWar;
     private readonly IServiceProvider _serviceProvider;
     private readonly IGameClientFactory _clientFactory;
     private readonly ILogger? _logger;
 
-    public GameLauncher(IMod rawDevMod, IServiceProvider serviceProvider)
+    public GameLauncher(BuildAndRunOption options, IMod rawDevMod, IServiceProvider serviceProvider)
     {
-        Requires.NotNull(rawDevMod, nameof(rawDevMod));
-        Requires.NotNull(serviceProvider, nameof(serviceProvider));
-        _republicAtWar = rawDevMod;
-        _serviceProvider = serviceProvider;
+        _options = options;
+        _republicAtWar = rawDevMod ?? throw new ArgumentNullException(nameof(rawDevMod));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _clientFactory = serviceProvider.GetRequiredService<IGameClientFactory>();
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }
@@ -38,13 +37,14 @@ internal class GameLauncher
 #if DEBUG
         _logger?.LogWarning("Game will not start in DEBUG mode");
 #else 
-        client.Play(_republicAtWar, gameArguments);
+        if (!_options.SkipRun)
+            client.Play(_republicAtWar, gameArguments);
 #endif
     }
 
     private void StartSteam()
     {
-        var steam = _serviceProvider.GetRequiredService<ISteamWrapper>();
+        var steam = _serviceProvider.GetRequiredService<ISteamWrapperFactory>().CreateWrapper();
         if (steam.IsRunning)
             return;
         _logger?.LogInformation("Waiting for Steam...");

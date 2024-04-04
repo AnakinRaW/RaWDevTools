@@ -5,9 +5,8 @@ using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PetroGlyph.Games.EawFoc.Mods;
+using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Pipelines.Steps;
-using Validation;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
@@ -15,17 +14,17 @@ internal class RawDevLauncherPipeline : Pipeline
 {
     private readonly ILogger? _logger;
 
+    private readonly BuildAndRunOption _options;
     private readonly IMod _republicAtWar;
     private readonly IServiceProvider _serviceProvider;
 
     private readonly StepRunner _buildPipeline;
 
-    public RawDevLauncherPipeline(IMod republicAtWar, IServiceProvider serviceProvider)
+    public RawDevLauncherPipeline(BuildAndRunOption options, IMod republicAtWar, IServiceProvider serviceProvider)
     {
-        Requires.NotNull(republicAtWar, nameof(republicAtWar));
-        Requires.NotNull(serviceProvider, nameof(serviceProvider));
-        _republicAtWar = republicAtWar;
-        _serviceProvider = serviceProvider;
+        _options = options;
+        _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _buildPipeline = new StepRunner(serviceProvider);
 
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
@@ -34,7 +33,7 @@ internal class RawDevLauncherPipeline : Pipeline
     protected override bool PrepareCore()
     {
         _buildPipeline.Queue(new RunPipelineStep(new RawBuildPipeline(_republicAtWar, _serviceProvider), _serviceProvider));
-        _buildPipeline.Queue(new LaunchStep(_republicAtWar, _serviceProvider));
+        _buildPipeline.Queue(new LaunchStep(_options, _republicAtWar, _serviceProvider));
         return true;
     }
 

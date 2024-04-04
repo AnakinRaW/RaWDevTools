@@ -3,26 +3,19 @@ using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using EawModinfo.Model;
 using Microsoft.Extensions.DependencyInjection;
-using PetroGlyph.Games.EawFoc.Clients.Arguments;
-using PetroGlyph.Games.EawFoc.Clients.Arguments.GameArguments;
-using PetroGlyph.Games.EawFoc.Mods;
-using Validation;
+using PG.StarWarsGame.Infrastructure.Clients.Arguments;
+using PG.StarWarsGame.Infrastructure.Clients.Arguments.GameArguments;
+using PG.StarWarsGame.Infrastructure.Mods;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class LaunchStep : PipelineStep
+internal class LaunchStep(BuildAndRunOption options, IMod mod, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
-    private readonly IMod _mod;
-
-    public LaunchStep(IMod mod, IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        Requires.NotNull(mod, nameof(mod));
-        _mod = mod;
-    }
+    private readonly IMod _mod = mod ?? throw new ArgumentNullException(nameof(mod));
 
     protected override void RunCore(CancellationToken token)
     {
-        var launcher = new GameLauncher(_mod, Services);
+        var launcher = new GameLauncher(options, _mod, Services);
         var args = CreateGameArgs();
         launcher.Launch(args);
     }
@@ -33,9 +26,11 @@ internal class LaunchStep : PipelineStep
         var modArgs = modArgFactory.BuildArgumentList(_mod, false);
         var gameArgsBuilder = Services.GetRequiredService<IArgumentCollectionBuilder>();
         gameArgsBuilder
-            .Add(new WindowedArgument())
             .Add(new LanguageArgument(LanguageInfo.Default))
             .Add(modArgs);
+
+        if (options.Windowed)
+            gameArgsBuilder.Add(new WindowedArgument());
 
         return gameArgsBuilder.Build();
     }

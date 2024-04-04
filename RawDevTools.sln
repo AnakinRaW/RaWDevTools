@@ -39,6 +39,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PG.Commons", "AlamoEngineTo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PG.StarWarsGame.Files.MEG", "AlamoEngineTools\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG.csproj", "{1EF33430-8CAB-468E-8A42-B709BF7A82E7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PG.StarWarsGame.Files.DAT", "AlamoEngineTools\PG.StarWarsGame.Files.DAT\PG.StarWarsGame.Files.DAT\PG.StarWarsGame.Files.DAT.csproj", "{83EB1DC9-B808-4794-9C52-B359C3AB65D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevLauncher.Tests", "src\DevLauncher.Tests\DevLauncher.Tests.csproj", "{F3CCE961-9C15-495C-A4CB-093BD538FF5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +97,14 @@ Global
 		{1EF33430-8CAB-468E-8A42-B709BF7A82E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EF33430-8CAB-468E-8A42-B709BF7A82E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EF33430-8CAB-468E-8A42-B709BF7A82E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83EB1DC9-B808-4794-9C52-B359C3AB65D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83EB1DC9-B808-4794-9C52-B359C3AB65D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83EB1DC9-B808-4794-9C52-B359C3AB65D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83EB1DC9-B808-4794-9C52-B359C3AB65D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3CCE961-9C15-495C-A4CB-093BD538FF5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3CCE961-9C15-495C-A4CB-093BD538FF5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3CCE961-9C15-495C-A4CB-093BD538FF5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3CCE961-9C15-495C-A4CB-093BD538FF5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,6 +125,7 @@ Global
 		{3E986062-E81F-4833-A127-24FA73FBCB1B} = {4C465CE6-4DB4-4075-A33D-6490579C1B92}
 		{2318713B-6C34-4B0C-A5CE-2CCAFC065386} = {FF4C3704-0C74-40B5-A38D-AF29B6385D85}
 		{1EF33430-8CAB-468E-8A42-B709BF7A82E7} = {FF4C3704-0C74-40B5-A38D-AF29B6385D85}
+		{83EB1DC9-B808-4794-9C52-B359C3AB65D2} = {FF4C3704-0C74-40B5-A38D-AF29B6385D85}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DC15751A-BB36-4EF1-BFF0-2DF1E419AC8F}

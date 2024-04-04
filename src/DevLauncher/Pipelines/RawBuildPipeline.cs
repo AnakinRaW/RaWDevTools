@@ -1,23 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using AnakinRaW.CommonUtilities.SimplePipeline;
-using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
-using PetroGlyph.Games.EawFoc.Mods;
+using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Configuration;
 using RepublicAtWar.DevLauncher.Pipelines.Steps;
-using Validation;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
-internal class RawBuildPipeline : SequentialPipeline
+internal class RawBuildPipeline(IMod republicAtWar, IServiceProvider serviceProvider)
+    : SequentialPipeline(serviceProvider)
 {
-    private readonly IMod _republicAtWar;
-
-    public RawBuildPipeline(IMod republicAtWar, IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        Requires.NotNull(republicAtWar, nameof(republicAtWar));
-        _republicAtWar = republicAtWar;
-    }
+    private readonly IMod _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
 
     protected override IList<IStep> BuildStepsOrdered()
     {
@@ -31,6 +24,10 @@ internal class RawBuildPipeline : SequentialPipeline
             new PackMegFileStep(new RawEnglishSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
             new PackMegFileStep(new RawGermanSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
             new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
+
+            new PackIconsStep(ServiceProvider),
+
+            new CompileLocalizationStep(ServiceProvider),
         };
     }
 

@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using EawModinfo.Model;
 using EawModinfo.Spec;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PetroGlyph.Games.EawFoc.Games;
-using PetroGlyph.Games.EawFoc.Mods;
-using PetroGlyph.Games.EawFoc.Services;
-using PetroGlyph.Games.EawFoc.Services.Detection;
-using Validation;
+using PG.StarWarsGame.Infrastructure.Clients.Steam;
+using PG.StarWarsGame.Infrastructure.Games;
+using PG.StarWarsGame.Infrastructure.Mods;
+using PG.StarWarsGame.Infrastructure.Services;
+using PG.StarWarsGame.Infrastructure.Services.Detection;
 
 namespace RepublicAtWar.DevLauncher.Services;
 
@@ -22,8 +23,7 @@ internal class ModFinderService
 
     public ModFinderService(IServiceProvider serviceProvider)
     {
-        Requires.NotNull(serviceProvider, nameof(serviceProvider));
-        _serviceProvider = serviceProvider;
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _fileSystem = _serviceProvider.GetRequiredService<IFileSystem>();
         _gameFactory = _serviceProvider.GetRequiredService<IGameFactory>();
         _modFactory = _serviceProvider.GetRequiredService<IModFactory>();
@@ -39,7 +39,12 @@ internal class ModFinderService
         if (potentialGameDirectory is null)
             throw new GameException("Unable to find game installation: Wrong install path?");
 
-        var gd = new DirectoryGameDetector(potentialGameDirectory, _serviceProvider);
+        var gd = new CompositeGameDetector(new List<IGameDetector>
+        {
+            new DirectoryGameDetector(potentialGameDirectory, _serviceProvider),
+            new SteamPetroglyphStarWarsGameDetector(_serviceProvider)
+        }, _serviceProvider, true);
+
         var detectedGame = gd.Detect(new GameDetectorOptions(GameType.Foc));
 
         if (detectedGame.GameLocation is null)
