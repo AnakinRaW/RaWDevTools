@@ -24,18 +24,18 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: recursive
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-            dotnet-version: 7.0.x
+            dotnet-version: 8.0.x
       - name: Build
         run: dotnet build ${{ env.TOOL_PROJ_PATH }} --configuration Release --output ./binaries
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Build Artifacts
           path: |
@@ -51,15 +51,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: recursive
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-            dotnet-version: 7.0.x
-      - uses: actions/download-artifact@v3
+            dotnet-version: 8.0.x
+      - uses: actions/download-artifact@v4
         with:
           name: Build Artifacts
           path: binaries
@@ -77,10 +77,10 @@ jobs:
           base_path: ${{env.ORIGIN_BASE_PART}}
           source: ./binaries
 
-      - uses: dotnet/nbgv@v0.4.0
+      - uses: dotnet/nbgv@v0.4.2
         id: nbgv
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: v${{ steps.nbgv.outputs.SemVer2 }}
           tag_name: v${{ steps.nbgv.outputs.SemVer2 }}
