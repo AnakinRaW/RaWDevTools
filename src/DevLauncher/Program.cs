@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using AET.SteamAbstraction;
@@ -26,6 +27,9 @@ namespace RepublicAtWar.DevLauncher;
 internal class Program : CliBootstrapper
 {
     protected override bool AutomaticUpdate => true;
+
+    private bool HasErrors { get; set; }
+    private bool HasWarning { get; set; }
 
     public static int Main(string[] args)
     {
@@ -59,6 +63,21 @@ internal class Program : CliBootstrapper
         return toolResult;
     }
 
+    protected override void ConfigureLogging(ILoggingBuilder loggingBuilder, IFileSystem fileSystem,
+        IApplicationEnvironment applicationEnvironment)
+    {
+        base.ConfigureLogging(loggingBuilder, fileSystem, applicationEnvironment);
+
+        loggingBuilder.AddFilter(level =>
+        {
+            if (level is LogLevel.Warning) 
+                HasWarning = true;
+            if (level is LogLevel.Error or LogLevel.Critical)
+                HasErrors = true;
+            return true;
+        });
+    }
+
     private int Run(DevToolsOptionBase options, IServiceCollection serviceCollection)
     {
         var services = CreateAppServices(options, serviceCollection);
@@ -84,7 +103,13 @@ internal class Program : CliBootstrapper
                     throw new ArgumentException(nameof(options));
             }
 
-            logger?.LogInformation("DONE");
+            if (!HasErrors && !HasWarning)
+                logger?.LogInformation("DONE");
+            if (HasErrors && !HasWarning)
+                logger?.LogInformation("DONE with errors");
+            else if (HasWarning && !HasErrors)
+                logger?.LogInformation("DONE with warnings");
+
             return 0;
         }
         catch (Exception e)
@@ -94,8 +119,11 @@ internal class Program : CliBootstrapper
         }
         finally
         {
-            Console.WriteLine("Press any key to exit.");
-            Console.ReadLine();
+            if (HasErrors || HasWarning)
+            {
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadLine();
+            }
         }
     }
 
