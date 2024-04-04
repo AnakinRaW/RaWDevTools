@@ -2,18 +2,18 @@
   "profiles": {
     "Build & Run Mod": {
       "commandName": "Project",
-      "commandLineArgs": "--skipUpdate",
-      "workingDirectory": "C:\\Privat\\Steam\\steamapps\\workshop\\content\\32470\\1129810972"
+      "commandLineArgs": "--skipUpdate -w",
+      "workingDirectory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\Republic_at_War"
     },
     "DAT2LocFile": {
       "commandName": "Project",
       "commandLineArgs": "initLoc --skipUpdate",
-      "workingDirectory": "C:\\Privat\\Steam\\steamapps\\workshop\\content\\32470\\1129810972"
+      "workingDirectory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\Republic_at_War"
     },
     "Loc2DAT": {
       "commandName": "Project",
       "commandLineArgs": "updateLoc --skipUpdate",
-      "workingDirectory": "C:\\Privat\\Steam\\steamapps\\workshop\\content\\32470\\1129810972"
+      "workingDirectory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\Republic_at_War"
     }
   }
 }

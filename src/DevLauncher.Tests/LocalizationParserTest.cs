@@ -107,8 +107,8 @@ and a line break""
 
 # This is a comment
 
-other_key-complex .123		=	test string # with \"" all "" sorts of \' special \= characters
-key1=123\n\r ""123"" key \= 123
+other_key-complex .123		=	test string \# with \"" all \"" sorts of \' special \= characters
+key1=123\n\r \""123\"" key \= 123
 
 key2=value
 
@@ -116,7 +116,7 @@ empty=""""
 
 quoteOnly=\""
 
-leadingQuotes=""""key\=123 value
+trailingSpace=""dqstring with trailing space should get ignored""          
 ";
 
         Setup(text);
@@ -130,7 +130,7 @@ leadingQuotes=""""key\=123 value
                 new("key2", @"value"),
                 new("empty", string.Empty),
                 new("quoteOnly", "\""),
-                new("leadingQuotes", "\"\"key=123 value"),
+                new("trailingSpace", "dqstring with trailing space should get ignored"),
             },
             localizationFile.Entries);
     }

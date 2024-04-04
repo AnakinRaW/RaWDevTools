@@ -9,13 +9,13 @@ using PG.StarWarsGame.Infrastructure.Mods;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class LaunchStep(IMod mod, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
+internal class LaunchStep(BuildAndRunOption options, IMod mod, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
     private readonly IMod _mod = mod ?? throw new ArgumentNullException(nameof(mod));
 
     protected override void RunCore(CancellationToken token)
     {
-        var launcher = new GameLauncher(_mod, Services);
+        var launcher = new GameLauncher(options, _mod, Services);
         var args = CreateGameArgs();
         launcher.Launch(args);
     }
@@ -26,9 +26,11 @@ internal class LaunchStep(IMod mod, IServiceProvider serviceProvider) : Pipeline
         var modArgs = modArgFactory.BuildArgumentList(_mod, false);
         var gameArgsBuilder = Services.GetRequiredService<IArgumentCollectionBuilder>();
         gameArgsBuilder
-            //.Add(new WindowedArgument())
             .Add(new LanguageArgument(LanguageInfo.Default))
             .Add(modArgs);
+
+        if (options.Windowed)
+            gameArgsBuilder.Add(new WindowedArgument());
 
         return gameArgsBuilder.Build();
     }

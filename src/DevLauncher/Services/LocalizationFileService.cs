@@ -85,7 +85,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
 
     private IDatModel CreateModelFromLocalizationFile(string file)
     {
-        var builder = new EmpireAtWarMasterTextFileBuilder(false, _serviceProvider);
+        var builder = new EmpireAtWarMasterTextBuilder(false, _serviceProvider);
 
         var textFileModel = new LocalizationFileReader(false, serviceProvider).ReadFile(file);
 
@@ -107,7 +107,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
 
         var locFile = reader.FromStream(locFileFs);
 
-        var builder = new EmpireAtWarMasterTextFileBuilder(false, _serviceProvider);
+        var builder = new EmpireAtWarMasterTextBuilder(false, _serviceProvider);
 
         foreach (var entry in locFile.Entries)
         {
@@ -131,7 +131,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
         var newHash = hashingService.GetHash(_fileSystem.FileInfo.New(checkDat), HashTypeKey.SHA256);
 
         if (!orgHash.SequenceEqual(newHash))
-            LogOrThrow($"Original Entry original and cross-check dat files are not equal.");
+            LogOrThrow("Original Entry original and cross-check dat files are not equal.");
 
         if (org.Count != other.Count)
             throw new InvalidOperationException();

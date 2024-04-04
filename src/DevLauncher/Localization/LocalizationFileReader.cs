@@ -91,6 +91,7 @@ internal class LocalizationFileReader(bool warningAsError, IServiceProvider serv
         value = value.Replace("\\'", "'");
         value = value.Replace("\\\"", "\"");
         value = value.Replace("\\=", "=");
+        value = value.Replace("\\#", "#");
 
         return value;
     }

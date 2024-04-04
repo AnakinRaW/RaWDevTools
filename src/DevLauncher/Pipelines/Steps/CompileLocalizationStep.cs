@@ -42,7 +42,7 @@ internal class CompileLocalizationStep(IServiceProvider serviceProvider) : Pipel
         var reader = new LocalizationFileReader(false, Services);
         var fileModel = reader.ReadFile(file);
         
-        using var builder = new EmpireAtWarMasterTextFileBuilder(false, Services);
+        using var builder = new EmpireAtWarMasterTextBuilder(false, Services);
 
         foreach (var entry in fileModel.Entries)
         {

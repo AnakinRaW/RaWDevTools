@@ -48,6 +48,7 @@ fragment SimpleEscapeSequence:
     | '\\='
     | '\\n'
     | '\\r'
+    | '\\#'
     ;
     
 // String is enclosed inn double-quotes. Allows doubble-double quotes ("") or escaped double-quote (\") inside.
@@ -55,7 +56,7 @@ DQSTRING	: '"' (~'"' | '""' | '\\"')* '"';
 LANG_ID		: '\'' UPPERCASE+ '\'' ;
     
 IDENTIFIER	: ID_CHAR+ ;
-VALUE		: (ID_CHAR | VALUE_CHAR | SimpleEscapeSequence)+; 
+VALUE		: (ID_CHAR | SimpleEscapeSequence)+; 
  
  WHITESPACES
     : (WHITESPACE | NEWLINE)+

@@ -32,7 +32,13 @@ internal class PackIconsStep(IServiceProvider serviceProvider) : PipelineStep(se
 
     protected override void RunCore(CancellationToken token)
     {
-        // TODO: Currently not required since ModTool.exe already does this
+        if (!_fileSystem.Directory.Exists(IconsDirectory))
+        {
+            _logger?.LogWarning("No Icons directory found.");
+            return;
+        }
+
+        // TODO: Currently not required since ModCompile.exe already does this
         //if (!RequiresBuild())
         //    return;
 

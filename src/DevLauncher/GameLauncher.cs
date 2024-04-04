@@ -11,13 +11,15 @@ namespace RepublicAtWar.DevLauncher;
 
 internal class GameLauncher
 {
+    private readonly BuildAndRunOption _options;
     private readonly IMod _republicAtWar;
     private readonly IServiceProvider _serviceProvider;
     private readonly IGameClientFactory _clientFactory;
     private readonly ILogger? _logger;
 
-    public GameLauncher(IMod rawDevMod, IServiceProvider serviceProvider)
+    public GameLauncher(BuildAndRunOption options, IMod rawDevMod, IServiceProvider serviceProvider)
     {
+        _options = options;
         _republicAtWar = rawDevMod ?? throw new ArgumentNullException(nameof(rawDevMod));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _clientFactory = serviceProvider.GetRequiredService<IGameClientFactory>();
@@ -35,7 +37,8 @@ internal class GameLauncher
 #if DEBUG
         _logger?.LogWarning("Game will not start in DEBUG mode");
 #else 
-        client.Play(_republicAtWar, gameArguments);
+        if (!_options.SkipRun)
+            client.Play(_republicAtWar, gameArguments);
 #endif
     }
 

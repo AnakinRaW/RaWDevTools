@@ -46,7 +46,7 @@ internal class Program : CliBootstrapper
     {
         Type[] optionTypes =
         [
-            typeof(RunAndBuildOption), 
+            typeof(BuildAndRunOption), 
             typeof(InitializeLocalizationOption),
             typeof(UpdateLocalizationFilesOption),
             typeof(ReleaseRepublicAtWarOption)
@@ -71,8 +71,8 @@ internal class Program : CliBootstrapper
 
             switch (options)
             {
-                case RunAndBuildOption:
-                    new RawDevLauncherPipeline(raw, services).Run();
+                case BuildAndRunOption runOptions:
+                    new RawDevLauncherPipeline(runOptions, raw, services).Run();
                     break;
                 case InitializeLocalizationOption:
                     new LocalizationFileService(options, services).InitializeFromDatFiles();
@@ -83,12 +83,19 @@ internal class Program : CliBootstrapper
                 default:
                     throw new ArgumentException(nameof(options));
             }
+
+            logger?.LogInformation("DONE");
             return 0;
         }
         catch (Exception e)
         {
             logger?.LogError(e.Message, e);
             return e.HResult;
+        }
+        finally
+        {
+            Console.WriteLine("Press any key to exit.");
+            Console.ReadLine();
         }
     }
 
@@ -123,7 +130,14 @@ public abstract class DevToolsOptionBase : UpdaterCommandLineOptions
 }
 
 [Verb("buildRun", true)]
-public sealed class RunAndBuildOption : DevToolsOptionBase;
+public sealed class BuildAndRunOption : DevToolsOptionBase
+{
+    [Option('w', "windowed", Default = false)]
+    public bool Windowed { get; init; }
+
+    [Option("skipRun")]
+    public bool SkipRun { get; init; }
+}
 
 [Verb("initLoc")]
 public sealed class InitializeLocalizationOption : DevToolsOptionBase;
