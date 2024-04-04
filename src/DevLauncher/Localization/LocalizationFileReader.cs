@@ -9,16 +9,14 @@ using Microsoft.Extensions.Logging;
 
 namespace RepublicAtWar.DevLauncher.Localization;
 
-internal class LocalizationFileReaderReader(bool warningAsError, IServiceProvider serviceProvider) : LocalizationGrammarBaseVisitor<LocalizationFile>, ILocalizationFileReader
+internal class LocalizationFileReader(bool warningAsError, IServiceProvider serviceProvider) : LocalizationGrammarBaseVisitor<LocalizationFile>, ILocalizationFileReader
 {
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()
-        ?.CreateLogger(typeof(LocalizationFileReaderReader));
+        ?.CreateLogger(typeof(LocalizationFileReader));
 
-    private readonly LocalizationFileValidator _validator =
-        new(warningAsError
-                ? LocalizationFileValidator.ValidationKind.Throw
-                : LocalizationFileValidator.ValidationKind.Log, 
-            serviceProvider);
+    private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
+
+    private readonly LocalizationFileValidator _validator = new(warningAsError, serviceProvider);
 
     public override LocalizationFile VisitLocalizationFile(LocalizationGrammarParser.LocalizationFileContext context)
     {
@@ -59,14 +57,14 @@ internal class LocalizationFileReaderReader(bool warningAsError, IServiceProvide
         var identifier = valueContext.IDENTIFIER();
         if (identifier is not null)
         {
-            _logger?.LogWarning($"The value of the key '{key}' is not enclosed by double quotes.");
+            LogOrThrow($"The value of the key '{key}' is not enclosed by double quotes.");
             return identifier.GetText();
         }
 
         var value = valueContext.VALUE();
         if (value is not null)
         {
-            _logger?.LogWarning($"The value of the key '{key}' is not enclosed by double quotes.");
+            LogOrThrow($"The value of the key '{key}' is not enclosed by double quotes.");
             return ReplaceEscapeSequences(value.GetText());
         }
 
@@ -99,9 +97,14 @@ internal class LocalizationFileReaderReader(bool warningAsError, IServiceProvide
 
     public LocalizationFile ReadFile(string filePath)
     {
-        var fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-        using var fileStream = fileSystem.FileStream.New(filePath, FileMode.Open, FileAccess.Read);
-        return FromStream(fileStream);
+        using var fileStream = _fileSystem.FileStream.New(filePath, FileMode.Open, FileAccess.Read);
+        var localizationFile = FromStream(fileStream);
+
+        var langName = LanguageNameFromFileName(filePath);
+        if (localizationFile.Language != langName)
+            LogOrThrow($"The file name of '{filePath}' does not match the language content.");
+
+        return localizationFile;
     }
 
     public LocalizationFile FromText(string text)
@@ -125,6 +128,25 @@ internal class LocalizationFileReaderReader(bool warningAsError, IServiceProvide
         parser.ErrorHandler = new StrictErrorStrategy();
 
         return VisitLocalizationFile(parser.localizationFile());
+    }
+
+    private string? LanguageNameFromFileName(string fileName)
+    {
+        if (fileName == null) 
+            throw new ArgumentNullException(nameof(fileName));
+        var fileNameWithoutExtension = _fileSystem.Path.GetFileNameWithoutExtension(fileName);
+        var underScore = fileNameWithoutExtension.IndexOf('_');
+        if (underScore == -1)
+            return null!;
+        return fileNameWithoutExtension.Substring(underScore + 1, fileNameWithoutExtension.Length - underScore - 1)
+            .ToUpperInvariant();
+    }
+
+    private void LogOrThrow(string message)
+    {
+        if (warningAsError)
+            throw new InvalidLocalizationFileException(message);
+        _logger?.LogWarning(message);
     }
 
     private class ThrowExceptionErrorListener : BaseErrorListener, IAntlrErrorListener<int>

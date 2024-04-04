@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RepublicAtWar.DevLauncher.Services;
+namespace RepublicAtWar.DevLauncher.Utilities;
 
 internal class TimeStampBasesUpdateChecker(IServiceProvider serviceProvider) : IBinaryRequiresUpdateChecker
 {

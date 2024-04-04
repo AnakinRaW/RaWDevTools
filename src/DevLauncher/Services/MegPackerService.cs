@@ -8,11 +8,12 @@ using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Files.MEG.Files;
 using PG.StarWarsGame.Files.MEG.Services.Builder;
 using RepublicAtWar.DevLauncher.Configuration;
+using RepublicAtWar.DevLauncher.Utilities;
 using DirectoryInfoWrapper = Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoWrapper;
 
 namespace RepublicAtWar.DevLauncher.Services;
 
-internal class MegPackerService(IServiceProvider serviceProvider) : IMegPackerService
+internal class MegPackerService(IServiceProvider serviceProvider)
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
@@ -20,8 +21,7 @@ internal class MegPackerService(IServiceProvider serviceProvider) : IMegPackerSe
 
     public void Pack(IPackMegConfiguration configuration)
     {
-        var megBuilder = new EmpireAtWarMegBuilder(configuration.VirtualRootDirectory.FullName, _serviceProvider);
-
+        
         var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
         foreach (var fileToPack in configuration.FilesToPack) 
             matcher.AddInclude(fileToPack);
@@ -30,13 +30,19 @@ internal class MegPackerService(IServiceProvider serviceProvider) : IMegPackerSe
 
         var files = matcherResult.Files.Select(f => f.Path).ToList();
         var megFilePath = _fileSystem.Path.Combine(configuration.VirtualRootDirectory.FullName, configuration.FileName);
+        
+        var megFileName = _fileSystem.Path.GetFileName(megFilePath);
 
         var updateChecker = _serviceProvider.GetRequiredService<IBinaryRequiresUpdateChecker>();
         if (!updateChecker.RequiresUpdate(megFilePath, files))
         {
-            _logger?.LogDebug($"MEG file '{_fileSystem.Path.GetFileName(megFilePath)}' is already up to date. Skipping build.");
+            _logger?.LogDebug($"MEG file '{megFileName}' is already up to date. Skipping build.");
             return;
         }
+
+        _logger?.LogInformation($"Writing MEG file '{megFileName}'...");
+
+        using var megBuilder = new EmpireAtWarMegBuilder(configuration.VirtualRootDirectory.FullName, _serviceProvider);
 
         foreach (var file in files)
         {
@@ -54,9 +60,6 @@ internal class MegPackerService(IServiceProvider serviceProvider) : IMegPackerSe
         }
 
         megBuilder.Build(new MegFileInformation(megFilePath, MegFileVersion.V1), true);
-    }
-
-    public void Dispose()
-    {
+        _logger?.LogInformation($"Finished writing MEG file '{megFileName}'...");
     }
 }

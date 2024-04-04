@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RepublicAtWar.DevLauncher.Services;
+namespace RepublicAtWar.DevLauncher.Utilities;
 
 internal interface IBinaryRequiresUpdateChecker
 {

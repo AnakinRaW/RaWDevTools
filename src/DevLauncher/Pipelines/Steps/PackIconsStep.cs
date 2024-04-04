@@ -10,25 +10,23 @@ using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Services;
+using RepublicAtWar.DevLauncher.Utilities;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class PackIconsStep(IPhysicalMod mod, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
+internal class PackIconsStep(IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(MegPackerService));
 
-    private readonly IPhysicalMod _mod = mod;
-
-    private string IconsDirectory => _fileSystem.Path.GetFullPath(_fileSystem.Path.Combine(_mod.Directory.FullName, "Data\\Art\\Textures\\Icons"));
-    private string MtCommandBarPath => _fileSystem.Path.GetFullPath(_fileSystem.Path.Combine(_mod.Directory.FullName, "Data\\Art\\Textures\\MT_CommandBar"));
-    private string MtCommandBarDataBase => _fileSystem.Path.GetFullPath(_fileSystem.Path.Combine(_mod.Directory.FullName, "Data\\Art\\Textures\\MT_CommandBar.mtd"));
-    private string MtCommandBarTexture => _fileSystem.Path.GetFullPath(_fileSystem.Path.Combine(_mod.Directory.FullName, "Data\\Art\\Textures\\MT_CommandBar.tga"));
-    private string DummyMasterTextFileXml => _fileSystem.Path.GetFullPath(_fileSystem.Path.Combine(_mod.Directory.FullName, "Data\\Text\\MasterTextFile.xml"));
-    private string ModCompileExe => _fileSystem.Path.GetFullPath(_fileSystem.Path.Combine(_mod.Directory.FullName, "ModCompile.exe"));
+    private string IconsDirectory => "Data\\Art\\Textures\\Icons";
+    private string MtCommandBarPath => "Data\\Art\\Textures\\MT_CommandBar";
+    private string MtCommandBarDataBase => "Data\\Art\\Textures\\MT_CommandBar.mtd";
+    private string MtCommandBarTexture => "Data\\Art\\Textures\\MT_CommandBar.tga";
+    private string DummyMasterTextFileXml => "Data\\Text\\MasterTextFile.xml";
+    private string ModCompileExe => "ModCompile.exe";
 
 
 
@@ -40,6 +38,8 @@ internal class PackIconsStep(IPhysicalMod mod, IServiceProvider serviceProvider)
 
         try
         {
+            _logger?.LogInformation("Creating Master Texture Database and TGA file...");
+
             WriteDummyMasterTextFile();
             WriteModCompile();
             CopyIcons();
@@ -50,6 +50,8 @@ internal class PackIconsStep(IPhysicalMod mod, IServiceProvider serviceProvider)
             var result = p.ExitCode;
             if (result != 0)
                 throw new Win32Exception();
+
+            _logger?.LogInformation("Finished creating Master Texture Database and TGA file.");
         }
         finally
         {

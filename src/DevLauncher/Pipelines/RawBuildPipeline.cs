@@ -8,7 +8,7 @@ using RepublicAtWar.DevLauncher.Pipelines.Steps;
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
 internal class RawBuildPipeline(IMod republicAtWar, IServiceProvider serviceProvider)
-    : ParallelPipeline(serviceProvider)
+    : SequentialPipeline(serviceProvider)
 {
     private readonly IMod _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
 
@@ -25,7 +25,9 @@ internal class RawBuildPipeline(IMod republicAtWar, IServiceProvider serviceProv
             new PackMegFileStep(new RawGermanSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
             new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
 
-            new PackIconsStep(physicalRaw, ServiceProvider),
+            new PackIconsStep(ServiceProvider),
+
+            new CompileLocalizationStep(ServiceProvider),
         };
     }
 

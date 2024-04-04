@@ -8,12 +8,6 @@ namespace RepublicAtWar.DevLauncher.Localization;
 
 internal class LocalizationFileValidator
 {
-    private readonly ValidationKind _validationKind;
-
-
-    private readonly ILogger? _logger;
-
-
     // These keys from the vanilla games cause warnings.
     // Since we don't want to change 'correct' them, just mute the error
     private static readonly List<string> SuppressedKeys =
@@ -103,22 +97,24 @@ internal class LocalizationFileValidator
         "TEXT_STORY_ALZOCIII_INTIMIDATION_OBJECTIVE_01i"
     ];
 
+    private readonly bool _warningAsError;
+    private readonly ILogger? _logger;
+
     private static readonly List<string> SupportedLanguages =
         ["ENGLISH", "GERMAN", "FRENCH", "ITALIAN", "POLISH", "RUSSIAN", "SPANISH"];
 
-    public LocalizationFileValidator(ValidationKind validationKind, IServiceProvider serviceProvider)
+    public LocalizationFileValidator(bool warningAsError, IServiceProvider serviceProvider)
     {
         if (serviceProvider == null)
             throw new ArgumentNullException(nameof(serviceProvider));
-        _validationKind = validationKind;
-
+        _warningAsError = warningAsError;
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }
 
     public void ValidateLanguage(string language)
     {
         if (!SupportedLanguages.Contains(language))
-            ThrowOrLog($"Unrecognized language '{language}'");
+            LogOrThrow($"Unrecognized language '{language}'");
     }
 
     public void ValidateKey(string key)
@@ -126,35 +122,26 @@ internal class LocalizationFileValidator
         if (SuppressedKeys.Contains(key))
             return;
 
-        if (key.StartsWith(" ") || key.EndsWith(" "))
-            ThrowOrLog($"Key '{key}' has leading or trailing spaces.");
-
         if (key.Contains(' '))
-            ThrowOrLog($"Key '{key}' should not contain spaces.");
+            LogOrThrow($"Key '{key}' should not contain spaces.");
 
         if (key.Contains('.'))
-            ThrowOrLog($"Key '{key}' should not contain periods '.'.");
+            LogOrThrow($"Key '{key}' should not contain periods '.'.");
 
         if (key.Any(char.IsLower))
-            ThrowOrLog($"Key '{key}' should have only UPPERCASE characters.");
+            LogOrThrow($"Key '{key}' should have only UPPERCASE characters.");
     }
 
     public void ValidateValue(string key, string value)
     {
         if (value.IndexOfAny(['\r', '\n', '\t'], 0) != -1)
-            ThrowOrLog($"Value of key '{key}' has invalid escape sequence.");
+            LogOrThrow($"Value of key '{key}' has invalid escape sequence.");
     }
 
-    private void ThrowOrLog(string message)
+    private void LogOrThrow(string message)
     {
-        if (_validationKind == ValidationKind.Throw)
+        if (_warningAsError)
             throw new InvalidLocalizationFileException(message);
         _logger?.LogWarning(message);
-    }
-
-    internal enum ValidationKind
-    {
-        Log,
-        Throw
     }
 }

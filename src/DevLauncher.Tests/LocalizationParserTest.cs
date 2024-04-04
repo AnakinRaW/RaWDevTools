@@ -10,13 +10,13 @@ namespace DevLauncher.Tests;
 public class LocalizationParserTest
 {
     private readonly MockFileSystem _fileSystem = new();
-    private readonly LocalizationFileReaderReader _readerReader;
+    private readonly LocalizationFileReader _reader;
 
     public LocalizationParserTest()
     {
         var sc = new ServiceCollection();
         sc.AddSingleton<IFileSystem>(_fileSystem);
-        _readerReader = new LocalizationFileReaderReader(false, sc.BuildServiceProvider());
+        _reader = new LocalizationFileReader(false, sc.BuildServiceProvider());
     }
 
     private void Setup(string text)
@@ -33,7 +33,7 @@ public class LocalizationParserTest
     public void Test_InvalidText_Language(string text)
     {
         Setup(text);
-        Assert.Throws<SyntaxErrorException>(() => _readerReader.ReadFile("textFile.txt"));
+        Assert.Throws<SyntaxErrorException>(() => _reader.ReadFile("textFile.txt"));
     }
 
     [Fact]
@@ -44,7 +44,7 @@ LANGUAGE='LANG';
 key=
 ";
         Setup(text);
-        Assert.Throws<SyntaxErrorException>(() => _readerReader.ReadFile("textFile.txt"));
+        Assert.Throws<SyntaxErrorException>(() => _reader.ReadFile("textFile.txt"));
     }
 
     [Fact]
@@ -56,7 +56,7 @@ key=
 key=""""
 ";
         Setup(text);
-        Assert.Throws<SyntaxErrorException>(() => _readerReader.ReadFile("textFile.txt"));
+        Assert.Throws<SyntaxErrorException>(() => _reader.ReadFile("textFile.txt"));
     }
 
     [Fact]
@@ -68,7 +68,7 @@ quoteOnly=""This value is interpreted as DQString
 leadingQuotes=""""key\=123 value
 ";
         Setup(text);
-        Assert.Throws<SyntaxErrorException>(() => _readerReader.ReadFile("textFile.txt"));
+        Assert.Throws<SyntaxErrorException>(() => _reader.ReadFile("textFile.txt"));
     }
 
     [Fact]
@@ -80,7 +80,7 @@ key=value
 key=value1
 ";
         Setup(text);
-        Assert.Throws<InvalidLocalizationFileException>(() => _readerReader.ReadFile("textFile.txt"));
+        Assert.Throws<InvalidLocalizationFileException>(() => _reader.ReadFile("textFile.txt"));
     }
 
 
@@ -88,7 +88,7 @@ key=value1
     public void Test_EmptyList()
     {
         Setup("LANGUAGE='ENGLISH';");
-        var localizationFile = _readerReader.ReadFile("textFile.txt");
+        var localizationFile = _reader.ReadFile("textFile.txt");
         Assert.Equal("ENGLISH", localizationFile.Language);
         Assert.Equal(new List<LocalizationEntry>(), localizationFile.Entries);
     }
@@ -120,7 +120,7 @@ leadingQuotes=""""key\=123 value
 ";
 
         Setup(text);
-        var localizationFile = _readerReader.ReadFile("textFile.txt");
+        var localizationFile = _reader.ReadFile("textFile.txt");
         Assert.Equal("ENGLISH", localizationFile.Language);
         Assert.Equal(new List<LocalizationEntry>
             {

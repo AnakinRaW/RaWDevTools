@@ -12,12 +12,28 @@ using PG.StarWarsGame.Files.DAT.Services;
 
 namespace RepublicAtWar.DevLauncher.Localization;
 
-internal class LocalizationFileWriter(IServiceProvider serviceProvider)
+internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serviceProvider)
 {
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(LocalizationFileWriter));
     private readonly IDatFileService _datService = serviceProvider.GetRequiredService<IDatFileService>();
     private readonly IDatModelService _modelService = serviceProvider.GetRequiredService<IDatModelService>();
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
+
+    private bool WarningAsError { get; } = warningAsError;
+
+    public void AppendEntries(string localizationFile, ICollection<DatStringEntry> entries)
+    {
+        if (entries.Count == 0)
+            return;
+
+        using var writer = _fileSystem.File.AppendText(localizationFile);
+
+        writer.WriteLine();
+        writer.WriteLine();
+
+        foreach (var entry in entries) 
+            WriteEntry(entry, writer);
+    }
 
     public IDatModel DatToLocalizationFile(string datFilePath)
     {
@@ -26,14 +42,14 @@ internal class LocalizationFileWriter(IServiceProvider serviceProvider)
         var localizationFilePath = _fileSystem.Path.ChangeExtension(datFilePath, "txt");
 
         using var locFs = _fileSystem.FileStream.New(localizationFilePath, FileMode.Create);
-        using var tw = new StreamWriter(locFs);
+        using var writer = new StreamWriter(locFs);
 
-        tw.WriteLine($"LANGUAGE='{GetLanguageName(datFilePath)}';");
+        writer.WriteLine($"LANGUAGE='{GetLanguageName(datFilePath)}';");
 
-        WriteInstructions(tw);
+        WriteInstructions(writer);
 
         foreach (var entry in masterText.OrderBy(e => e.Key))
-            WriteEntry(entry, tw);
+            WriteEntry(entry, writer);
 
         return masterText;
     }
@@ -46,26 +62,11 @@ internal class LocalizationFileWriter(IServiceProvider serviceProvider)
         var localizationFilePath = _fileSystem.Path.ChangeExtension(datFilePath, "txt");
 
         using var locFs = _fileSystem.FileStream.New(localizationFilePath, FileMode.Create);
-        using var tw = new StreamWriter(locFs);
+        using var writer = new StreamWriter(locFs);
 
         var normalEntries = new List<DatStringEntry>();
-
-        var entriesWhichDotNotExistInReference = new List<DatStringEntry>();
-
-        var missingEntries = new List<DatStringEntry>();
-
         var entriesWithMissingValue = new List<DatStringEntry>();
-
-
-        foreach (var key in _modelService.GetMissingKeysFromBase(referenceModel, masterText))
-        {
-            missingEntries.AddRange(referenceModel.EntriesWithKey(key));
-        }
-
-        foreach (var key in _modelService.GetMissingKeysFromBase(masterText, referenceModel))
-        {
-            entriesWhichDotNotExistInReference.AddRange(masterText.EntriesWithKey(key));
-        }
+        var englishValueEntries = new List<DatStringEntry>();
 
         foreach (var entry in masterText)
         {
@@ -74,50 +75,34 @@ internal class LocalizationFileWriter(IServiceProvider serviceProvider)
             if (entry.Value == string.Empty)
             {
                 if (englishEntry.Value == string.Empty)
-                {
                     normalEntries.Add(entry);
-                }
                 else
-                {
                     entriesWithMissingValue.Add(englishEntry);
-                }
             }
             else
             {
-                normalEntries.Add(entry);
+                if (entry.Value.Equals(englishEntry.Value) && !string.IsNullOrWhiteSpace(entry.Value))
+                    englishValueEntries.Add(entry);
+                else
+                    normalEntries.Add(entry);
+                
             }
         }
 
-        tw.WriteLine($"LANGUAGE='{GetLanguageName(datFilePath)}';");
+        writer.WriteLine($"LANGUAGE='{GetLanguageName(datFilePath)}';");
 
-        WriteInstructions(tw);
+        WriteInstructions(writer);
         
         foreach (var entry in normalEntries.OrderBy(e => e.Key)) 
-            WriteEntry(entry, tw);
+            WriteEntry(entry, writer);
 
+        writer.WriteLine();
+        writer.WriteLine();
 
-        if (missingEntries.Count > 0)
+        if (englishValueEntries.Count > 0)
         {
-            WriteSectionComment("Entries which are currently missing", tw);
-
-            foreach (var entry in missingEntries.OrderBy(e => e.Key))
-                WriteEntry(entry, tw);
-        }
-
-        if (entriesWithMissingValue.Count > 0)
-        {
-            WriteSectionComment("Entries which are missing a text value compare to English", tw);
-
-            foreach (var entry in entriesWithMissingValue.OrderBy(e => e.Key))
-                WriteEntry(entry, tw);
-        }
-
-        if (entriesWhichDotNotExistInReference.Count > 0)
-        {
-            WriteSectionComment("Entries which do not exist in the English model", tw);
-
-            foreach (var entry in entriesWhichDotNotExistInReference.OrderBy(e => e.Key))
-                WriteEntry(entry, tw);
+            foreach (var entry in englishValueEntries.Union(entriesWithMissingValue).OrderBy(e => e.Key))
+                WriteEntry(entry, writer);
         }
 
     }
@@ -152,19 +137,12 @@ internal class LocalizationFileWriter(IServiceProvider serviceProvider)
             foreach (var entry in duplicates)
                 sb.AppendLine($"Duplicate Key: '{entry.Key}'");
 
-            _logger?.LogWarning(sb.ToString());
+            LogOrThrow(sb.ToString());
             masterText = _modelService.RemoveDuplicates(masterText);
         }
         return masterText;
     }
-
-    private void WriteSectionComment(string comment, TextWriter writer)
-    {
-        writer.WriteLine();
-        writer.WriteLine("#" + comment);
-        writer.WriteLine();
-    }
-
+    
     private void WriteCommentLine(string comment, TextWriter writer)
     {
         writer.WriteLine("#" + comment);
@@ -178,8 +156,15 @@ internal class LocalizationFileWriter(IServiceProvider serviceProvider)
             value = value.Replace("\"", "\"\"");
 
         if (value.IndexOfAny(['\r', '\n', '\t'], 0) != -1)
-            _logger?.LogWarning($"Entry of key '{entry.Key}' has invalid escape sequence.");
+            LogOrThrow($"Entry of key '{entry.Key}' has invalid escape sequence.");
 
         writer.WriteLine($"{entry.Key}=\"{value}\"");
+    }
+
+    private void LogOrThrow(string message)
+    {
+        if (WarningAsError)
+            throw new InvalidOperationException(message);
+        _logger?.LogWarning(message);
     }
 }

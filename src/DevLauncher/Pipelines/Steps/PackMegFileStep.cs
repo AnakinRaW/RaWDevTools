@@ -14,7 +14,6 @@ internal class PackMegFileStep(IPackMegConfiguration config, IServiceProvider se
 
     protected override void RunCore(CancellationToken token)
     {
-        using var packer = Services.GetRequiredService<IMegPackerService>();
-        packer.Pack(_config);
+        Services.GetRequiredService<MegPackerService>().Pack(_config);
     }
 }

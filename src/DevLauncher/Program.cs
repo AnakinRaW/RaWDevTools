@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
 using AnakinRaW.ApplicationBase.Options;
 using AnakinRaW.CommonUtilities.Hashing;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
-using AnakinRaW.CommonUtilities.SimplePipeline;
 using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,11 +15,11 @@ using PG.StarWarsGame.Files.DAT.Services.Builder;
 using PG.StarWarsGame.Files.MEG.Data.Archives;
 using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Clients;
-using PG.StarWarsGame.Infrastructure.Clients.Steam;
 using PG.StarWarsGame.Infrastructure.Mods;
-using PG.StarWarsGame.Infrastructure.Services.Detection;
+using RepublicAtWar.DevLauncher.Localization;
 using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Services;
+using RepublicAtWar.DevLauncher.Utilities;
 
 namespace RepublicAtWar.DevLauncher;
 
@@ -44,66 +44,92 @@ internal class Program : CliBootstrapper
 
     protected override int ExecuteAfterUpdate(string[] args, IServiceCollection serviceCollection)
     {
-        var services = CreateServices(serviceCollection);
-        var logger = services.GetService<ILoggerFactory>()?.CreateLogger<Program>();
+        Type[] optionTypes =
+        [
+            typeof(RunAndBuildOption), 
+            typeof(InitializeLocalizationOption),
+            typeof(UpdateLocalizationFilesOption),
+            typeof(ReleaseRepublicAtWarOption)
+        ];
 
-        if (new ModFinderService(services).FindAndAddModInCurrentDirectory() is not IPhysicalMod raw)
-            throw new InvalidOperationException("Unable to find physical mod Republic at War");
+        var toolResult = 0;
+        Parser.Default.ParseArguments(args, optionTypes)
+            .WithParsed(o => { toolResult = Run((DevToolsOptionBase)o, serviceCollection); })
+            .WithNotParsed(_ => toolResult = 160);
+        return toolResult;
+    }
+
+    private int Run(DevToolsOptionBase options, IServiceCollection serviceCollection)
+    {
+        var services = CreateAppServices(options, serviceCollection);
+        var logger = services.GetService<ILoggerFactory>()?.CreateLogger(GetType());
 
         try
         {
+            if (new ModFinderService(services).FindAndAddModInCurrentDirectory() is not IPhysicalMod raw)
+                throw new InvalidOperationException("Unable to find physical mod Republic at War");
 
-            Parser.Default.ParseArguments<BuildAndRunOption, InitializeLocalizationOption>(args)
-                .WithParsed<InitializeLocalizationOption>(o =>
-                {
-                    new LocalizationInitializer(services).Run();
-                })
-                .WithParsed<BuildAndRunOption>(_ =>
-                {
-                    BuildAndRun(raw, services);
-                });
-
+            switch (options)
+            {
+                case RunAndBuildOption:
+                    new RawDevLauncherPipeline(raw, services).Run();
+                    break;
+                case InitializeLocalizationOption:
+                    new LocalizationFileService(options, services).InitializeFromDatFiles();
+                    break;
+                case UpdateLocalizationFilesOption:
+                    new LocalizationFileService(options, services).UpdateNonEnglishFiles();
+                    break;
+                default:
+                    throw new ArgumentException(nameof(options));
+            }
             return 0;
-
         }
-        catch (StepFailureException e)
+        catch (Exception e)
         {
-            logger?.LogError(e, $"Building Mod Failed: {e.Message}");
+            logger?.LogError(e.Message, e);
             return e.HResult;
         }
     }
 
-    private void BuildAndRun(IPhysicalMod raw, IServiceProvider services)
-    {
-        var pipeline = new RawDevLauncherPipeline(raw, services);
-        pipeline.Run();
-    }
-
-    private static IServiceProvider CreateServices(IServiceCollection serviceCollection)
+    private static IServiceProvider CreateAppServices(DevToolsOptionBase options, IServiceCollection serviceCollection)
     {
         SteamAbstractionLayer.InitializeServices(serviceCollection);
         PetroglyphGameClients.InitializeServices(serviceCollection);
         PetroglyphGameInfrastructure.InitializeServices(serviceCollection);
 
-        Console.WriteLine(typeof(IDatBuilder));
-        Console.WriteLine(typeof(IMegArchive));
+        RuntimeHelpers.RunClassConstructor(typeof(IDatBuilder).TypeHandle);
+        RuntimeHelpers.RunClassConstructor(typeof(IMegArchive).TypeHandle);
 
         serviceCollection.CollectPgServiceContributions();
 
         serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
 
-        serviceCollection.AddTransient<IGameDetector>(sp => new SteamPetroglyphStarWarsGameDetector(sp));
-
         serviceCollection.AddTransient<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(sp));
-        
-        serviceCollection.AddTransient<IMegPackerService>(sp => new MegPackerService(sp));
+
+        serviceCollection.AddTransient(sp => new MegPackerService(sp));
+
+        serviceCollection.AddTransient(sp => new LocalizationFileWriter(options.WarnAsError, sp));
+        serviceCollection.AddTransient(sp => new LocalizationFileReader(options.WarnAsError, sp));
 
         return serviceCollection.BuildServiceProvider();
     }
 }
 
+public abstract class DevToolsOptionBase : UpdaterCommandLineOptions
+{
+    [Option("warnAsError")]
+    public bool WarnAsError { get; init; }
+}
+
 [Verb("buildRun", true)]
-public class BuildAndRunOption : UpdaterCommandLineOptions;
+public sealed class RunAndBuildOption : DevToolsOptionBase;
 
 [Verb("initLoc")]
-public class InitializeLocalizationOption : UpdaterCommandLineOptions;
+public sealed class InitializeLocalizationOption : DevToolsOptionBase;
+
+[Verb("updateLoc")]
+public sealed class UpdateLocalizationFilesOption : DevToolsOptionBase;
+
+[Verb("release")]
+public sealed class ReleaseRepublicAtWarOption : DevToolsOptionBase;
