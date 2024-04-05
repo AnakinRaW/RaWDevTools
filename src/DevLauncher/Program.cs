@@ -57,7 +57,10 @@ internal class Program : CliBootstrapper
         ];
 
         var toolResult = 0;
-        Parser.Default.ParseArguments(args, optionTypes)
+        new Parser(with =>
+            {
+                with.IgnoreUnknownArguments = true;
+            }).ParseArguments(args, optionTypes)
             .WithParsed(o => { toolResult = Run((DevToolsOptionBase)o, serviceCollection); })
             .WithNotParsed(_ => toolResult = 160);
         return toolResult;
