@@ -62,7 +62,7 @@ internal class Program : CliBootstrapper
                 with.IgnoreUnknownArguments = true;
             }).ParseArguments(args, optionTypes)
             .WithParsed(o => { toolResult = Run((DevToolsOptionBase)o, serviceCollection); })
-            .WithNotParsed(_ => toolResult = 160);
+            .WithNotParsed(_ => toolResult = 0xA0);
         return toolResult;
     }
 
