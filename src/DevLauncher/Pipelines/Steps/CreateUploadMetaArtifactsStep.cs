@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO.Abstractions;
 using System.Threading;
-using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using EawModinfo.Model;
 using EawModinfo.Spec;
@@ -54,7 +53,7 @@ internal class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) :
         };
 
         _fileSystem.File.WriteAllText("modinfo.json", combined.ToJson(true));
-        _fileSystem.File.WriteAllText($"{combined.SteamData.Title}.workshop.json", combined.ToJson(true));
+        _fileSystem.File.WriteAllText($"{combined.SteamData.Title}.workshop.json", combined.SteamData.ToJson(true));
 
         _logger?.LogInformation("Finish build release artifacts");
     }
