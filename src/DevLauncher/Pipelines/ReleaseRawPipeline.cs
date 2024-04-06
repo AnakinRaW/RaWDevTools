@@ -11,17 +11,17 @@ using RepublicAtWar.DevLauncher.Pipelines.Steps;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
-internal class RawDevLauncherPipeline : Pipeline
+internal class ReleaseRawPipeline : Pipeline
 {
     private readonly ILogger? _logger;
 
-    private readonly BuildAndRunOption _options;
+    private readonly ReleaseRepublicAtWarOption _options;
     private readonly IPhysicalMod _republicAtWar;
     private readonly IServiceProvider _serviceProvider;
 
     private readonly StepRunner _buildPipeline;
 
-    public RawDevLauncherPipeline(BuildAndRunOption options, IPhysicalMod republicAtWar, IServiceProvider serviceProvider)
+    public ReleaseRawPipeline(ReleaseRepublicAtWarOption options, IPhysicalMod republicAtWar, IServiceProvider serviceProvider)
     {
         _options = options;
         _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
@@ -34,13 +34,13 @@ internal class RawDevLauncherPipeline : Pipeline
     protected override bool PrepareCore()
     {
         _buildPipeline.Queue(new RunPipelineStep(new RawBuildPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider));
-        _buildPipeline.Queue(new LaunchStep(_options, _republicAtWar, _serviceProvider));
+        _buildPipeline.Queue(new CreateUploadMetaArtifactsStep(_serviceProvider));
         return true;
     }
 
     protected override void RunCore(CancellationToken token)
     {
-        _logger?.LogTrace("Starting mod build pipeline.");
+        _logger?.LogInformation("Release Republic at War");
         _buildPipeline.Error += OnError;
         try
         {
@@ -49,7 +49,7 @@ internal class RawDevLauncherPipeline : Pipeline
         finally
         {
             _buildPipeline.Error -= OnError;
-            _logger?.LogTrace("Completed build pipeline.");
+            _logger?.LogTrace("Completed Release pipeline.");
         }
     }
 

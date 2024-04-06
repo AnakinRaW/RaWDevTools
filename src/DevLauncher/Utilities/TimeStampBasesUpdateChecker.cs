@@ -5,12 +5,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace RepublicAtWar.DevLauncher.Utilities;
 
-internal class TimeStampBasesUpdateChecker(IServiceProvider serviceProvider) : IBinaryRequiresUpdateChecker
+internal class TimeStampBasesUpdateChecker(bool forceRebuild, IServiceProvider serviceProvider) : IBinaryRequiresUpdateChecker
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
 
     public bool RequiresUpdate(string binaryFile, IEnumerable<string> files)
     {
+        if (forceRebuild)
+            return true;
+
         if (!_fileSystem.File.Exists(binaryFile))
             return true;
 

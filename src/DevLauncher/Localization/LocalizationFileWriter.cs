@@ -21,17 +21,15 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
 
     private bool WarningAsError { get; } = warningAsError;
 
-    public void AppendEntries(string localizationFile, ICollection<DatStringEntry> entries)
+    public void WriteFile(FileSystemStream fileStream, LocalizationFile localizationFile)
     {
-        if (entries.Count == 0)
-            return;
+        using var writer = new StreamWriter(fileStream, Encoding.Unicode, 1024, true);
 
-        using var writer = _fileSystem.File.AppendText(localizationFile);
+        WriteLanguage(localizationFile.Language, writer);
 
-        writer.WriteLine();
-        writer.WriteLine();
+        WriteInstructions(writer);
 
-        foreach (var entry in entries) 
+        foreach (var entry in localizationFile.Entries) 
             WriteEntry(entry, writer);
     }
 
@@ -44,7 +42,7 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
         using var locFs = _fileSystem.FileStream.New(localizationFilePath, FileMode.Create);
         using var writer = new StreamWriter(locFs);
 
-        writer.WriteLine($"LANGUAGE='{GetLanguageName(datFilePath)}';");
+        WriteLanguage(GetLanguageName(datFilePath), writer);
 
         WriteInstructions(writer);
 
@@ -89,7 +87,7 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
             }
         }
 
-        writer.WriteLine($"LANGUAGE='{GetLanguageName(datFilePath)}';");
+        WriteLanguage(GetLanguageName(datFilePath), writer);
 
         WriteInstructions(writer);
         
@@ -105,6 +103,50 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
                 WriteEntry(entry, writer);
         }
 
+    }
+
+    public void CreateDiffFile(FileSystemStream fileStream, string language, MasterTextDifference diffEntries)
+    {
+        using var writer = new StreamWriter(fileStream, Encoding.Unicode, 1024, true);
+
+        WriteLanguage(language, writer);
+        WriteInstructions(writer);
+
+        if (diffEntries.DeletedKeys.Count > 0)
+            WriteCommentSection("The following entries have been deleted - DO NOT TRANSLATE!", writer);
+        foreach (var deletedKey in diffEntries.DeletedKeys) 
+            WriteEntry(deletedKey, LocalizationEntry.DeletedKeyValue, writer);
+
+        if (diffEntries.NewEntries.Count > 0)
+            WriteCommentSection("The following entries are new", writer);
+        foreach (var newEntry in diffEntries.NewEntries) WriteEntry(newEntry, writer);
+
+        if (diffEntries.ChangedEntries.Count > 0)
+            WriteCommentSection("The following entries have been changed in the english language", writer);
+        foreach (var (entry, oldValue) in diffEntries.ChangedEntries)
+        {
+            WriteComment($"ORG Value: \"{EscapeQuotes(oldValue)}\"", writer);
+            WriteEntry(entry, writer);
+            writer.WriteLine();
+        }
+    }
+
+    private void WriteCommentSection(string comment, StreamWriter writer)
+    {
+        writer.WriteLine();
+        WriteComment(comment, writer);
+        writer.WriteLine();
+    }
+
+    private void WriteComment(string comment, TextWriter writer)
+    {
+        writer.WriteLine($"# {comment}");
+    }
+
+
+    private void WriteLanguage(string language, TextWriter writer)
+    {
+        writer.WriteLine($"LANGUAGE='{language}';");
     }
 
     private void WriteInstructions(StreamWriter tw)
@@ -148,17 +190,31 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
         writer.WriteLine("#" + comment);
     }
 
+
     private void WriteEntry(DatStringEntry entry, TextWriter writer)
     {
-        var value = entry.Value;
+        WriteEntry(entry.Key, entry.Value, writer);
+    }
 
+    private void WriteEntry(LocalizationEntry entry, TextWriter writer)
+    {
+        WriteEntry(entry.Key, entry.Value, writer);
+    }
+
+    private void WriteEntry(string key, string value, TextWriter writer)
+    {
         if (value.Contains("\""))
-            value = value.Replace("\"", "\"\"");
+            value = EscapeQuotes(value);
 
         if (value.IndexOfAny(['\r', '\n', '\t'], 0) != -1)
-            LogOrThrow($"Entry of key '{entry.Key}' has invalid escape sequence.");
+            LogOrThrow($"Entry of key '{key}' has invalid escape sequence.");
 
-        writer.WriteLine($"{entry.Key}=\"{value}\"");
+        writer.WriteLine($"{key}=\"{value}\"");
+    }
+
+    private string EscapeQuotes(string value)
+    {
+        return value.Replace("\"", "\"\"");
     }
 
     private void LogOrThrow(string message)

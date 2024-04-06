@@ -3,29 +3,27 @@ using System.Collections.Generic;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Configuration;
+using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Pipelines.Steps;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
-internal class RawBuildPipeline(IMod republicAtWar, IServiceProvider serviceProvider)
+internal class RawBuildPipeline(RaWBuildOption buildOption, IPhysicalMod republicAtWar, IServiceProvider serviceProvider)
     : SequentialPipeline(serviceProvider)
 {
-    private readonly IMod _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
+    private readonly IPhysicalMod _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
 
     protected override IList<IStep> BuildStepsOrdered()
     {
-        if (_republicAtWar is not IPhysicalMod physicalRaw)
-            throw new NotSupportedException("Mod must be physical!");
-
         return new List<IStep>
         {
-            new PackMegFileStep(new RawAiPackMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
-            new PackMegFileStep(new RawCustomMapsPackMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
-            new PackMegFileStep(new RawEnglishSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
-            new PackMegFileStep(new RawGermanSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
-            new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(physicalRaw, ServiceProvider), ServiceProvider),
+            new PackMegFileStep(new RawAiPackMegConfiguration(_republicAtWar, ServiceProvider), ServiceProvider),
+            new PackMegFileStep(new RawCustomMapsPackMegConfiguration(_republicAtWar, ServiceProvider), ServiceProvider),
+            new PackMegFileStep(new RawEnglishSFXMegConfiguration(_republicAtWar, ServiceProvider), ServiceProvider),
+            new PackMegFileStep(new RawGermanSFXMegConfiguration(_republicAtWar, ServiceProvider), ServiceProvider),
+            new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(_republicAtWar, ServiceProvider), ServiceProvider),
 
-            new PackIconsStep(ServiceProvider),
+            new PackIconsStep(buildOption, ServiceProvider),
 
             new CompileLocalizationStep(ServiceProvider),
         };

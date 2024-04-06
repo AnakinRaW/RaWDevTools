@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
-using AnakinRaW.ApplicationBase.Options;
 using AnakinRaW.CommonUtilities.Hashing;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
@@ -18,6 +17,7 @@ using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Clients;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Localization;
+using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Services;
 using RepublicAtWar.DevLauncher.Utilities;
@@ -52,7 +52,8 @@ internal class Program : CliBootstrapper
         [
             typeof(BuildAndRunOption), 
             typeof(InitializeLocalizationOption),
-            typeof(UpdateLocalizationFilesOption),
+            typeof(PrepareLocalizationsOption),
+            typeof(MergeLocalizationOption),
             typeof(ReleaseRepublicAtWarOption)
         ];
 
@@ -99,11 +100,17 @@ internal class Program : CliBootstrapper
                 case InitializeLocalizationOption:
                     new LocalizationFileService(options, services).InitializeFromDatFiles();
                     break;
-                case UpdateLocalizationFilesOption:
-                    new LocalizationFileService(options, services).UpdateNonEnglishFiles();
+                case PrepareLocalizationsOption:
+                    new LocalizationFileService(options, services).CreateForeignDiffFiles();
+                    break;
+                case ReleaseRepublicAtWarOption releaseOptions:
+                    new ReleaseRawPipeline(releaseOptions, raw, services).Run();
+                    break;
+                case MergeLocalizationOption:
+                    new LocalizationFileService(options, services).MergeDiffsInfoFiles();
                     break;
                 default:
-                    throw new ArgumentException(nameof(options));
+                    throw new ArgumentException($"The option '{options.GetType().FullName}' is not implemented", nameof(options));
             }
 
             if (!HasErrors && !HasWarning)
@@ -132,20 +139,20 @@ internal class Program : CliBootstrapper
 
     private static IServiceProvider CreateAppServices(DevToolsOptionBase options, IServiceCollection serviceCollection)
     {
+        serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
+
         SteamAbstractionLayer.InitializeServices(serviceCollection);
         PetroglyphGameClients.InitializeServices(serviceCollection);
         PetroglyphGameInfrastructure.InitializeServices(serviceCollection);
 
         RuntimeHelpers.RunClassConstructor(typeof(IDatBuilder).TypeHandle);
         RuntimeHelpers.RunClassConstructor(typeof(IMegArchive).TypeHandle);
-
         serviceCollection.CollectPgServiceContributions();
 
-        serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
+        serviceCollection.AddSingleton(sp => new GitService(".", options.WarnAsError, sp));
 
-        serviceCollection.AddTransient<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(sp));
-
-        serviceCollection.AddTransient(sp => new MegPackerService(sp));
+        var forceRebuild = options is RaWBuildOption { CleanBuild: true };
+        serviceCollection.AddTransient<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(forceRebuild, sp));
 
         serviceCollection.AddTransient(sp => new LocalizationFileWriter(options.WarnAsError, sp));
         serviceCollection.AddTransient(sp => new LocalizationFileReader(options.WarnAsError, sp));
@@ -153,28 +160,3 @@ internal class Program : CliBootstrapper
         return serviceCollection.BuildServiceProvider();
     }
 }
-
-public abstract class DevToolsOptionBase : UpdaterCommandLineOptions
-{
-    [Option("warnAsError")]
-    public bool WarnAsError { get; init; }
-}
-
-[Verb("buildRun", true)]
-public sealed class BuildAndRunOption : DevToolsOptionBase
-{
-    [Option('w', "windowed", Default = false)]
-    public bool Windowed { get; init; }
-
-    [Option("skipRun")]
-    public bool SkipRun { get; init; }
-}
-
-[Verb("initLoc")]
-public sealed class InitializeLocalizationOption : DevToolsOptionBase;
-
-[Verb("updateLoc")]
-public sealed class UpdateLocalizationFilesOption : DevToolsOptionBase;
-
-[Verb("release")]
-public sealed class ReleaseRepublicAtWarOption : DevToolsOptionBase;
