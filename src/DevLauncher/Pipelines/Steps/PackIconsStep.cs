@@ -10,16 +10,16 @@ using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using RepublicAtWar.DevLauncher.Services;
+using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Utilities;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class PackIconsStep(IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
+internal class PackIconsStep(RaWBuildOption buildOption, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-    private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(MegPackerService));
+    private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(PackIconsStep));
 
     private string IconsDirectory => "Data\\Art\\Textures\\Icons";
     private string MtCommandBarPath => "Data\\Art\\Textures\\MT_CommandBar";
@@ -41,6 +41,19 @@ internal class PackIconsStep(IServiceProvider serviceProvider) : PipelineStep(se
         // TODO: Currently not required since ModCompile.exe already does this
         //if (!RequiresBuild())
         //    return;
+
+        if (buildOption.CleanBuild)
+        {
+            try
+            {
+                _fileSystem.File.Delete(MtCommandBarDataBase);
+                _fileSystem.File.Delete(MtCommandBarTexture);
+            }
+            catch (IOException)
+            {
+                // Ignore
+            }
+        }
 
         try
         {

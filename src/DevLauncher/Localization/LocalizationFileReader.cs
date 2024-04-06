@@ -103,7 +103,7 @@ internal class LocalizationFileReader(bool warningAsError, IServiceProvider serv
 
         var langName = LanguageNameFromFileName(filePath);
         if (localizationFile.Language != langName)
-            LogOrThrow($"The file name of '{filePath}' does not match the language content.");
+            LogOrThrow($"The file name of '{filePath}' does not match the language content '{langName}'.");
 
         return localizationFile;
     }
@@ -136,7 +136,7 @@ internal class LocalizationFileReader(bool warningAsError, IServiceProvider serv
         if (fileName == null) 
             throw new ArgumentNullException(nameof(fileName));
         var fileNameWithoutExtension = _fileSystem.Path.GetFileNameWithoutExtension(fileName);
-        var underScore = fileNameWithoutExtension.IndexOf('_');
+        var underScore = fileNameWithoutExtension.LastIndexOf('_');
         if (underScore == -1)
             return null!;
         return fileNameWithoutExtension.Substring(underScore + 1, fileNameWithoutExtension.Length - underScore - 1)

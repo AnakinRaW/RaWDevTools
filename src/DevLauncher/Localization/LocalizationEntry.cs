@@ -4,6 +4,8 @@ namespace RepublicAtWar.DevLauncher.Localization;
 
 internal readonly struct LocalizationEntry(string key, string value) : IEquatable<LocalizationEntry>
 {
+    public const string DeletedKeyValue = "[[[DELETED]]]";
+
     public string Key { get; } = key;
 
     public string Value { get; } = value;
@@ -26,5 +28,10 @@ internal readonly struct LocalizationEntry(string key, string value) : IEquatabl
     public override string ToString()
     {
         return $"{Key}:{Value}";
+    }
+
+    public bool IsDeletedValue()
+    {
+        return Value == DeletedKeyValue;
     }
 }
