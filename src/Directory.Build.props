@@ -3,7 +3,7 @@
 	<Import Project="../Directory.Build.props" />
 
 	<PropertyGroup>
-		<Copyright>Copyright © AnakinRaW 2023</Copyright>
+		<Copyright>Copyright © AnakinRaW 2024</Copyright>
 		<Authors>AnakinRaW</Authors>
 		<Company>Republic at War Modding Team</Company>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>

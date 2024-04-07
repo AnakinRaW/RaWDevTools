@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using AET.SteamAbstraction;
@@ -8,6 +9,7 @@ using AnakinRaW.CommonUtilities.Hashing;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
 using CommandLine;
+using CommandLine.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.Commons.Extensibility;
@@ -58,12 +60,17 @@ internal class Program : CliBootstrapper
         ];
 
         var toolResult = 0;
-        new Parser(with =>
-            {
-                with.IgnoreUnknownArguments = true;
-            }).ParseArguments(args, optionTypes)
-            .WithParsed(o => { toolResult = Run((DevToolsOptionBase)o, serviceCollection); })
-            .WithNotParsed(_ => toolResult = 0xA0);
+        var parseResult = new Parser(with =>
+        {
+            with.IgnoreUnknownArguments = true;
+        }).ParseArguments(args, optionTypes);
+
+        parseResult.WithParsed(o => { toolResult = Run((DevToolsOptionBase)o, serviceCollection); });
+        parseResult.WithNotParsed(e =>
+        {
+            Console.WriteLine(HelpText.AutoBuild(parseResult).ToString());
+            toolResult = 0xA0;
+        });
         return toolResult;
     }
 
@@ -95,7 +102,7 @@ internal class Program : CliBootstrapper
             switch (options)
             {
                 case BuildAndRunOption runOptions:
-                    new RawDevLauncherPipeline(runOptions, raw, services).Run();
+                    new BuildAndRunPipeline(runOptions, raw, services).Run();
                     break;
                 case InitializeLocalizationOption:
                     new LocalizationFileService(options, services).InitializeFromDatFiles();
