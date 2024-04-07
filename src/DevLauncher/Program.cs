@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using AET.SteamAbstraction;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +32,7 @@ internal class ReleaseRawPipeline : SequentialPipeline
         var createArtifactStep = new CreateUploadMetaArtifactsStep(_serviceProvider);
         return new List<IStep>
         {
+            new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider),
             new RunPipelineStep(new RawBuildPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider),
             createArtifactStep,
             new CopyReleaseStep(createArtifactStep, _options, _serviceProvider),

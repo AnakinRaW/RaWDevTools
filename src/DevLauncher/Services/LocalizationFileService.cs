@@ -275,6 +275,12 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
             throw new InvalidOperationException(message);
         _logger?.LogWarning(message);
     }
+
+    public IDatModel LoadLocalization(string localizationFileName)
+    {
+        return CreateModelFromLocalizationFile(
+            ReadLocalizationFile(_fileSystem.Path.Combine("Data/Text", localizationFileName)));
+    }
 }
 
 
