@@ -86,7 +86,7 @@ internal class CopyReleaseStep : PipelineStep
         _buildArtifactsStep = buildArtifactsStep;
         _releaseOptions = releaseOptions;
         _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-        _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CreateUploadMetaArtifactsStep));
+        _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CopyReleaseStep));
 
         _fileCopyBlacklist = CreateBlacklist();
     }
