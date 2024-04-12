@@ -4,6 +4,7 @@ using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Pipelines.Steps;
@@ -16,12 +17,14 @@ internal class ReleaseRawPipeline : SequentialPipeline
 
     private readonly ReleaseRepublicAtWarOption _options;
     private readonly IPhysicalMod _republicAtWar;
+    private readonly IGame _empireAtWarGame;
     private readonly IServiceProvider _serviceProvider;
 
-    public ReleaseRawPipeline(ReleaseRepublicAtWarOption options, IPhysicalMod republicAtWar, IServiceProvider serviceProvider) : base(serviceProvider)
+    public ReleaseRawPipeline(ReleaseRepublicAtWarOption options, IPhysicalMod republicAtWar, IGame empireAtWarGame, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _options = options;
         _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
+        _empireAtWarGame = empireAtWarGame;
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
@@ -32,10 +35,10 @@ internal class ReleaseRawPipeline : SequentialPipeline
         var createArtifactStep = new CreateUploadMetaArtifactsStep(_serviceProvider);
         return new List<IStep>
         {
-            new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider),
-            new RunPipelineStep(new RawBuildPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider),
-            createArtifactStep,
-            new CopyReleaseStep(createArtifactStep, _options, _serviceProvider),
+            new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _empireAtWarGame, _serviceProvider), _serviceProvider),
+            //new RunPipelineStep(new RawBuildPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider),
+            //createArtifactStep,
+            //new CopyReleaseStep(createArtifactStep, _options, _serviceProvider),
         };
     }
 

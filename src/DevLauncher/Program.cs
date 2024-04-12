@@ -95,7 +95,10 @@ internal class Program : CliBootstrapper
 
         try
         {
-            if (new ModFinderService(services).FindAndAddModInCurrentDirectory() is not IPhysicalMod raw)
+
+            var gameFinderResult = new ModFinderService(services).FindAndAddModInCurrentDirectory();
+
+            if (gameFinderResult.Mod is not IPhysicalMod raw)
                 throw new InvalidOperationException("Unable to find physical mod Republic at War");
 
             switch (options)
@@ -110,7 +113,7 @@ internal class Program : CliBootstrapper
                     new LocalizationFileService(options, services).CreateForeignDiffFiles();
                     break;
                 case ReleaseRepublicAtWarOption releaseOptions:
-                    new ReleaseRawPipeline(releaseOptions, raw, services).Run();
+                    new ReleaseRawPipeline(releaseOptions, raw, gameFinderResult.FallbackGame, services).Run();
                     break;
                 case MergeLocalizationOption:
                     new LocalizationFileService(options, services).MergeDiffsInfoFiles();

@@ -30,7 +30,7 @@ internal class ModFinderService
         _logger = _serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }
 
-    public IMod FindAndAddModInCurrentDirectory()
+    public GameFinderResult FindAndAddModInCurrentDirectory()
     {
         var currentDirectory = _fileSystem.DirectoryInfo.New(Environment.CurrentDirectory);
 
@@ -45,23 +45,38 @@ internal class ModFinderService
             new SteamPetroglyphStarWarsGameDetector(_serviceProvider)
         }, _serviceProvider, true);
 
-        var detectedGame = gd.Detect(new GameDetectorOptions(GameType.Foc));
+        var focDetectionResult = gd.Detect(new GameDetectorOptions(GameType.Foc));
 
-        if (detectedGame.GameLocation is null)
+        if (focDetectionResult.GameLocation is null)
             throw new GameException("Unable to find game installation: Wrong install path?");
 
-        if (detectedGame.Error is not null)
-            throw new GameException($"Unable to find game installation: {detectedGame.Error.Message}", detectedGame.Error);
+        if (focDetectionResult.Error is not null)
+            throw new GameException($"Unable to find game installation: {focDetectionResult.Error.Message}", focDetectionResult.Error);
 
-        _logger?.LogInformation($"Found game {detectedGame.GameIdentity} at '{detectedGame.GameLocation.FullName}'");
+        _logger?.LogInformation($"Found game {focDetectionResult.GameIdentity} at '{focDetectionResult.GameLocation.FullName}'");
 
-        var game = _gameFactory.CreateGame(detectedGame);
+        var foc = _gameFactory.CreateGame(focDetectionResult);
 
         var rawId = new ModReference(currentDirectory.FullName, ModType.Default);
+        var raw = _modFactory.FromReference(foc, rawId, false);
+        foc.AddMod(raw);
 
-        var raw = _modFactory.FromReference(game, rawId, false);
-        game.AddMod(raw);
+        var eawDetectionResult = gd.Detect(new GameDetectorOptions(GameType.EaW));
+        if (eawDetectionResult.GameLocation is null)
+            throw new GameException("Unable to find Empire at War installation.");
+        if (eawDetectionResult.Error is not null)
+            throw new GameException($"Unable to find game installation: {eawDetectionResult.Error.Message}", eawDetectionResult.Error);
+        _logger?.LogInformation($"Found game {eawDetectionResult.GameIdentity} at '{eawDetectionResult.GameLocation.FullName}'");
 
-        return raw;
+        var eaw = _gameFactory.CreateGame(eawDetectionResult);
+
+        return new GameFinderResult(raw, eaw);
     }
+}
+
+public readonly struct GameFinderResult(IMod mod, IGame fallbackGame)
+{
+    public IMod Mod { get; } = mod;
+
+    public IGame FallbackGame { get; } = fallbackGame;
 }
