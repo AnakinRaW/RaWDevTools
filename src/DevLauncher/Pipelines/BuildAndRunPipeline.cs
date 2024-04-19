@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
-using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Infrastructure.Mods;
@@ -25,19 +25,13 @@ internal class BuildAndRunPipeline : SequentialPipeline
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }
-
-    protected override IList<IStep> BuildStepsOrdered()
+    
+    protected override Task<IList<IStep>> BuildSteps()
     {
-        return new List<IStep>
+        return Task.FromResult<IList<IStep>>(new List<IStep>
         {
             new RunPipelineStep(new RawBuildPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider),
             new LaunchStep(_options, _republicAtWar, _serviceProvider)
-        };
-    }
-
-    protected override void OnRunning(StepRunner buildRunner)
-    {
-        _logger?.LogInformation("");
-        base.OnRunning(buildRunner);
+        });
     }
 }

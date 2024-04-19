@@ -13,11 +13,11 @@ internal class RunPipelineStep(IPipeline pipeline, IServiceProvider serviceProvi
     protected override void RunCore(CancellationToken token)
     {
         Logger?.LogInformation($"Running {_pipeline}...");
-        _pipeline.Run(token);
+        _pipeline.RunAsync(token).Wait();
         Logger?.LogInformation($"Finished {_pipeline}");
     }
 
-    protected override void Dispose(bool disposing)
+    protected override void DisposeManagedResources()
     {
         _pipeline.Dispose();
     }

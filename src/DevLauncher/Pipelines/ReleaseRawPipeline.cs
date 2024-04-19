@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
-using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Infrastructure.Games;
@@ -18,33 +19,35 @@ internal class ReleaseRawPipeline : SequentialPipeline
     private readonly ReleaseRepublicAtWarOption _options;
     private readonly IPhysicalMod _republicAtWar;
     private readonly IGame _empireAtWarGame;
-    private readonly IServiceProvider _serviceProvider;
 
     public ReleaseRawPipeline(ReleaseRepublicAtWarOption options, IPhysicalMod republicAtWar, IGame empireAtWarGame, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _options = options;
         _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
         _empireAtWarGame = empireAtWarGame;
-        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }
-
-    protected override IList<IStep> BuildStepsOrdered()
-    {
-        var createArtifactStep = new CreateUploadMetaArtifactsStep(_serviceProvider);
-        return new List<IStep>
-        {
-            new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _empireAtWarGame, _serviceProvider), _serviceProvider),
-            //new RunPipelineStep(new RawBuildPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider),
-            //createArtifactStep,
-            //new CopyReleaseStep(createArtifactStep, _options, _serviceProvider),
-        };
-    }
-
-    protected override void OnRunning(StepRunner buildRunner)
+    protected override Task RunCoreAsync(CancellationToken token)
     {
         _logger?.LogInformation("Release Republic at War");
-        base.OnRunning(buildRunner);
+        return base.RunCoreAsync(token);
+    }
+
+    protected override Task<IList<IStep>> BuildSteps()
+    {
+        return Task.Run<IList<IStep>>(() =>
+        {
+            var createArtifactStep = new CreateUploadMetaArtifactsStep(ServiceProvider);
+            return new List<IStep>
+            {
+                // Build & Verify
+                new RunPipelineStep(new BuildAndVerifyPipeline(_options, _republicAtWar, _empireAtWarGame, ServiceProvider), ServiceProvider),
+                // Build Release artifacts
+                createArtifactStep,
+                // Copy to Release
+                new CopyReleaseStep(createArtifactStep, _options, ServiceProvider),
+            };
+        });
     }
 }

@@ -12,7 +12,6 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.SimplePipeline;
-using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,35 +22,26 @@ using PG.StarWarsGame.Files.MEG.Services;
 using PG.StarWarsGame.Files.MEG.Services.Builder.Normalization;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevLauncher.Pipelines.Steps;
 using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 
 namespace RepublicAtWar.DevLauncher.Petroglyph;
 
 
-
-internal class InitializeGameDatabasePipeline(IServiceProvider serviceProvider, int workerCount = 4) : ParallelPipeline(serviceProvider, workerCount)
+internal class InitializeGameDatabasePipeline(IServiceProvider serviceProvider) : ParallelProducerConsumerPipeline(serviceProvider)
 {
     private IStep _parseGameObjectsStep;
 
-    protected override IList<IStep> BuildStepsOrdered()
-    {
-        throw new NotImplementedException();
-    }
-
-
-    private async Task Add(IList<IStep> queue)
-    {
-        await foreach (var t in CreateSteps())
-        {
-            queue.Add(t);
-        }
-    }
-
-
     public static async IAsyncEnumerable<IStep> CreateSteps()
     {
-        yield return new CompileLocalizationStep(null!);
+        yield break;
+    }
+
+    protected override async Task BuildSteps(IStepQueue queue)
+    {
+        await foreach (var s in CreateSteps())
+        {
+            queue.AddStep(s);
+        }
     }
 }
 
@@ -59,11 +49,13 @@ internal class InitializeGameDatabasePipeline(IServiceProvider serviceProvider, 
 
 public class GameDatabase(GameRepository gameRepository, IServiceProvider serviceProvider)
 {
-    private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(GameDatabase));
+    private readonly ILogger?
+        _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(GameDatabase));
 
-    public GameRepository GameRepository { get; } = gameRepository ?? throw new ArgumentNullException(nameof(gameRepository));
+    public GameRepository GameRepository { get; } =
+        gameRepository ?? throw new ArgumentNullException(nameof(gameRepository));
 
-    public Task Initialize(CancellationToken token = default)
+    public async Task Initialize(CancellationToken token = default)
     {
         // GUIDialogs.xml
         // LensFlares.xml
@@ -105,26 +97,10 @@ public class GameDatabase(GameRepository gameRepository, IServiceProvider servic
         // TargetingPrioritySetFiles.xml
         // MousePointerFiles.xml
 
-
-        var cts = CancellationTokenSource.CreateLinkedTokenSource(token);
-
-
-        var runner = new ParallelBlockingRunner(4, serviceProvider);
-        runner.Error += (sender, e) =>
-        {
-            _logger?.LogError($"Error while initializing database '{e.Step}'");
-            cts.Cancel();
-        };
-
-        runner.Run(cts.Token);
-
-
-        runner.Wait();
-
-        return Task.CompletedTask;
+        var indexGamesPipeline = new InitializeGameDatabasePipeline(serviceProvider);
+        await indexGamesPipeline.RunAsync(token);
     }
 }
-
 
 public abstract class ParseXmlDatabaseStep<T> : PipelineStep where T : class
 {

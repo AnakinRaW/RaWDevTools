@@ -18,7 +18,7 @@ internal class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) :
 
     internal string? SteamJsonName { get; private set; }
 
-    protected override void SynchronizedInvoke(CancellationToken token)
+    protected override void RunSynchronized(CancellationToken token)
     {
         _logger?.LogInformation("Creating Modinfo, Steam json and splashes...");
 

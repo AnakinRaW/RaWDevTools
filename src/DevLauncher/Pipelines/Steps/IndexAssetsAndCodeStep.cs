@@ -27,7 +27,7 @@ internal class IndexAssetsAndCodeStep : SynchronizedStep
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
-    protected override void SynchronizedInvoke(CancellationToken token)
+    protected override void RunSynchronized(CancellationToken token)
     {
         _logger?.LogInformation("Indexing Republic at War...");
 

@@ -2,11 +2,14 @@
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
 using AnakinRaW.CommonUtilities.Hashing;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
+using AnakinRaW.CommonUtilities.SimplePipeline;
 using CommandLine;
 using CommandLine.Text;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,8 +37,11 @@ internal class Program : CliBootstrapper
 
     private bool HasWarning { get; set; }
 
+    private static readonly CancellationTokenSource ApplicationCancellationTokenSource = new();
+
     public static int Main(string[] args)
     {
+        Console.CancelKeyPress += (_, _) => ApplicationCancellationTokenSource.Cancel();
         return new Program().Run(args);
     }
 
@@ -57,7 +63,8 @@ internal class Program : CliBootstrapper
             typeof(InitializeLocalizationOption),
             typeof(PrepareLocalizationsOption),
             typeof(MergeLocalizationOption),
-            typeof(ReleaseRepublicAtWarOption)
+            typeof(ReleaseRepublicAtWarOption),
+            typeof(VerifyOption)
         ];
 
         var toolResult = 0;
@@ -66,7 +73,15 @@ internal class Program : CliBootstrapper
             with.IgnoreUnknownArguments = true;
         }).ParseArguments(args, optionTypes);
 
-        parseResult.WithParsed(o => { toolResult = Run((DevToolsOptionBase)o, serviceCollection); });
+        parseResult.WithParsed(o =>
+        {
+            Task.Run(async () =>
+            {
+                toolResult = await Run((DevToolsOptionBase)o, serviceCollection);
+            }).Wait();
+
+
+        });
         parseResult.WithNotParsed(e =>
         {
             Console.WriteLine(HelpText.AutoBuild(parseResult).ToString());
@@ -90,23 +105,24 @@ internal class Program : CliBootstrapper
         });
     }
 
-    private int Run(DevToolsOptionBase options, IServiceCollection serviceCollection)
+    private async Task<int> Run(DevToolsOptionBase options, IServiceCollection serviceCollection)
     {
         var services = CreateAppServices(options, serviceCollection);
         var logger = services.GetService<ILoggerFactory>()?.CreateLogger(GetType());
 
         try
         {
-
             var gameFinderResult = new ModFinderService(services).FindAndAddModInCurrentDirectory();
 
             if (gameFinderResult.Mod is not IPhysicalMod raw)
                 throw new InvalidOperationException("Unable to find physical mod Republic at War");
 
+            IPipeline? launcherPipeline = null;
+
             switch (options)
             {
                 case BuildAndRunOption runOptions:
-                    new BuildAndRunPipeline(runOptions, raw, services).Run();
+                    launcherPipeline = new BuildAndRunPipeline(runOptions, raw, services);
                     break;
                 case InitializeLocalizationOption:
                     new LocalizationFileService(options, services).InitializeFromDatFiles();
@@ -115,14 +131,20 @@ internal class Program : CliBootstrapper
                     new LocalizationFileService(options, services).CreateForeignDiffFiles();
                     break;
                 case ReleaseRepublicAtWarOption releaseOptions:
-                    new ReleaseRawPipeline(releaseOptions, raw, gameFinderResult.FallbackGame, services).Run();
+                    launcherPipeline = new ReleaseRawPipeline(releaseOptions, raw, gameFinderResult.FallbackGame, services);
                     break;
                 case MergeLocalizationOption:
                     new LocalizationFileService(options, services).MergeDiffsInfoFiles();
                     break;
+                case VerifyOption verifyOption:
+                    launcherPipeline = new BuildAndVerifyPipeline(verifyOption, raw, gameFinderResult.FallbackGame, services);
+                    break;
                 default:
                     throw new ArgumentException($"The option '{options.GetType().FullName}' is not implemented", nameof(options));
             }
+            
+            if (launcherPipeline is not null) 
+                await launcherPipeline.RunAsync(ApplicationCancellationTokenSource.Token);
 
             if (!HasErrors && !HasWarning)
                 logger?.LogInformation("DONE");
