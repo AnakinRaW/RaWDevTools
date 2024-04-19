@@ -22,6 +22,7 @@ using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Services;
 using RepublicAtWar.DevLauncher.Utilities;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace RepublicAtWar.DevLauncher;
 
@@ -30,6 +31,7 @@ internal class Program : CliBootstrapper
     protected override bool AutomaticUpdate => true;
 
     private bool HasErrors { get; set; }
+
     private bool HasWarning { get; set; }
 
     public static int Main(string[] args)
@@ -73,7 +75,7 @@ internal class Program : CliBootstrapper
         return toolResult;
     }
 
-    protected override void ConfigureLogging(ILoggingBuilder loggingBuilder, IFileSystem fileSystem,
+    protected override void ConfigureLogging(ILoggingBuilder loggingBuilder, IFileSystem fileSystem, 
         IApplicationEnvironment applicationEnvironment)
     {
         base.ConfigureLogging(loggingBuilder, fileSystem, applicationEnvironment);

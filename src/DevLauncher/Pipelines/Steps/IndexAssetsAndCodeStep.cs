@@ -7,7 +7,6 @@ using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Petroglyph;
-using RepublicAtWar.DevLauncher.Services;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
@@ -18,7 +17,7 @@ internal class IndexAssetsAndCodeStep : SynchronizedStep
     private readonly DevToolsOptionBase _options;
     private readonly ILogger? _logger;
 
-    internal GameDatabase GameDatabase { get; private set; }
+    internal GameDatabase GameDatabase { get; private set; } = null!;
 
     public IndexAssetsAndCodeStep(IPhysicalMod mod, IGame fallbackGame, DevToolsOptionBase options, IServiceProvider serviceProvider) : base(serviceProvider)
     {
@@ -32,10 +31,11 @@ internal class IndexAssetsAndCodeStep : SynchronizedStep
     {
         _logger?.LogInformation("Indexing Republic at War...");
 
-        var englishLocalization = new LocalizationFileService(_options, Services).LoadLocalization("MasterTextFile_English.txt");
-
         var gameRepository = new GameRepository(_mod, _fallbackGame, Services);
 
+        GameDatabase = new GameDatabase(gameRepository, Services);
+
+        GameDatabase.Initialize(token).Wait(token);
 
         _logger?.LogInformation("Finished indexing");
     }

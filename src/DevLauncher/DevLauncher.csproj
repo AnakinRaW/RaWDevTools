@@ -45,6 +45,7 @@
 		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure.Clients" Version="3.0.6" />
 		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="3.0.6" />
 		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="11.1.5" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.Xml" Version="11.1.5" />
 		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
 		<PackageReference Include="Antlr4BuildTasks" Version="12.8.0" />
 		<PackageReference Include="Costura.Fody" Version="5.7.0">
