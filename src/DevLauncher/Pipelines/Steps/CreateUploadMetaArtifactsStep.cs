@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO.Abstractions;
 using System.Threading;
-using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using EawModinfo.Model;
 using EawModinfo.Spec;
@@ -10,12 +9,16 @@ using Microsoft.Extensions.Logging;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
+internal class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : SynchronizedStep(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CreateUploadMetaArtifactsStep));
 
-    protected override void RunCore(CancellationToken token)
+    internal string? SteamTitle { get; private set; }
+
+    internal string? SteamJsonName { get; private set; }
+
+    protected override void RunSynchronized(CancellationToken token)
     {
         _logger?.LogInformation("Creating Modinfo, Steam json and splashes...");
 
@@ -53,8 +56,11 @@ internal class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) :
             SteamData = steamDataWithDescription
         };
 
+        SteamTitle = combined.SteamData.Title;
+        SteamJsonName = $"{SteamTitle}.workshop.json";
+
         _fileSystem.File.WriteAllText("modinfo.json", combined.ToJson(true));
-        _fileSystem.File.WriteAllText($"{combined.SteamData.Title}.workshop.json", combined.ToJson(true));
+        _fileSystem.File.WriteAllText(SteamJsonName, combined.SteamData.ToJson(true));
 
         _logger?.LogInformation("Finish build release artifacts");
     }

@@ -1,60 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
-using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
+using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Pipelines.Steps;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
-internal class ReleaseRawPipeline : Pipeline
+internal class ReleaseRawPipeline : SequentialPipeline
 {
     private readonly ILogger? _logger;
 
     private readonly ReleaseRepublicAtWarOption _options;
     private readonly IPhysicalMod _republicAtWar;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IGame _empireAtWarGame;
 
-    private readonly StepRunner _buildPipeline;
-
-    public ReleaseRawPipeline(ReleaseRepublicAtWarOption options, IPhysicalMod republicAtWar, IServiceProvider serviceProvider)
+    public ReleaseRawPipeline(ReleaseRepublicAtWarOption options, IPhysicalMod republicAtWar, IGame empireAtWarGame, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _options = options;
         _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
-        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        _buildPipeline = new StepRunner(serviceProvider);
+        _empireAtWarGame = empireAtWarGame;
 
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }
-
-    protected override bool PrepareCore()
-    {
-        _buildPipeline.Queue(new RunPipelineStep(new RawBuildPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider));
-        _buildPipeline.Queue(new CreateUploadMetaArtifactsStep(_serviceProvider));
-        return true;
-    }
-
-    protected override void RunCore(CancellationToken token)
+    protected override Task RunCoreAsync(CancellationToken token)
     {
         _logger?.LogInformation("Release Republic at War");
-        _buildPipeline.Error += OnError;
-        try
-        {
-            _buildPipeline.Run(token);
-        }
-        finally
-        {
-            _buildPipeline.Error -= OnError;
-            _logger?.LogTrace("Completed Release pipeline.");
-        }
+        return base.RunCoreAsync(token);
     }
 
-    private static void OnError(object sender, StepErrorEventArgs e)
+    protected override Task<IList<IStep>> BuildSteps()
     {
-        throw new StepFailureException(new List<IStep> { e.Step });
+        return Task.Run<IList<IStep>>(() =>
+        {
+            var createArtifactStep = new CreateUploadMetaArtifactsStep(ServiceProvider);
+            return new List<IStep>
+            {
+                // Build
+                new RunPipelineStep(new BuildPipeline(_options, _republicAtWar, ServiceProvider), ServiceProvider),
+                // Verify
+                // new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _empireAtWarGame, ServiceProvider), ServiceProvider),
+                // Build Release artifacts
+                createArtifactStep,
+                // Copy to Release
+                new CopyReleaseStep(createArtifactStep, _options, ServiceProvider),
+            };
+        });
     }
 }
