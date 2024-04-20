@@ -9,7 +9,7 @@ using RepublicAtWar.DevLauncher.Pipelines.Steps;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
-internal class RawBuildPipeline(RaWBuildOption buildOption, IPhysicalMod republicAtWar, IServiceProvider serviceProvider)
+internal class BuildPipeline(RaWBuildOption buildOption, IPhysicalMod republicAtWar, IServiceProvider serviceProvider)
     : ParallelPipeline(serviceProvider)
 {
     public override string ToString()

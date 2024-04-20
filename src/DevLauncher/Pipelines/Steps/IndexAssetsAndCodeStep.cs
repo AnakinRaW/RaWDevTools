@@ -33,9 +33,51 @@ internal class IndexAssetsAndCodeStep : SynchronizedStep
 
         var gameRepository = new GameRepository(_mod, _fallbackGame, Services);
 
-        GameDatabase = new GameDatabase(gameRepository, Services);
 
-        GameDatabase.Initialize(token).Wait(token);
+        // GUIDialogs.xml
+        // LensFlares.xml
+        // SurfaceFX.xml
+        // TerrainDecalFX.xml
+        // GraphicDetails.xml
+        // DynamicTrackFX.xml
+        // ShadowBlobMaterials.xml
+        // TacticalCameras.xml
+        // LightSources.xml
+        // StarWars3DTextCrawl.xml
+        // MusicEvents.xml
+        // SpeechEvents.xml
+        // GameConstants.xml
+        // Audio.xml
+        // WeatherAudio.xml
+        // HeroClash.xml
+        // TradeRouteLines.xml
+        // RadarMap.xml
+        // WeatherModifiers.xml
+        // Movies.xml
+        // LightningEffectTypes.xml
+        // DifficultyAdjustments.xml
+        // WeatherScenarios.xml
+        // UnitAbilityTypes.xml
+        // BlackMarketItems.xml
+        // MovementClassTypeDefs.xml
+        // AITerrainEffectiveness.xml
+
+
+        // CONTAINER FILES:
+        // GameObjectFiles.xml
+        // SFXEventFiles.xml
+        // CommandBarComponentFiles.xml
+        // TradeRouteFiles.xml
+        // HardPointDataFiles.xml
+        // CampaignFiles.xml
+        // FactionFiles.xml
+        // TargetingPrioritySetFiles.xml
+        // MousePointerFiles.xml
+
+        var indexGamesPipeline = new InitializeGameDatabasePipeline(gameRepository, Services);
+        indexGamesPipeline.RunAsync(token).Wait();
+
+        GameDatabase = indexGamesPipeline.GameDatabase;
 
         _logger?.LogInformation("Finished indexing");
     }

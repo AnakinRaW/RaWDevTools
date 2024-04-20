@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
+using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Options;
-using RepublicAtWar.DevLauncher.Pipelines.Steps;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
@@ -21,7 +21,7 @@ internal class BuildAndVerifyPipeline(RaWBuildOption buildOption, IPhysicalMod r
     {
         return Task.FromResult<IList<IStep>>(new List<IStep>
         {
-            new RunPipelineStep(new RawBuildPipeline(buildOption, republicAtWar, ServiceProvider), ServiceProvider),
+            new RunPipelineStep(new BuildPipeline(buildOption, republicAtWar, ServiceProvider), ServiceProvider),
             new RunPipelineStep(new VerifyPipeline(buildOption, republicAtWar, fallbackGame, ServiceProvider), ServiceProvider),
         });
     }

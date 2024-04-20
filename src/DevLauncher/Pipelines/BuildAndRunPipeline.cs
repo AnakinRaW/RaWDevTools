@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
+using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Infrastructure.Mods;
@@ -30,7 +31,7 @@ internal class BuildAndRunPipeline : SequentialPipeline
     {
         return Task.FromResult<IList<IStep>>(new List<IStep>
         {
-            new RunPipelineStep(new RawBuildPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider),
+            new RunPipelineStep(new BuildPipeline(_options, _republicAtWar, _serviceProvider), _serviceProvider),
             new LaunchStep(_options, _republicAtWar, _serviceProvider)
         });
     }

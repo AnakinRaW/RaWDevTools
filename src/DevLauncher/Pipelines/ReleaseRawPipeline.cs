@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
+using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Infrastructure.Games;
@@ -41,8 +42,10 @@ internal class ReleaseRawPipeline : SequentialPipeline
             var createArtifactStep = new CreateUploadMetaArtifactsStep(ServiceProvider);
             return new List<IStep>
             {
-                // Build & Verify
-                new RunPipelineStep(new BuildAndVerifyPipeline(_options, _republicAtWar, _empireAtWarGame, ServiceProvider), ServiceProvider),
+                // Build
+                new RunPipelineStep(new BuildPipeline(_options, _republicAtWar, ServiceProvider), ServiceProvider),
+                // Verify
+                // new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _empireAtWarGame, ServiceProvider), ServiceProvider),
                 // Build Release artifacts
                 createArtifactStep,
                 // Copy to Release
