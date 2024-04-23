@@ -37,8 +37,13 @@ internal class GameLauncher
         _logger?.LogInformation("Starting Game...");
 #if DEBUG
         _logger?.LogWarning("Game will not start in DEBUG mode");
-#else 
-        if (!_options.SkipRun)
+#else
+        if (_options.SkipRun)
+            return;
+        if (client is IDebugableGameClient debugClient && debugClient.IsDebugAvailable(_republicAtWar) &&
+            _options.Debug)
+            debugClient.Debug(_republicAtWar, gameArguments, false);
+        else
             client.Play(_republicAtWar, gameArguments);
 #endif
     }
