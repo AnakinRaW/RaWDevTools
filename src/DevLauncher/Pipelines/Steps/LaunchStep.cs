@@ -28,10 +28,14 @@ internal class LaunchStep(BuildAndRunOption options, IMod mod, IServiceProvider 
         var gameArgsBuilder = Services.GetRequiredService<IArgumentCollectionBuilder>();
         gameArgsBuilder
             .Add(new LanguageArgument(LanguageInfo.Default))
+            .Add(new NoArtProcessArgument())
             .Add(modArgs);
 
         if (options.Windowed)
             gameArgsBuilder.Add(new WindowedArgument());
+
+        if (options.Debug)
+            gameArgsBuilder.Add(new IgnoreAssertsArgument());
 
         return gameArgsBuilder.Build();
     }
