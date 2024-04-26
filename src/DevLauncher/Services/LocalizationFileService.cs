@@ -284,11 +284,11 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
 }
 
 
-internal class KeyValuePairList<TKey, TValue> where TKey : notnull
+public class KeyValuePairList<TKey, TValue> where TKey : notnull
 {
     private readonly HashSet<TKey> _keys = new();
     private readonly List<(TKey key, TValue value)> _items = new();
-
+    
     public bool ContainsKey(TKey key, [NotNullWhen(true)] out TValue? firstOrDefault)
     {
         firstOrDefault = default;

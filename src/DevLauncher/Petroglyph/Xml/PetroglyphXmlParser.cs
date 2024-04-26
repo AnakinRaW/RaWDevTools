@@ -1,9 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Xml.Linq;
 
 namespace RepublicAtWar.DevLauncher.Petroglyph.Xml;
 
-public abstract class PetroglyphXmlParser<T> : PetroglyphXmlElementParser<T>, IPetroglyphXmlParser<T>
+public abstract class PetroglyphXmlParser<T>(IServiceProvider serviceProvider) : PetroglyphXmlElementParser<T>(serviceProvider), IPetroglyphXmlParser<T>
 {
     public T ParseFile(Stream xmlStream)
     {

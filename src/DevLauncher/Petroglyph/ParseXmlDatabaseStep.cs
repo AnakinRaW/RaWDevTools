@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using RepublicAtWar.DevLauncher.Petroglyph.Xml;
@@ -25,11 +24,9 @@ public abstract class ParseXmlDatabaseStep<T>(
         var parsedDatabaseEntries = new List<T>();
         foreach (var xmlFile in xmlFiles)
         {
-            using var fileStream = repository.TryOpenFile(xmlFile);
-            if (fileStream is null)
-                throw new FileNotFoundException($"Unable to find game file.", xmlFile);
+            using var fileStream = repository.OpenFile(xmlFile);
 
-            var parser = PetroglyphXmlParserFactory.Instance.GetFileParser<T>();
+            var parser = PetroglyphXmlParserFactory.Instance.GetFileParser<T>(Services);
             var parsedData = parser.ParseFile(fileStream)!;
 
             parsedDatabaseEntries.Add(parsedData);
@@ -37,5 +34,5 @@ public abstract class ParseXmlDatabaseStep<T>(
         Database = CreateDataBase(parsedDatabaseEntries);
     }
 
-    protected abstract T CreateDataBase(List<T> parsedDatabaseEntries);
+    protected abstract T CreateDataBase(IList<T> parsedDatabaseEntries);
 }

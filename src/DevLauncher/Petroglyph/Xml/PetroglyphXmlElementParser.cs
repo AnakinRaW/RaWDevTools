@@ -4,14 +4,16 @@ using System.Xml.Linq;
 
 namespace RepublicAtWar.DevLauncher.Petroglyph.Xml;
 
-public abstract class PetroglyphXmlElementParser<T> : IPetroglyphXmlElementParser<T>
+public abstract class PetroglyphXmlElementParser<T>(IServiceProvider serviceProvider) : IPetroglyphXmlElementParser<T>
 {
+    protected IServiceProvider ServiceProvider { get; } = serviceProvider;
+
     protected virtual IDictionary<string, Type> Map { get; } = new Dictionary<string, Type>();
 
     private readonly PetroglyphXmlParserFactory _parserFactory = PetroglyphXmlParserFactory.Instance;
 
     public abstract T Parse(XElement element);
-
+    
     public ValueListDictionary<string, object> ToKeyValuePairList(XElement element)
     {
         var keyValuePairList = new ValueListDictionary<string, object>();
@@ -22,7 +24,7 @@ public abstract class PetroglyphXmlElementParser<T> : IPetroglyphXmlElementParse
             if (!Map.ContainsKey(tagName))
                 continue;
 
-            var parser = _parserFactory.GetParser(Map[tagName]);
+            var parser = _parserFactory.GetParser(Map[tagName], ServiceProvider);
             var value = parser.Parse(elm);
 
             keyValuePairList.Add(tagName, value);

@@ -6,7 +6,7 @@ using RepublicAtWar.DevLauncher.Petroglyph.Models.Xml;
 
 namespace RepublicAtWar.DevLauncher.Petroglyph.Xml.Parsers;
 
-public class XmlFileContainerParser : PetroglyphXmlParser<XmlFileContainer>
+public class XmlFileContainerParser(IServiceProvider serviceProvider) : PetroglyphXmlParser<XmlFileContainer>(serviceProvider)
 {
     protected override IDictionary<string, Type> Map { get; } = new Dictionary<string, Type>
     {

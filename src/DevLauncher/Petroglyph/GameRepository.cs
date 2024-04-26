@@ -106,7 +106,7 @@ public class GameRepository
             return Array.Empty<IMegFile>();
         }
 
-        var parser = PetroglyphXmlParserFactory.Instance.GetFileParser<XmlFileContainer>();
+        var parser = PetroglyphXmlParserFactory.Instance.GetFileParser<XmlFileContainer>(_serviceProvider);
         var megaFilesXml = parser.ParseFile(xmlStream);
 
 
@@ -141,6 +141,13 @@ public class GameRepository
         return megFile;
     }
 
+    public Stream OpenFile(string filePath, bool megFileOnly = false)
+    {
+        var stream = TryOpenFile(filePath, megFileOnly);
+        if (stream is null)
+            throw new FileNotFoundException($"Unable to find game file: {filePath}");
+        return stream;
+    }
 
     public Stream? TryOpenFile(string filePath, bool megFileOnly = false)
     {
