@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -104,7 +103,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
 
         // This commit introduced the localization TXT files.
         using var oldEnglishFileStream = _serviceProvider.GetRequiredService<GitService>()
-            .GetLatestStableVersion(englishTextPath, "7205f0ce23ee31f133046e3c905f74f291325143");
+            .GetLatestStableVersion(englishTextPath, "f56067b5010d8ae3a3687532493d1856e2287b48");
 
         if (oldEnglishFileStream is null)
             throw new InvalidOperationException("Unable to find an oldest reference english master text file.");
@@ -183,20 +182,18 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
 
             var currentDiff = ReadLocalizationFile(diffFile);
 
-            var entries = new KeyValuePairList<string, LocalizationEntry>();
+            var maxItemCount = masterTextLoc.Entries.Count + currentDiff.Entries.Count;
+            var entries = new OrderedDictionary<string, LocalizationEntry>(maxItemCount);
 
             foreach (var entry in masterTextLoc.Entries.Concat(currentDiff.Entries))
             {
                 if (entry.IsDeletedValue())
                     continue;
-                if (entries.ContainsKey(entry.Key, out _))
-                    entries.Replace(entry.Key, entry);
-                else
-                    entries.Add(entry.Key, entry);
+                entries.AddOrReplace(entry.Key, entry);
             }
 
             using var fs = _fileSystem.FileStream.New(locFile, FileMode.Create);
-            LocalizationFileWriter.WriteFile(fs, new LocalizationFile(masterTextLoc.Language, entries.GetValueList()));
+            LocalizationFileWriter.WriteFile(fs, new LocalizationFile(masterTextLoc.Language, entries.GetValues()));
         }
     }
 
@@ -284,58 +281,30 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
 }
 
 
-public class KeyValuePairList<TKey, TValue> where TKey : notnull
+internal class OrderedDictionary<TKey, TValue>(int capacity) where TKey : notnull
 {
-    private readonly HashSet<TKey> _keys = new();
-    private readonly List<(TKey key, TValue value)> _items = new();
-    
-    public bool ContainsKey(TKey key, [NotNullWhen(true)] out TValue? firstOrDefault)
-    {
-        firstOrDefault = default;
-        if (!_keys.Contains(key))
-            return false;
-        var firstEntry = _items.First(i => EqualityComparer<TKey>.Default.Equals(i.key, key));
-        firstOrDefault = firstEntry.value!;
-        return true;
-    }
+    private readonly Dictionary<TKey, int> _keys = new(capacity, EqualityComparer<TKey>.Default);
+    private readonly List<TValue> _items = new(capacity);
 
-    public void Add(TKey key, TValue value)
+    public bool AddOrReplace(TKey key, TValue value) 
     {
         if (key is null)
             throw new ArgumentNullException(nameof(key));
-        _items.Add((key, value));
-        _keys.Add(key);
+
+        if (!_keys.TryGetValue(key, out var index))
+        {
+            var newIndex = _items.Count;
+            _items.Add(value);
+            _keys.Add(key, newIndex);
+            return false;
+        }
+
+        _items[index] = value;
+        return true;
     }
 
-    public void Replace(TKey key, TValue value)
+    public IList<TValue> GetValues()
     {
-        var index = _items.FindIndex(i => EqualityComparer<TKey>.Default.Equals(i.key, key));
-        _items[index] = (key, value);
-    }
-
-    public void Clear()
-    {
-        _items.Clear();
-        _keys.Clear();
-    }
-
-    public bool Remove(TKey key, TValue value)
-    {
-        var result = _items.Remove((key, value));
-        if (!_items.Any(x => EqualityComparer<TKey>.Default.Equals(x.key, key)))
-            _keys.Remove(key);
-        return result;
-    }
-
-    public bool RemoveAll(TKey key)
-    {
-        var result = _items.RemoveAll(i => EqualityComparer<TKey>.Default.Equals(i.key, key)) > 0;
-        _keys.Remove(key);
-        return result;
-    }
-
-    public IList<TValue> GetValueList()
-    {
-        return _items.Select(i => i.value).ToList();
+        return _items.ToList();
     }
 }

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Utilities;
 
-namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
+namespace RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
 
 internal class PackIconsStep(RaWBuildOption buildOption, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
@@ -79,7 +79,7 @@ internal class PackIconsStep(RaWBuildOption buildOption, IServiceProvider servic
                 _fileSystem.File.Delete(DummyMasterTextFileXml);
                 _fileSystem.Directory.Delete(MtCommandBarPath);
             }
-            catch (Exception e) when(e is UnauthorizedAccessException or IOException )
+            catch (Exception e) when (e is UnauthorizedAccessException or IOException)
             {
                 // Ignore
             }

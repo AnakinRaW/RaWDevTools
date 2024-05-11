@@ -7,7 +7,7 @@ using EawModinfo.Spec;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
+namespace RepublicAtWar.DevLauncher.Pipelines.Steps.Release;
 
 internal class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : SynchronizedStep(serviceProvider)
 {
@@ -32,6 +32,10 @@ internal class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) :
         string steamDescription;
         if (version.IsPrerelease)
         {
+            _logger?.LogInformation("Building a preview version!!!");
+            _logger?.LogInformation("Building a preview version!!!");
+            _logger?.LogInformation("Building a preview version!!!");
+
             releaseInfo = ModinfoData.Parse(_fileSystem.File.ReadAllText("modinfo-beta.json"));
             steamDescription = _fileSystem.File.ReadAllText("SteamText-Beta.txt");
             _fileSystem.File.Copy("splash-beta.png", "splash.png", true);

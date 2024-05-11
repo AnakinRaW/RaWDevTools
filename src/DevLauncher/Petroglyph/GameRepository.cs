@@ -23,7 +23,7 @@ public class GameRepository
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IFileSystem _fileSystem;
-    private readonly PetroglyphDataEntryPathNormalizer _filePathNormalizer;
+    private readonly PetroglyphDataEntryPathNormalizer _megPathNormalizer;
     private readonly ICrc32HashingService _crc32HashingService;
     private readonly IMegFileExtractor _megExtractor;
     private readonly IMegFileService _megFileService;
@@ -44,7 +44,7 @@ public class GameRepository
         if (fallbackGame == null) 
             throw new ArgumentNullException(nameof(fallbackGame));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        _filePathNormalizer = serviceProvider.GetRequiredService<PetroglyphDataEntryPathNormalizer>();
+        _megPathNormalizer = serviceProvider.GetRequiredService<PetroglyphDataEntryPathNormalizer>();
         _crc32HashingService = serviceProvider.GetRequiredService<ICrc32HashingService>();
         _megExtractor = serviceProvider.GetRequiredService<IMegFileExtractor>();
         _megFileService = serviceProvider.GetRequiredService<IMegFileService>();
@@ -168,8 +168,8 @@ public class GameRepository
 
         if (_masterMegArchive is not null)
         {
-            var normalizedPath = _filePathNormalizer.Normalize(filePath);
-            var crc = _crc32HashingService.GetCrc32(normalizedPath, Encoding.ASCII);
+            var normalizedPath = _megPathNormalizer.Normalize(filePath);
+            var crc = _crc32HashingService.GetCrc32(normalizedPath, PGConstants.PGCrc32Encoding);
 
             var entry = _masterMegArchive.FirstEntryWithCrc(crc);
             if (entry is not null)

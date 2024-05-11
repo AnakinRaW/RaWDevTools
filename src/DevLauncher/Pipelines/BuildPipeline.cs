@@ -6,6 +6,7 @@ using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Configuration;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Pipelines.Steps;
+using RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 

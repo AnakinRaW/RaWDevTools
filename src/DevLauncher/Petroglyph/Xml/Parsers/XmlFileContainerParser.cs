@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using RepublicAtWar.DevLauncher.Petroglyph.Models.Xml;
@@ -8,10 +7,12 @@ namespace RepublicAtWar.DevLauncher.Petroglyph.Xml.Parsers;
 
 public class XmlFileContainerParser(IServiceProvider serviceProvider) : PetroglyphXmlParser<XmlFileContainer>(serviceProvider)
 {
-    protected override IDictionary<string, Type> Map { get; } = new Dictionary<string, Type>
+    protected override IPetroglyphXmlElementParser? GetParser(string tag)
     {
-        { "File", typeof(string) }
-    };
+        if (tag == "File")
+            return PetroglyphXmlStringParser.Instance;
+        return null;
+    }
 
     public override XmlFileContainer Parse(XElement element)
     {

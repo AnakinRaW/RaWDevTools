@@ -13,7 +13,7 @@ using RepublicAtWar.DevLauncher.Configuration;
 using RepublicAtWar.DevLauncher.Utilities;
 using DirectoryInfoWrapper = Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoWrapper;
 
-namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
+namespace RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
 
 internal class PackMegFileStep(IPackMegConfiguration config, IServiceProvider serviceProvider)
     : PipelineStep(serviceProvider)

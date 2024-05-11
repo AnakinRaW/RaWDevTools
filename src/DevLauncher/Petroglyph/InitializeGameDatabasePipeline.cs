@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
@@ -31,7 +30,7 @@ internal class InitializeGameDatabasePipeline(GameRepository repository, IServic
             var parser = PetroglyphXmlParserFactory.Instance.GetFileParser<XmlFileContainer>(ServiceProvider);
             using var gameObjectFiles = repository.OpenFile("DATA\\XML\\GAMEOBJECTFILES.XML");
             var xmlFiles = parser.ParseFile(gameObjectFiles).Files.Select(x => _fileSystem.Path.Combine("DATA\\XML", x)).ToList();
-            return new ParseGameObjectsStep(xmlFiles, repository, ServiceProvider);
+            return _parseGameObjects = new ParseGameObjectsStep(xmlFiles, repository, ServiceProvider);
         });
     }
 
@@ -41,19 +40,25 @@ internal class InitializeGameDatabasePipeline(GameRepository repository, IServic
 
         GameDatabase = new GameDatabase(repository, ServiceProvider)
         {
-            GameConstants = _parseGameConstants.Database
+            GameConstants = _parseGameConstants.Database,
+            GameObjects = _parseGameObjects.Database,
         };
     }
 
     private sealed class ParseGameConstantsStep(string xmlFile, GameRepository repository, IServiceProvider serviceProvider)
         : ParseXmlDatabaseStep<GameConstants>(xmlFile, repository, serviceProvider)
     {
-        protected override GameConstants CreateDataBase(IList<GameConstants> parsedDatabaseEntries)
+        protected override GameConstants CreateDatabase(IList<GameConstants> parsedDatabaseEntries)
         {
             if (parsedDatabaseEntries.Count != 1)
                 throw new InvalidOperationException("There can be only one GameConstant model.");
 
             return parsedDatabaseEntries.First();
+        }
+
+        public override string ToString()
+        {
+            return "Parsing GameConstants...";
         }
     }
 
@@ -63,9 +68,14 @@ internal class InitializeGameDatabasePipeline(GameRepository repository, IServic
         IServiceProvider serviceProvider)
         : ParseXmlDatabaseStep<IList<GameObject>>(xmlFiles, repository, serviceProvider)
     {
-        protected override IList<GameObject> CreateDataBase(IList<IList<GameObject>> parsedDatabaseEntries)
+        protected override IList<GameObject> CreateDatabase(IList<IList<GameObject>> parsedDatabaseEntries)
         {
-            throw new NotImplementedException();
+            return parsedDatabaseEntries.SelectMany(x => x).ToList();
+        }
+
+        public override string ToString()
+        {
+            return "Parsing GameObjects...";
         }
     }
 }

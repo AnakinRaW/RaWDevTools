@@ -7,6 +7,8 @@ namespace RepublicAtWar.DevLauncher.Petroglyph.Xml.Parsers;
 
 public class GameObjectFileParser(IServiceProvider serviceProvider) : PetroglyphXmlParser<IList<GameObject>>(serviceProvider)
 {
+    protected override bool LoadLineInfo => true;
+
     public override IList<GameObject> Parse(XElement element)
     {
         var elements = new List<GameObject>();

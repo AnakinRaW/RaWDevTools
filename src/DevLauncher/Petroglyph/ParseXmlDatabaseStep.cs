@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
+using Microsoft.Extensions.Logging;
 using RepublicAtWar.DevLauncher.Petroglyph.Xml;
 
 namespace RepublicAtWar.DevLauncher.Petroglyph;
@@ -21,18 +22,19 @@ public abstract class ParseXmlDatabaseStep<T>(
 
     protected override void RunCore(CancellationToken token)
     {
+        Logger?.LogDebug($"{ToString()}");
         var parsedDatabaseEntries = new List<T>();
         foreach (var xmlFile in xmlFiles)
         {
             using var fileStream = repository.OpenFile(xmlFile);
 
             var parser = PetroglyphXmlParserFactory.Instance.GetFileParser<T>(Services);
+            Logger?.LogDebug($"Parsing File '{xmlFile}'");
             var parsedData = parser.ParseFile(fileStream)!;
-
             parsedDatabaseEntries.Add(parsedData);
         }
-        Database = CreateDataBase(parsedDatabaseEntries);
+        Database = CreateDatabase(parsedDatabaseEntries);
     }
 
-    protected abstract T CreateDataBase(IList<T> parsedDatabaseEntries);
+    protected abstract T CreateDatabase(IList<T> parsedDatabaseEntries);
 }

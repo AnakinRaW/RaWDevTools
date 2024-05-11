@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 
 namespace RepublicAtWar.DevLauncher.Petroglyph;
 
@@ -59,11 +60,34 @@ public class ValueListDictionary<TKey, TValue> where TKey : notnull
         throw new KeyNotFoundException($"The key '{key}' was not found.");
     }
 
+    public T? GetLastValue<T>(TKey key) where T : TValue
+    {
+        var value = GetLastValue(key);
+        if (value is null)
+            return default;
+        return (T)value;
+    }
+
+
     public IList<TValue?> GetValues(TKey key)
     {
         if (!TryGetValues(key, out var values))
             throw new KeyNotFoundException($"The key '{key}' was not found.");
         return values;
+    }
+
+    public bool TryGetLastValue(TKey key, [NotNullWhen(true)] out TValue? value)
+    {
+        if (_singleValueDictionary.TryGetValue(key, out value!))
+            return true;
+
+        if (_multiValueDictionary.TryGetValue(key, out var valueList))
+        {
+            value =  valueList.Last()!;
+            return true;
+        }
+
+        return false;
     }
 
     public bool TryGetValues(TKey key, [NotNullWhen(true)] out IList<TValue?>? values)
@@ -86,4 +110,41 @@ public class ValueListDictionary<TKey, TValue> where TKey : notnull
         values = null;
         return false;
     }
+
+    public IEnumerable<T> AggregateValues<T>(ISet<TKey> keys, Predicate<T> filter, bool multipleValuesPerKey = false) where T : TValue
+    {
+        foreach (var key in keys)
+        {
+            if (!ContainsKey(key))
+                continue;
+            if (multipleValuesPerKey)
+            {
+                foreach (var value in GetValues(key))
+                {
+                    if (value is not null)
+                    {
+                        var typedValue = (T)value;
+                        if (filter(typedValue))
+                            yield return typedValue;
+                    }
+                       
+                }
+            }
+            else
+            {
+                var value = GetLastValue(key);
+                if (value is not null)
+                {
+                    var typedValue = (T)value;
+                    if (filter(typedValue))
+                        yield return typedValue;
+                }
+            }
+        }
+    }
+}
+
+public static class PGConstants
+{
+    public static readonly Encoding PGCrc32Encoding = Encoding.ASCII;
 }

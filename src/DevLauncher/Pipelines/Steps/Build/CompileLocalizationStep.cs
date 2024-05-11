@@ -10,7 +10,7 @@ using PG.StarWarsGame.Files.DAT.Services.Builder;
 using RepublicAtWar.DevLauncher.Localization;
 using RepublicAtWar.DevLauncher.Utilities;
 
-namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
+namespace RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
 
 internal class CompileLocalizationStep(IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
@@ -41,7 +41,7 @@ internal class CompileLocalizationStep(IServiceProvider serviceProvider) : Pipel
 
         var reader = new LocalizationFileReader(false, Services);
         var fileModel = reader.ReadFile(file);
-        
+
         using var builder = new EmpireAtWarMasterTextBuilder(false, Services);
 
         foreach (var entry in fileModel.Entries)

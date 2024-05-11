@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Xml.Linq;
+using RepublicAtWar.DevLauncher.Petroglyph.Xml.Parsers;
 
 namespace RepublicAtWar.DevLauncher.Petroglyph.Xml;
 
@@ -8,9 +8,10 @@ public abstract class PetroglyphXmlElementParser<T>(IServiceProvider serviceProv
 {
     protected IServiceProvider ServiceProvider { get; } = serviceProvider;
 
-    protected virtual IDictionary<string, Type> Map { get; } = new Dictionary<string, Type>();
-
-    private readonly PetroglyphXmlParserFactory _parserFactory = PetroglyphXmlParserFactory.Instance;
+    protected virtual IPetroglyphXmlElementParser? GetParser(string tag)
+    {
+        return PetroglyphXmlStringParser.Instance;
+    }
 
     public abstract T Parse(XElement element);
     
@@ -21,13 +22,13 @@ public abstract class PetroglyphXmlElementParser<T>(IServiceProvider serviceProv
         {
             var tagName = elm.Name.LocalName;
 
-            if (!Map.ContainsKey(tagName))
-                continue;
+            var parser = GetParser(tagName);
 
-            var parser = _parserFactory.GetParser(Map[tagName], ServiceProvider);
-            var value = parser.Parse(elm);
-
-            keyValuePairList.Add(tagName, value);
+            if (parser is not null)
+            {
+                var value = parser.Parse(elm);
+                keyValuePairList.Add(tagName, value);
+            }
         }
 
         return keyValuePairList;
