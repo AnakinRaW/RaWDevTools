@@ -22,6 +22,7 @@ using PG.StarWarsGame.Infrastructure.Clients;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Localization;
 using RepublicAtWar.DevLauncher.Options;
+using RepublicAtWar.DevLauncher.Petroglyph.Files;
 using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Services;
 using RepublicAtWar.DevLauncher.Utilities;
@@ -189,6 +190,8 @@ internal class Program : CliBootstrapper
 
         serviceCollection.AddTransient(sp => new LocalizationFileWriter(options.WarnAsError, sp));
         serviceCollection.AddTransient(sp => new LocalizationFileReader(options.WarnAsError, sp));
+
+        serviceCollection.AddSingleton<IChunkReaderFactory>(new ChunkReaderFactory());
 
         return serviceCollection.BuildServiceProvider();
     }

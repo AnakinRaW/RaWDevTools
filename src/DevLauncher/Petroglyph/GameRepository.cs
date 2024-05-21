@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text;
 using AnakinRaW.CommonUtilities.FileSystem;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -52,7 +51,7 @@ public class GameRepository
 
         _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
 
-        _modPath = _fileSystem.Path.GetFullPath(_fileSystem.Path.Combine(mod.Directory.FullName));
+        _modPath = _fileSystem.Path.GetFullPath(mod.Directory.FullName);
         _gameDirectory = _fileSystem.Path.GetFullPath(mod.Game.Directory.FullName);
         _fallbackPath = _fileSystem.Path.GetFullPath(fallbackGame.Directory.FullName);
 
@@ -147,6 +146,57 @@ public class GameRepository
         if (stream is null)
             throw new FileNotFoundException($"Unable to find game file: {filePath}");
         return stream;
+    }
+
+    public bool FileExists(string filePath, string[] extensions, bool megFileOnly = false)
+    {
+        foreach (var extension in extensions)
+        {
+            var newPath = _fileSystem.Path.ChangeExtension(filePath, extension);
+            if (FileExists(newPath, megFileOnly))
+                return true;
+        }
+        return false;
+    }
+
+
+    public bool FileExists(string filePath, bool megFileOnly = false)
+    {
+        if (!megFileOnly)
+        {
+            // This is a custom rule
+            if (_fileSystem.Path.IsPathFullyQualified(filePath))
+                return _fileSystem.File.Exists(filePath);
+
+            var modFilePath = _fileSystem.Path.Combine(_modPath, filePath);
+            if (_fileSystem.File.Exists(modFilePath))
+                return true;
+
+            var normalFilePath = _fileSystem.Path.Combine(_gameDirectory, filePath);
+            if (_fileSystem.File.Exists(normalFilePath))
+                return true;
+        }
+
+        if (_masterMegArchive is not null)
+        {
+            var normalizedPath = _megPathNormalizer.Normalize(filePath);
+            var crc = _crc32HashingService.GetCrc32(normalizedPath, PGConstants.PGCrc32Encoding);
+
+            var entry = _masterMegArchive.FirstEntryWithCrc(crc);
+            if (entry is not null)
+                return true;
+        }
+
+        if (!megFileOnly)
+        {
+            var fallbackPath = _fileSystem.Path.Combine(_fallbackPath, filePath);
+            if (_fileSystem.File.Exists(fallbackPath))
+                return true;
+        }
+
+        _logger?.LogTrace($"Unable to find file '{filePath}'");
+
+        return false;
     }
 
     public Stream? TryOpenFile(string filePath, bool megFileOnly = false)
