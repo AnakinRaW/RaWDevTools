@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RepublicAtWar.DevLauncher.Petroglyph;
+namespace RepublicAtWar.DevLauncher.Petroglyph.Engine;
 
 public static class FocHardcodedConstants
 {

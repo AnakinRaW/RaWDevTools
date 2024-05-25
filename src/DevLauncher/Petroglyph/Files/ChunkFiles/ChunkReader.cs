@@ -4,7 +4,7 @@ using System.Text;
 using AnakinRaW.CommonUtilities;
 using PG.Commons.Utilities;
 
-namespace RepublicAtWar.DevLauncher.Petroglyph.Files;
+namespace RepublicAtWar.DevLauncher.Petroglyph.Files.ChunkFiles;
 
 internal class ChunkReader : DisposableObject
 {
@@ -34,35 +34,46 @@ internal class ChunkReader : DisposableObject
         return isContainer ? ChunkMetadata.FromContainer(type, size) : ChunkMetadata.FromData(type, size);
     }
 
-    public ChunkMetadata ReadMiniChunk()
+    public ChunkMetadata ReadChunk(ref int readBytes)
+    {
+        var chunk = ReadChunk();
+        readBytes += 8;
+        return chunk;
+    }
+
+    public ChunkMetadata ReadMiniChunk(ref int readBytes)
     {
         var type = _binaryReader.ReadByte();
         var size = _binaryReader.ReadByte();
 
+        readBytes += 2;
+
         return ChunkMetadata.FromData(type, size, true);
     }
 
-    public uint ReadDword()
+    public uint ReadDword(ref int readSize)
     {
-        return _binaryReader.ReadUInt32();
+        var value = _binaryReader.ReadUInt32();
+        readSize += sizeof(uint);
+        return value;
     }
 
-    public int Skip(int bytesToSkip)
+    public void Skip(int bytesToSkip, ref int readBytes)
     {
-        //_binaryReader.ReadBytes(bytesToSkip);
         _binaryReader.BaseStream.Seek(bytesToSkip, SeekOrigin.Current);
-        return bytesToSkip;
+        readBytes += bytesToSkip;
     }
 
-    public int SkipNext(bool miniChunk = false)
+    public void Skip(int bytesToSkip)
     {
-        var chunk = miniChunk ? ReadMiniChunk() : ReadChunk();
-        return 8 + Skip(chunk.Size);
+        _binaryReader.BaseStream.Seek(bytesToSkip, SeekOrigin.Current);
     }
 
-    public string ReadString(int size, Encoding encoding, bool zeroTerminated)
+    public string ReadString(int size, Encoding encoding, bool zeroTerminated, ref int readSize)
     {
-        return _binaryReader.ReadString(size, encoding, zeroTerminated);
+        var value = _binaryReader.ReadString(size, encoding, zeroTerminated);
+        readSize += size;
+        return value;
     }
 
     public ChunkMetadata? TryReadChunk()

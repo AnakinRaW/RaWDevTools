@@ -33,11 +33,11 @@ internal class CompileLocalizationStep(IServiceProvider serviceProvider) : Pipel
         var updateChecker = Services.GetRequiredService<IBinaryRequiresUpdateChecker>();
         if (!updateChecker.RequiresUpdate(datFilePath, new List<string> { file }))
         {
-            _logger?.LogDebug($"DAT file '{datFileName}' is already up to date. Skipping build.");
+            _logger?.LogDebug($"DAT data '{datFileName}' is already up to date. Skipping build.");
             return;
         }
 
-        _logger?.LogInformation($"Writing DAT file '{datFileName}'...");
+        _logger?.LogInformation($"Writing DAT data '{datFileName}'...");
 
         var reader = new LocalizationFileReader(false, Services);
         var fileModel = reader.ReadFile(file);
@@ -53,6 +53,6 @@ internal class CompileLocalizationStep(IServiceProvider serviceProvider) : Pipel
 
         builder.Build(new DatFileInformation { FilePath = _fileSystem.Path.GetFullPath(datFilePath) }, true);
 
-        _logger?.LogInformation($"Finished writing DAT file for language {fileModel.Language}");
+        _logger?.LogInformation($"Finished writing DAT data for language {fileModel.Language}");
     }
 }

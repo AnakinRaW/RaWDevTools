@@ -32,9 +32,9 @@ internal class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) :
         string steamDescription;
         if (version.IsPrerelease)
         {
-            _logger?.LogInformation("Building a preview version!!!");
-            _logger?.LogInformation("Building a preview version!!!");
-            _logger?.LogInformation("Building a preview version!!!");
+            Console.WriteLine("Building a preview version!!!");
+            Console.WriteLine("Building a preview version!!!");
+            Console.WriteLine("Building a preview version!!!");
 
             releaseInfo = ModinfoData.Parse(_fileSystem.File.ReadAllText("modinfo-beta.json"));
             steamDescription = _fileSystem.File.ReadAllText("SteamText-Beta.txt");
@@ -48,7 +48,7 @@ internal class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) :
         }
 
         if (releaseInfo.SteamData is null)
-            throw new InvalidOperationException("SteamData of release modinfo file must not be null");
+            throw new InvalidOperationException("SteamData of release modinfo data must not be null");
 
         var steamDataWithDescription = new SteamData(releaseInfo.SteamData)
         {

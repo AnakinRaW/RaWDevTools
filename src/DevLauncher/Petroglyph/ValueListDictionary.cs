@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 
 namespace RepublicAtWar.DevLauncher.Petroglyph;
 
@@ -142,9 +141,4 @@ public class ValueListDictionary<TKey, TValue> where TKey : notnull
             }
         }
     }
-}
-
-public static class PGConstants
-{
-    public static readonly Encoding PGCrc32Encoding = Encoding.ASCII;
 }

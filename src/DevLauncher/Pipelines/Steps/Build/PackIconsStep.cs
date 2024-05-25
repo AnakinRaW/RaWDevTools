@@ -57,7 +57,7 @@ internal class PackIconsStep(RaWBuildOption buildOption, IServiceProvider servic
 
         try
         {
-            _logger?.LogInformation("Creating Master Texture Database and TGA file...");
+            _logger?.LogInformation("Creating Master Texture Database and TGA data...");
 
             WriteDummyMasterTextFile();
             WriteModCompile();
@@ -70,7 +70,7 @@ internal class PackIconsStep(RaWBuildOption buildOption, IServiceProvider servic
             if (result != 0)
                 throw new Win32Exception();
 
-            _logger?.LogInformation("Finished creating Master Texture Database and TGA file.");
+            _logger?.LogInformation("Finished creating Master Texture Database and TGA data.");
         }
         finally
         {

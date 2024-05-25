@@ -1,39 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
-using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.Logging;
 using RepublicAtWar.DevLauncher.Petroglyph.Xml;
 
-namespace RepublicAtWar.DevLauncher.Petroglyph;
+namespace RepublicAtWar.DevLauncher.Petroglyph.Engine.Pipeline;
 
 public abstract class ParseXmlDatabaseStep<T>(
     IList<string> xmlFiles,
-    GameRepository repository,
+    IGameRepository repository,
     IServiceProvider serviceProvider)
-    : PipelineStep(serviceProvider)
+    : CreateDatabaseStep<T>(repository, serviceProvider)
     where T : class
 {
-    public T Database { get; private set; } = null!;
-
-    protected ParseXmlDatabaseStep(string xmlFile, GameRepository repository, IServiceProvider serviceProvider) : this([xmlFile], repository, serviceProvider)
+    protected ParseXmlDatabaseStep(string xmlFile, IGameRepository repository, IServiceProvider serviceProvider) : this([xmlFile], repository, serviceProvider)
     {
     }
 
-    protected override void RunCore(CancellationToken token)
+    protected sealed override T CreateDatabase()
     {
-        Logger?.LogDebug($"{ToString()}");
         var parsedDatabaseEntries = new List<T>();
         foreach (var xmlFile in xmlFiles)
         {
-            using var fileStream = repository.OpenFile(xmlFile);
+            using var fileStream = GameRepository.OpenFile(xmlFile);
 
             var parser = PetroglyphXmlParserFactory.Instance.GetFileParser<T>(Services);
             Logger?.LogDebug($"Parsing File '{xmlFile}'");
             var parsedData = parser.ParseFile(fileStream)!;
             parsedDatabaseEntries.Add(parsedData);
         }
-        Database = CreateDatabase(parsedDatabaseEntries);
+        return CreateDatabase(parsedDatabaseEntries);
     }
 
     protected abstract T CreateDatabase(IList<T> parsedDatabaseEntries);

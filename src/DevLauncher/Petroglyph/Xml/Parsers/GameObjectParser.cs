@@ -3,6 +3,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using PG.Commons.Hashing;
+using RepublicAtWar.DevLauncher.Petroglyph.Engine;
 using RepublicAtWar.DevLauncher.Petroglyph.Models.Xml;
 
 namespace RepublicAtWar.DevLauncher.Petroglyph.Xml.Parsers;

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using AnakinRaW.CommonUtilities.SimplePipeline;
-using RepublicAtWar.DevLauncher.Pipelines.Steps.Verification;
+using RepublicAtWar.DevLauncher.Petroglyph.Verification.Steps;
 
-namespace RepublicAtWar.DevLauncher.Pipelines;
+namespace RepublicAtWar.DevLauncher.Petroglyph.Verification;
 
-internal sealed class ModVerificationException(IEnumerable<ModVerificationStep> failedSteps) : Exception
+internal sealed class GameVerificationException(IEnumerable<GameVerificationStep> failedSteps) : Exception
 {
     private readonly string? _error = null;
     private readonly IEnumerable<IStep> _failedSteps = failedSteps ?? throw new ArgumentNullException(nameof(failedSteps));

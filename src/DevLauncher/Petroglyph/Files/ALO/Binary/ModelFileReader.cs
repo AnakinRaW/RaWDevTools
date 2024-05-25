@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using PG.Commons.Binary;
-using RepublicAtWar.DevLauncher.Petroglyph.Models.Files;
+using RepublicAtWar.DevLauncher.Petroglyph.Files.ALO.Data;
+using RepublicAtWar.DevLauncher.Petroglyph.Files.ChunkFiles;
 
-namespace RepublicAtWar.DevLauncher.Petroglyph.Files;
+namespace RepublicAtWar.DevLauncher.Petroglyph.Files.ALO.Services;
 
 internal class ModelFileReader(string fileName, ChunkReader reader, ChunkMetadata firstChunk) : ChunkFileReaderBase<AlamoModel>(fileName, reader, firstChunk)
 {
@@ -41,8 +42,7 @@ internal class ModelFileReader(string fileName, ChunkReader reader, ChunkMetadat
         return new AlamoModel
         {
             Bones = bones,
-            FileName = FileName,
-            Textures = textures, 
+            Textures = textures,
             Shaders = shaders,
             Proxies = proxies
         };
@@ -53,18 +53,15 @@ internal class ModelFileReader(string fileName, ChunkReader reader, ChunkMetadat
         var actualSize = 0;
         do
         {
-            var chunk = ChunkReader.ReadChunk();
-            actualSize += 8;
+            var chunk = ChunkReader.ReadChunk(ref actualSize);
 
             if (chunk.Type == (int)ChunkType.ProxyConnection)
             {
-                actualSize += ReadProxy(chunk.Size, out string proxy);
-                if (proxy is null)
-                    throw new InvalidOperationException("Proxy without name.");
+                ReadProxy(chunk.Size, out var proxy, ref actualSize);
                 proxies.Add(proxy);
             }
             else
-                actualSize += ChunkReader.Skip(chunk.Size);
+                ChunkReader.Skip(chunk.Size, ref actualSize);
 
 
         } while (actualSize < size);
@@ -73,30 +70,28 @@ internal class ModelFileReader(string fileName, ChunkReader reader, ChunkMetadat
             throw new BinaryCorruptedException("Unable to read alo model.");
     }
 
-    private int ReadProxy(int size, out string proxyName)
+    private void ReadProxy(int size, out string proxy, ref int readSize)
     {
         var actualSize = 0;
-        proxyName = null!;
+        proxy = null!;
         do
         {
-            var chunk = ChunkReader.ReadMiniChunk();
-            actualSize += 2;
+            var chunk = ChunkReader.ReadMiniChunk(ref actualSize);
 
             if (chunk.Type == 5)
-            {
-                proxyName = ChunkReader.ReadString(chunk.Size, Encoding.ASCII, true);
-                actualSize += chunk.Size;
-            }
+                proxy = ChunkReader.ReadString(chunk.Size, Encoding.ASCII, true, ref actualSize);
             else
-                actualSize += ChunkReader.Skip(chunk.Size);
-
+                ChunkReader.Skip(chunk.Size, ref actualSize);
 
         } while (actualSize < size);
 
         if (size != actualSize)
             throw new BinaryCorruptedException("Unable to read alo model.");
 
-        return size;
+        if (proxy is null)
+            throw new BinaryCorruptedException("Alamo proxy does not have a name.");
+
+        readSize += actualSize;
     }
 
     private void ReadMesh(int size, ISet<string> textures, ISet<string> shaders)
@@ -104,13 +99,12 @@ internal class ModelFileReader(string fileName, ChunkReader reader, ChunkMetadat
         var actualSize = 0;
         do
         {
-            var chunk = ChunkReader.ReadChunk();
-            actualSize += 8;
+            var chunk = ChunkReader.ReadChunk(ref actualSize);
 
             if (chunk.Type == (int)ChunkType.SubMeshMaterialInformation)
-                actualSize += ReadSubMeshMaterialInformation(chunk.Size, textures, shaders);
+                ReadSubMeshMaterialInformation(chunk.Size, textures, shaders, ref actualSize);
             else
-                actualSize += ChunkReader.Skip(chunk.Size);
+                ChunkReader.Skip(chunk.Size, ref actualSize);
 
 
         } while (actualSize < size);
@@ -119,28 +113,26 @@ internal class ModelFileReader(string fileName, ChunkReader reader, ChunkMetadat
             throw new BinaryCorruptedException("Unable to read alo model.");
     }
 
-    private int ReadSubMeshMaterialInformation(int size, ISet<string> textures, ISet<string> shaders)
+    private void ReadSubMeshMaterialInformation(int size, ISet<string> textures, ISet<string> shaders, ref int readSize)
     {
         var actualSize = 0;
         do
         {
-            var chunk = ChunkReader.ReadChunk();
-            actualSize += 8;
+            var chunk = ChunkReader.ReadChunk(ref actualSize);
 
             switch (chunk.Type)
             {
                 case (int)ChunkType.ShaderFileName:
-                {
-                    var shader = ChunkReader.ReadString(chunk.Size, Encoding.ASCII, true);
-                    shaders.Add(shader);
-                    actualSize += chunk.Size;
-                    break;
-                }
+                    {
+                        var shader = ChunkReader.ReadString(chunk.Size, Encoding.ASCII, true, ref actualSize);
+                        shaders.Add(shader);
+                        break;
+                    }
                 case (int)ChunkType.ShaderTexture:
-                    actualSize += ReadShaderTexture(chunk.Size, textures);
+                    ReadShaderTexture(chunk.Size, textures, ref actualSize);
                     break;
                 default:
-                    actualSize += ChunkReader.Skip(chunk.Size);
+                    ChunkReader.Skip(chunk.Size, ref actualSize);
                     break;
             }
 
@@ -150,49 +142,44 @@ internal class ModelFileReader(string fileName, ChunkReader reader, ChunkMetadat
         if (size != actualSize)
             throw new BinaryCorruptedException("Unable to read alo model.");
 
-        return size;
+        readSize += actualSize;
     }
 
-    private int ReadShaderTexture(int size, ISet<string> textures)
+    private void ReadShaderTexture(int size, ISet<string> textures, ref int readSize)
     {
         var actualTextureChunkSize = 0;
         do
         {
-            var mini = ChunkReader.ReadMiniChunk();
-            actualTextureChunkSize += 2;
+            var mini = ChunkReader.ReadMiniChunk(ref actualTextureChunkSize);
 
             if (mini.Type == 2)
             {
-                var texture = ChunkReader.ReadString(mini.Size, Encoding.ASCII, true);
+                var texture = ChunkReader.ReadString(mini.Size, Encoding.ASCII, true, ref actualTextureChunkSize);
                 textures.Add(texture);
-                actualTextureChunkSize += mini.Size;
             }
             else
-                actualTextureChunkSize += ChunkReader.Skip(mini.Size);
+                ChunkReader.Skip(mini.Size, ref actualTextureChunkSize);
 
         } while (actualTextureChunkSize != size);
 
-        return size;
+        readSize += actualTextureChunkSize;
     }
 
     private void ReadSkeleton(int size, IList<string> bones)
     {
         var actualSize = 0;
-       
-        var boneCountChunk = ChunkReader.ReadChunk();
-        actualSize += 8;
+
+        var boneCountChunk = ChunkReader.ReadChunk(ref actualSize);
 
         Debug.Assert(boneCountChunk is { Size: 128, Type: (int)ChunkType.BoneCount });
 
-        var boneCount = ChunkReader.ReadDword();
-        actualSize += sizeof(uint);
-        
-        actualSize += ChunkReader.Skip(128 - sizeof(uint));
+        var boneCount = ChunkReader.ReadDword(ref actualSize);
+
+        ChunkReader.Skip(128 - sizeof(uint), ref actualSize);
 
         for (var i = 0; i < boneCount; i++)
-        { 
-            var bone = ChunkReader.ReadChunk();
-            actualSize += 8;
+        {
+            var bone = ChunkReader.ReadChunk(ref actualSize);
 
             Debug.Assert(bone is { Type: (int)ChunkType.Bone, IsContainer: true });
 
@@ -200,20 +187,18 @@ internal class ModelFileReader(string fileName, ChunkReader reader, ChunkMetadat
 
             while (boneReadSize < bone.Size)
             {
-                var innerBoneChunk = ChunkReader.ReadChunk();
-                boneReadSize += 8;
+                var innerBoneChunk = ChunkReader.ReadChunk(ref boneReadSize);
 
                 if (innerBoneChunk.Type == (int)ChunkType.BoneName)
                 {
                     var nameSize = innerBoneChunk.Size;
 
-                    var name = ChunkReader.ReadString(nameSize, Encoding.ASCII, true);
-                    boneReadSize += nameSize;
+                    var name = ChunkReader.ReadString(nameSize, Encoding.ASCII, true, ref boneReadSize);
                     bones.Add(name);
                 }
                 else
                 {
-                    boneReadSize += ChunkReader.Skip(innerBoneChunk.Size);
+                    ChunkReader.Skip(innerBoneChunk.Size, ref boneReadSize);
                 }
             }
 
