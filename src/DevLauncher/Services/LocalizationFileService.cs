@@ -118,6 +118,8 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
     public void CreateForeignDiffFiles()
     {
         var englishDiff = CreateEnglishDiff();
+        var englishFile =
+            CreateModelFromLocalizationFile(ReadLocalizationFile(_fileSystem.Path.Combine("Data\\Text", EnglishText)));
 
         var foreignLangFiles = _fileSystem.Directory.GetFiles("Data\\Text", "MasterTextFile_*.txt");
 
@@ -136,10 +138,9 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
             var changedEntries = new List<(DatStringEntry newEntry, string currentValue)>();
             var keysToDelete = new HashSet<string>();
 
-            foreach (var newEntry in englishDiff.NewEntries)
+            foreach (var missingEntry in _modelService.GetMissingKeysFromBase(englishFile, masterText))
             {
-                if (!masterText.ContainsKey(newEntry.Crc32))
-                    newEntries.Add(newEntry);
+                newEntries.Add(englishFile.FirstEntryWithKey(missingEntry));
             }
 
             foreach (var deletedKey in englishDiff.DeletedKeys)
