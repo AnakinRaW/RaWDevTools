@@ -21,7 +21,7 @@ public class VerifyPipeline(IPhysicalPlayableObject playableObject, IGame empire
     {
         var repository = new GameRepository(playableObject, empireAtWarFallback, ServiceProvider);
 
-        var buildIndexStep = new CreateGameDatabaseStep(playableObject, empireAtWarFallback, repository, ServiceProvider);
+        var buildIndexStep = new CreateGameDatabaseStep(repository, ServiceProvider);
         _verificationSteps = new List<GameVerificationStep>
         {
             new VerifyReferencedModelsStep(buildIndexStep, repository, ServiceProvider),
