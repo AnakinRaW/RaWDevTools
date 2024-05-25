@@ -11,14 +11,16 @@ using PG.StarWarsGame.Files.MEG.Data.Archives;
 using PG.StarWarsGame.Files.MEG.Files;
 using PG.StarWarsGame.Files.MEG.Services;
 using PG.StarWarsGame.Files.MEG.Services.Builder.Normalization;
+using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
+using PG.StarWarsGame.Infrastructure.Services.Dependencies;
 using RepublicAtWar.DevLauncher.Petroglyph.Models.Xml;
 using RepublicAtWar.DevLauncher.Petroglyph.Xml;
 
-namespace RepublicAtWar.DevLauncher.Petroglyph;
+namespace RepublicAtWar.DevLauncher.Petroglyph.Engine;
 
-public class GameRepository
+public class GameRepository : IGameRepository
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IFileSystem _fileSystem;
@@ -30,17 +32,53 @@ public class GameRepository
 
     private readonly string _gameDirectory;
 
-    // TODO: In a full feature implementation these must be lists
-    private readonly string _modPath;
+    private readonly IList<string> _modPaths = new List<string>();
+
     private readonly string _fallbackPath;
 
     private readonly IVirtualMegArchive? _masterMegArchive;
 
-    public GameRepository(IPhysicalMod mod, IGame fallbackGame, IServiceProvider serviceProvider)
+    public IGameRepository EffectsRepository { get; }
+
+
+    public GameRepository(IPhysicalPlayableObject playableObject, IGame fallbackGame, IServiceProvider serviceProvider)
+        : this(playableObject.Game,
+            fallbackGame, serviceProvider)
     {
-        if (mod == null) 
-            throw new ArgumentNullException(nameof(mod));
-        if (fallbackGame == null) 
+        if (playableObject == null)
+            throw new ArgumentNullException(nameof(playableObject));
+
+        if (playableObject is IPhysicalMod mod)
+        {
+            if (mod.DependencyResolveStatus == DependencyResolveStatus.Resolved)
+            {
+                var mods = serviceProvider.GetRequiredService<IModDependencyTraverser>().Traverse(mod);
+                foreach (var entry in mods)
+                {
+                    if (entry.Mod is IPhysicalMod physicalMod)
+                        _modPaths.Add(physicalMod.Directory.FullName);
+                }
+            }
+            else
+                _modPaths.Add(playableObject.Directory.FullName);
+        }
+    }
+
+    public GameRepository(IPhysicalMod[] mods, IGame baseGame, IGame fallbackGame, IServiceProvider serviceProvider) :
+        this(baseGame, fallbackGame, serviceProvider)
+    {
+        if (mods == null)
+            throw new ArgumentNullException(nameof(mods));
+
+        foreach (var mod in mods)
+            _modPaths.Add(mod.Directory.FullName);
+    }
+
+    public GameRepository(IGame baseGame, IGame fallbackGame, IServiceProvider serviceProvider)
+    {
+        if (fallbackGame == null)
+            throw new ArgumentNullException(nameof(fallbackGame));
+        if (fallbackGame == null)
             throw new ArgumentNullException(nameof(fallbackGame));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _megPathNormalizer = serviceProvider.GetRequiredService<PetroglyphDataEntryPathNormalizer>();
@@ -51,11 +89,12 @@ public class GameRepository
 
         _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
 
-        _modPath = _fileSystem.Path.GetFullPath(mod.Directory.FullName);
-        _gameDirectory = _fileSystem.Path.GetFullPath(mod.Game.Directory.FullName);
+        _gameDirectory = _fileSystem.Path.GetFullPath(baseGame.Directory.FullName);
         _fallbackPath = _fileSystem.Path.GetFullPath(fallbackGame.Directory.FullName);
 
         _masterMegArchive = CreateMasterMegArchive();
+
+        EffectsRepository = new EffectsRepository(this, serviceProvider);
     }
 
     private IVirtualMegArchive CreateMasterMegArchive()
@@ -63,7 +102,7 @@ public class GameRepository
         var builder = _serviceProvider.GetRequiredService<IVirtualMegArchiveBuilder>();
 
         var megsToConsider = new List<IMegFile>();
-        
+
         var eawMegs = LoadMegArchivesFromXml(_fallbackPath);
         var eawPatch = LoadMegArchive(_fileSystem.Path.Combine(_fallbackPath, "Data\\Patch.meg"));
         var eawPatch2 = LoadMegArchive(_fileSystem.Path.Combine(_fallbackPath, "Data\\Patch2.meg"));
@@ -75,7 +114,7 @@ public class GameRepository
         var foc64Patch = LoadMegArchive("Data\\64Patch.meg");
 
         megsToConsider.AddRange(eawMegs);
-        if (eawPatch is not null) 
+        if (eawPatch is not null)
             megsToConsider.Add(eawPatch);
         if (eawPatch2 is not null)
             megsToConsider.Add(eawPatch2);
@@ -128,14 +167,14 @@ public class GameRepository
         using var megFileStream = TryOpenFile(megPath);
         if (megFileStream is not FileSystemStream fileSystemStream)
         {
-            _logger?.LogTrace($"Unable to find MEG file at '{megPath}'");
+            _logger?.LogTrace($"Unable to find MEG data at '{megPath}'");
             return null;
         }
 
         var megFile = _megFileService.Load(fileSystemStream);
 
         if (megFile.FileInformation.FileVersion != MegFileVersion.V1)
-            throw new InvalidOperationException("MEG file version must be V1.");
+            throw new InvalidOperationException("MEG data version must be V1.");
 
         return megFile;
     }
@@ -144,7 +183,7 @@ public class GameRepository
     {
         var stream = TryOpenFile(filePath, megFileOnly);
         if (stream is null)
-            throw new FileNotFoundException($"Unable to find game file: {filePath}");
+            throw new FileNotFoundException($"Unable to find game data: {filePath}");
         return stream;
     }
 
@@ -168,9 +207,12 @@ public class GameRepository
             if (_fileSystem.Path.IsPathFullyQualified(filePath))
                 return _fileSystem.File.Exists(filePath);
 
-            var modFilePath = _fileSystem.Path.Combine(_modPath, filePath);
-            if (_fileSystem.File.Exists(modFilePath))
-                return true;
+            foreach (var modPath in _modPaths)
+            {
+                var modFilePath = _fileSystem.Path.Combine(modPath, filePath);
+                if (_fileSystem.File.Exists(modFilePath))
+                    return true;
+            }
 
             var normalFilePath = _fileSystem.Path.Combine(_gameDirectory, filePath);
             if (_fileSystem.File.Exists(normalFilePath))
@@ -194,8 +236,6 @@ public class GameRepository
                 return true;
         }
 
-        _logger?.LogTrace($"Unable to find file '{filePath}'");
-
         return false;
     }
 
@@ -207,9 +247,13 @@ public class GameRepository
             if (_fileSystem.Path.IsPathFullyQualified(filePath))
                 return !_fileSystem.File.Exists(filePath) ? null : OpenFileRead(filePath);
 
-            var modFilePath = _fileSystem.Path.Combine(_modPath, filePath);
-            if (_fileSystem.File.Exists(modFilePath))
-                return OpenFileRead(modFilePath);
+            foreach (var modPath in _modPaths)
+            {
+                var modFilePath = _fileSystem.Path.Combine(modPath, filePath);
+                if (_fileSystem.File.Exists(modFilePath))
+                    return OpenFileRead(modFilePath);
+            }
+
 
             var normalFilePath = _fileSystem.Path.Combine(_gameDirectory, filePath);
             if (_fileSystem.File.Exists(normalFilePath))
@@ -233,18 +277,29 @@ public class GameRepository
                 return OpenFileRead(fallbackPath);
         }
 
-        _logger?.LogTrace($"Unable to find file '{filePath}'");
-
         return null;
     }
 
     private FileSystemStream OpenFileRead(string filePath)
     {
-        if (!_fileSystem.Path.IsChildOf(_modPath, filePath) &&
-            !_fileSystem.Path.IsChildOf(_gameDirectory, filePath) &&
-            !_fileSystem.Path.IsChildOf(_fallbackPath, filePath))
-            throw new UnauthorizedAccessException("The file is not part of the Games!");
-
+        if (!AllowOpenFile(filePath))
+            throw new UnauthorizedAccessException("The data is not part of the Games!");
         return _fileSystem.FileStream.New(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+    }
+
+    private bool AllowOpenFile(string filePath)
+    {
+        foreach (var modPath in _modPaths)
+        {
+            if (_fileSystem.Path.IsChildOf(modPath, filePath))
+                return true;
+        }
+
+        if (_fileSystem.Path.IsChildOf(_gameDirectory, filePath))
+            return true;
+        if (_fileSystem.Path.IsChildOf(_fallbackPath, filePath))
+            return true;
+
+        return false;
     }
 }

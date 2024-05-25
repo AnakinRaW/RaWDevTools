@@ -32,7 +32,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
 
     public void InitializeFromDatFiles()
     {
-        _logger?.LogInformation($"Processing file '{EnglishDAT}'");
+        _logger?.LogInformation($"Processing data '{EnglishDAT}'");
         
         var englishMtfPath = _fileSystem.Path.Combine("Data\\Text", EnglishDAT);
         var englishMasterText = LocalizationFileWriter.DatToLocalizationFile(englishMtfPath);
@@ -48,7 +48,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
             if (fileName.ToUpperInvariant().Equals(EnglishDAT.ToUpperInvariant()))
                 continue;
 
-            _logger?.LogInformation($"Processing file '{fileName}'");
+            _logger?.LogInformation($"Processing data '{fileName}'");
 
             LocalizationFileWriter.InitializeFromDatAndEnglishReference(datFile, englishMasterText);
 
@@ -59,7 +59,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
     }
 
     /// <summary>
-    /// Creates a difference between the current english master text file and the latest stable version master text file
+    /// Creates a difference between the current english master text data and the latest stable version master text data
     /// </summary>
     private MasterTextDifference CreateEnglishDiff()
     {
@@ -106,7 +106,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
             .GetLatestStableVersion(englishTextPath, "f56067b5010d8ae3a3687532493d1856e2287b48");
 
         if (oldEnglishFileStream is null)
-            throw new InvalidOperationException("Unable to find an oldest reference english master text file.");
+            throw new InvalidOperationException("Unable to find an oldest reference english master text data.");
         
         var oldEnglish = CreateModelFromLocalizationFile(
             new LocalizationFileReader(false, serviceProvider).FromStream(oldEnglishFileStream));
@@ -129,7 +129,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
             if (fileName.ToUpperInvariant().Equals(EnglishText.ToUpperInvariant()))
                 continue;
 
-            _logger?.LogInformation($"Creating Diff for file '{fileName}'");
+            _logger?.LogInformation($"Creating Diff for data '{fileName}'");
 
             var locFile = ReadLocalizationFile(langFile);
             var masterText = CreateModelFromLocalizationFile(locFile);
@@ -172,7 +172,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
             var locFile = diffFile.Replace("Diff_", "");
             if (!_fileSystem.File.Exists(locFile))
             {
-                LogOrThrow($"Unable to find localization file '{locFile}' for DIFF file '{diffFile}'");
+                LogOrThrow($"Unable to find localization data '{locFile}' for DIFF data '{diffFile}'");
                 continue;
             }
 
@@ -231,7 +231,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
         {
             var result = builder.AddEntry(entry.Key, entry.Value);
             if (!result.Added)
-                LogOrThrow($"Unable to add KEY '{entry.Key}' to the DAT file.");
+                LogOrThrow($"Unable to add KEY '{entry.Key}' to the DAT data.");
         }
 
         const string checkDat = "Data\\Text\\Check.dat";

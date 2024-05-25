@@ -152,8 +152,8 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
     private void WriteInstructions(StreamWriter tw)
     {
         tw.WriteLine();
-        WriteCommentLine(" Instructions how to use this file:", tw);
-        WriteCommentLine(" This is a simple key-value file holding localized game strings. Entries are not required to be sorted in this file.", tw);
+        WriteCommentLine(" Instructions how to use this data:", tw);
+        WriteCommentLine(" This is a simple key-value data holding localized game strings. Entries are not required to be sorted in this data.", tw);
         WriteCommentLine(" The format of an entry is always: KEY=\"Value\"", tw);
         WriteCommentLine(" The key shall be UPPERCASE only. Other allowed characters are numbers and '_' and '-'", tw);
         WriteCommentLine(" The value shall be enclosed in double quotes '\"'. This way a value can have line breaks.", tw);

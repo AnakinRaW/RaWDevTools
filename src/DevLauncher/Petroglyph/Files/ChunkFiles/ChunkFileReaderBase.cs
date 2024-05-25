@@ -1,12 +1,11 @@
 ﻿using System;
 using AnakinRaW.CommonUtilities;
-using RepublicAtWar.DevLauncher.Petroglyph.Models.Files;
 
-namespace RepublicAtWar.DevLauncher.Petroglyph.Files;
+namespace RepublicAtWar.DevLauncher.Petroglyph.Files.ChunkFiles;
 
 internal abstract class ChunkFileReaderBase<T>(string fileName, ChunkReader chunkReader, ChunkMetadata firstChunk)
     : DisposableObject, IChunkFileReader<T>
-    where T : IChunkFile
+    where T : IChunkData
 {
     protected readonly ChunkReader ChunkReader = chunkReader ?? throw new ArgumentNullException(nameof(chunkReader));
 
@@ -16,7 +15,7 @@ internal abstract class ChunkFileReaderBase<T>(string fileName, ChunkReader chun
 
     public abstract T ReadFile();
 
-    IChunkFile IChunkFileReader.ReadFile()
+    IChunkData IChunkFileReader.ReadFile()
     {
         return ReadFile();
     }

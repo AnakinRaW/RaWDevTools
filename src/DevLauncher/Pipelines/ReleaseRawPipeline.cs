@@ -43,7 +43,7 @@ internal class ReleaseRawPipeline : SequentialPipeline
             return new List<IStep>
             {
                 // Build
-                new RunPipelineStep(new BuildPipeline(_options, _republicAtWar, ServiceProvider), ServiceProvider),
+                new RunPipelineStep(new BuildPipeline(_republicAtWar, _options, ServiceProvider), ServiceProvider),
                 // Verify
                 // new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _empireAtWarGame, ServiceProvider), ServiceProvider),
                 // Build Release artifacts

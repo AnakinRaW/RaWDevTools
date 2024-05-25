@@ -108,7 +108,7 @@ internal class LocalizationFileReader(bool warningAsError, IServiceProvider serv
 
         var langName = LanguageNameFromFileName(filePath);
         if (localizationFile.Language != langName)
-            LogOrThrow($"The file name of '{filePath}' does not match the language content '{langName}'.");
+            LogOrThrow($"The data name of '{filePath}' does not match the language content '{langName}'.");
 
         return localizationFile;
     }

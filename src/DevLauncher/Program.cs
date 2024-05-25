@@ -22,7 +22,7 @@ using PG.StarWarsGame.Infrastructure.Clients;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Localization;
 using RepublicAtWar.DevLauncher.Options;
-using RepublicAtWar.DevLauncher.Petroglyph.Files;
+using RepublicAtWar.DevLauncher.Petroglyph.Files.ChunkFiles;
 using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Services;
 using RepublicAtWar.DevLauncher.Utilities;

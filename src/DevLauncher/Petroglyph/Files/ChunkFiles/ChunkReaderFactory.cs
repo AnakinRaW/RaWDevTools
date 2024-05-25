@@ -2,8 +2,10 @@
 using System.IO;
 using System.IO.Abstractions;
 using PG.StarWarsGame.Files.MEG.Utilities;
+using RepublicAtWar.DevLauncher.Petroglyph.Files.ALO.Binary;
+using RepublicAtWar.DevLauncher.Petroglyph.Files.ALO.Services;
 
-namespace RepublicAtWar.DevLauncher.Petroglyph.Files;
+namespace RepublicAtWar.DevLauncher.Petroglyph.Files.ChunkFiles;
 
 internal class ChunkReaderFactory : IChunkReaderFactory
 {

@@ -22,7 +22,7 @@ public abstract class PetroglyphXmlParser<T>(IServiceProvider serviceProvider) :
         var doc = XDocument.Load(xmlReader, options);
         var root = doc.Root;
         if (root is null)
-            return default;
+            return default!;
         return Parse(root);
     }
 
@@ -52,6 +52,8 @@ public readonly struct XmlLocationInfo(string xmlFile, int? line)
 
     public static XmlLocationInfo FromElement(XElement element)
     {
+        if (element.Document is null)
+            return default;
         if (element is IXmlLineInfo lineInfoHolder && lineInfoHolder.HasLineInfo())
             return new XmlLocationInfo(element.Document.BaseUri, lineInfoHolder.LineNumber);
         return new XmlLocationInfo(element.Document.BaseUri, null);

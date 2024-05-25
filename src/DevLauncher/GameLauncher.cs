@@ -2,10 +2,10 @@
 using AET.SteamAbstraction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Clients;
 using PG.StarWarsGame.Infrastructure.Clients.Arguments;
 using PG.StarWarsGame.Infrastructure.Games;
-using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Options;
 
 namespace RepublicAtWar.DevLauncher;
@@ -13,15 +13,15 @@ namespace RepublicAtWar.DevLauncher;
 internal class GameLauncher
 {
     private readonly BuildAndRunOption _options;
-    private readonly IMod _republicAtWar;
+    private readonly IPlayableObject _playableObject;
     private readonly IServiceProvider _serviceProvider;
     private readonly IGameClientFactory _clientFactory;
     private readonly ILogger? _logger;
 
-    public GameLauncher(BuildAndRunOption options, IMod rawDevMod, IServiceProvider serviceProvider)
+    public GameLauncher(BuildAndRunOption options, IPlayableObject rawDevMod, IServiceProvider serviceProvider)
     {
         _options = options;
-        _republicAtWar = rawDevMod ?? throw new ArgumentNullException(nameof(rawDevMod));
+        _playableObject = rawDevMod ?? throw new ArgumentNullException(nameof(rawDevMod));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _clientFactory = serviceProvider.GetRequiredService<IGameClientFactory>();
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
@@ -29,22 +29,22 @@ internal class GameLauncher
 
     public void Launch(IArgumentCollection gameArguments)
     {
-        var game = _republicAtWar.Game;
+        var game = _playableObject.Game;
         if (game.Platform == GamePlatform.SteamGold)
             StartSteam();
 
-        var client = _clientFactory.CreateClient(_republicAtWar.Game.Platform, _serviceProvider);
+        var client = _clientFactory.CreateClient(_playableObject.Game.Platform, _serviceProvider);
         _logger?.LogInformation("Starting Game...");
 #if DEBUG
         _logger?.LogWarning("Game will not start in DEBUG mode");
 #else
         if (_options.SkipRun)
             return;
-        if (client is IDebugableGameClient debugClient && debugClient.IsDebugAvailable(_republicAtWar) &&
+        if (client is IDebugableGameClient debugClient && debugClient.IsDebugAvailable(_playableObject) &&
             _options.Debug)
-            debugClient.Debug(_republicAtWar, gameArguments, false);
+            debugClient.Debug(_playableObject, gameArguments, false);
         else
-            client.Play(_republicAtWar, gameArguments);
+            client.Play(_playableObject, gameArguments);
 #endif
     }
 

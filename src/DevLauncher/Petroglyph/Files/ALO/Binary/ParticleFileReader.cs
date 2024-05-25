@@ -1,7 +1,7 @@
-﻿using System;
-using RepublicAtWar.DevLauncher.Petroglyph.Models.Files;
+﻿using RepublicAtWar.DevLauncher.Petroglyph.Files.ALO.Data;
+using RepublicAtWar.DevLauncher.Petroglyph.Files.ChunkFiles;
 
-namespace RepublicAtWar.DevLauncher.Petroglyph.Files;
+namespace RepublicAtWar.DevLauncher.Petroglyph.Files.ALO.Binary;
 
 internal class ParticleFileReader(string fileName, ChunkReader reader, ChunkMetadata firstChunk) : ChunkFileReaderBase<AlamoParticle>(fileName, reader, firstChunk)
 {
