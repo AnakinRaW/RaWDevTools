@@ -7,7 +7,9 @@ using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
+using PG.StarWarsGame.Files.MEG.Data.EntryLocations;
 using PG.StarWarsGame.Files.MEG.Files;
+using PG.StarWarsGame.Files.MEG.Services;
 using PG.StarWarsGame.Files.MEG.Services.Builder;
 using RepublicAtWar.DevLauncher.Configuration;
 using RepublicAtWar.DevLauncher.Utilities;
@@ -47,6 +49,15 @@ internal class PackMegFileStep(IPackMegConfiguration config, IServiceProvider se
         _logger?.LogInformation($"Writing MEG data '{megFileName}'...");
 
         using var megBuilder = new EmpireAtWarMegBuilder(_config.VirtualRootDirectory.FullName, _serviceProvider);
+
+        if (_config.BaseMegFile is not null)
+        {
+            var megFileService = _serviceProvider.GetRequiredService<IMegFileService>();
+            var baseMeg = megFileService.Load(_config.BaseMegFile);
+
+            foreach (var entry in baseMeg.Archive) 
+                megBuilder.AddEntry(new MegDataEntryLocationReference(baseMeg, entry));
+        }
 
         foreach (var file in files)
         {

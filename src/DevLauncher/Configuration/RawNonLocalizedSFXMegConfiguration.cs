@@ -5,7 +5,7 @@ using PG.StarWarsGame.Infrastructure;
 namespace RepublicAtWar.DevLauncher.Configuration;
 
 internal class RawNonLocalizedSFXMegConfiguration(
-    IPhysicalPlayableObject? physicalGameObject,
+    IPhysicalPlayableObject physicalGameObject,
     IServiceProvider serviceProvider)
     : RawPackMegConfiguration(physicalGameObject, serviceProvider)
 {
@@ -15,6 +15,8 @@ internal class RawNonLocalizedSFXMegConfiguration(
     };
 
     public override string FileName => "Data\\Audio\\SFX\\sfx2d_non_localized.meg";
+
+    public override string BaseMegFile => "AssetLib\\Foc\\sfx2d_non_localized.meg";
 
     public override bool FileNamesOnly => true;
 }

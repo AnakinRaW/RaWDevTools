@@ -7,6 +7,8 @@ internal interface IPackMegConfiguration
 {
     IEnumerable<string> FilesToPack { get; }
 
+    string? BaseMegFile { get; }
+
     public string FileName { get; }
 
     public bool FileNamesOnly { get; }

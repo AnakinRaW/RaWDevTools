@@ -4,10 +4,10 @@ using PG.StarWarsGame.Infrastructure;
 
 namespace RepublicAtWar.DevLauncher.Configuration;
 
-internal class RawAiPackMegConfiguration(IPhysicalPlayableObject? physicalGameObject, IServiceProvider serviceProvider)
+internal class RawAiPackMegConfiguration(IPhysicalPlayableObject physicalGameObject, IServiceProvider serviceProvider)
     : RawPackMegConfiguration(physicalGameObject, serviceProvider)
 {
-    public override IEnumerable<string> FilesToPack { get; } = new List<string>()
+    public override IEnumerable<string> FilesToPack { get; } = new List<string>
     {
         "Data\\XML\\AI\\**\\*.xml",
         "Data\\SCRIPTS\\AI\\**\\*.lua"

@@ -11,15 +11,19 @@ internal abstract class RawPackMegConfiguration : IPackMegConfiguration
     protected readonly IFileSystem FileSystem;
     
     public abstract IEnumerable<string> FilesToPack { get; }
+
+    public virtual string? BaseMegFile => null;
+
     public abstract string FileName { get; }
+
     public virtual bool FileNamesOnly => false;
+    
+    public IDirectoryInfo VirtualRootDirectory { get; }
 
-    public IDirectoryInfo? VirtualRootDirectory { get; }
-
-    protected RawPackMegConfiguration(IPhysicalPlayableObject? physicalGameObject, IServiceProvider serviceProvider)
+    protected RawPackMegConfiguration(IPhysicalPlayableObject physicalGameObject, IServiceProvider serviceProvider)
     {
         if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
         FileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-        VirtualRootDirectory = physicalGameObject?.Directory;
+        VirtualRootDirectory = physicalGameObject.Directory;
     }
 }

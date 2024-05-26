@@ -5,7 +5,7 @@ using PG.StarWarsGame.Infrastructure;
 namespace RepublicAtWar.DevLauncher.Configuration;
 
 internal class RawCustomMapsPackMegConfiguration(
-    IPhysicalPlayableObject? physicalGameObject,
+    IPhysicalPlayableObject physicalGameObject,
     IServiceProvider serviceProvider)
     : RawPackMegConfiguration(physicalGameObject, serviceProvider)
 {
