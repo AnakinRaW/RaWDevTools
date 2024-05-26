@@ -71,6 +71,12 @@
 	  <ProjectReference Include="..\..\AlamoEngineTools\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG.csproj" />
 	  <ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CLI\ApplicationBase.CLI.csproj" />
 	  <ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" />
+	  <ProjectReference Include="..\..\ModVerify\PetroglyphTools\PG.Commons\PG.Commons\PG.Commons.csproj" />
+	  <ProjectReference Include="..\..\ModVerify\PetroglyphTools\PG.StarWarsGame.Files.DAT\PG.StarWarsGame.Files.DAT\PG.StarWarsGame.Files.DAT.csproj" />
+	  <ProjectReference Include="..\..\ModVerify\PetroglyphTools\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG.csproj" />
+	  <ProjectReference Include="..\..\ModVerify\src\ModVerify\ModVerify.csproj" />
+	  <ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Engine\PG.StarWarsGame.Engine.csproj" />
+	  <ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Files.ALO\PG.StarWarsGame.Files.ALO.csproj" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -81,11 +87,6 @@
 
 	<ItemGroup>
 		<PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Petroglyph\Files\ALO\Files\" />
-	  <Folder Include="Petroglyph\Files\XML\" />
 	</ItemGroup>
 
 </Project>

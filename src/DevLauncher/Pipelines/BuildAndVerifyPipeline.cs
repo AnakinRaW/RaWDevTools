@@ -23,7 +23,13 @@ internal class BuildAndVerifyPipeline(RaWBuildOption buildOption, IPhysicalMod m
         return Task.FromResult<IList<IStep>>(new List<IStep>
         {
             new RunPipelineStep(new BuildPipeline(mod, buildOption, ServiceProvider), ServiceProvider),
-            new RunPipelineStep(new VerifyPipeline(mod, fallbackGame, ServiceProvider), ServiceProvider),
+            new RunPipelineStep(
+                new VerifyFocPipeline(
+                    [mod.Directory.FullName],
+                    mod.Game.Directory.FullName,
+                    fallbackGame.Directory.FullName,
+                    ServiceProvider),
+                ServiceProvider),
         });
     }
 }
