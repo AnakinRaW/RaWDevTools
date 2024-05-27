@@ -8,11 +8,12 @@ using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Files.DAT.Files;
 using PG.StarWarsGame.Files.DAT.Services.Builder;
 using RepublicAtWar.DevLauncher.Localization;
+using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Utilities;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
 
-internal class CompileLocalizationStep(IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
+internal class CompileLocalizationStep(IServiceProvider serviceProvider, RaWBuildOption buildOption) : PipelineStep(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CompileLocalizationStep));
@@ -31,7 +32,7 @@ internal class CompileLocalizationStep(IServiceProvider serviceProvider) : Pipel
         var datFileName = _fileSystem.Path.GetFileName(datFilePath);
 
         var updateChecker = Services.GetRequiredService<IBinaryRequiresUpdateChecker>();
-        if (!updateChecker.RequiresUpdate(datFilePath, new List<string> { file }))
+        if (!buildOption.CleanBuild && !updateChecker.RequiresUpdate(datFilePath, new List<string> { file }))
         {
             _logger?.LogDebug($"DAT data '{datFileName}' is already up to date. Skipping build.");
             return;

@@ -14,9 +14,7 @@ internal class RawNonLocalizedSFXMegConfiguration(
         "Data\\Audio\\Units\\NonLocalized\\*.wav"
     };
 
-    public override string FileName => "Data\\Audio\\SFX\\sfx2d_non_localized.meg";
-
-    public override string BaseMegFile => "AssetLib\\Foc\\sfx2d_non_localized.meg";
+    public override string FileName => "Data\\Audio\\SFX\\voices_non_localized.meg";
 
     public override bool FileNamesOnly => true;
 }

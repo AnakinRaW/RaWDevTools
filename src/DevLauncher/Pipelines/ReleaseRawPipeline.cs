@@ -32,6 +32,14 @@ internal class ReleaseRawPipeline : SequentialPipeline
     protected override Task RunCoreAsync(CancellationToken token)
     {
         _logger?.LogInformation("Release Republic at War");
+
+        if (!_options.CleanBuild)
+        {
+            _logger?.LogWarning("Releasing without Clean build!!!");
+            _logger?.LogWarning("Releasing without Clean build!!!");
+            _logger?.LogWarning("Releasing without Clean build!!!");
+        }
+
         return base.RunCoreAsync(token);
     }
 

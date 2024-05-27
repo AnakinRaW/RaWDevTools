@@ -55,6 +55,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PG.StarWarsGame.Files.DAT",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PG.StarWarsGame.Files.MEG", "ModVerify\PetroglyphTools\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG\PG.StarWarsGame.Files.MEG.csproj", "{46040394-C2B9-4002-8083-9FEDD0BF115B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModVerify.CliApp", "ModVerify\src\ModVerify.CliApp\ModVerify.CliApp.csproj", "{C5703F53-DC3D-4B4E-9E18-365124C72793}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -137,6 +139,10 @@ Global
 		{46040394-C2B9-4002-8083-9FEDD0BF115B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46040394-C2B9-4002-8083-9FEDD0BF115B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46040394-C2B9-4002-8083-9FEDD0BF115B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5703F53-DC3D-4B4E-9E18-365124C72793}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5703F53-DC3D-4B4E-9E18-365124C72793}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5703F53-DC3D-4B4E-9E18-365124C72793}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5703F53-DC3D-4B4E-9E18-365124C72793}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -163,6 +169,7 @@ Global
 		{FBD44E55-3CFC-46BF-B1CA-137EBBD0CF61} = {FF4C3704-0C74-40B5-A38D-AF29B6385D85}
 		{AA9ED765-5075-43A6-B2FE-73EFB3C9FE26} = {FF4C3704-0C74-40B5-A38D-AF29B6385D85}
 		{46040394-C2B9-4002-8083-9FEDD0BF115B} = {FF4C3704-0C74-40B5-A38D-AF29B6385D85}
+		{C5703F53-DC3D-4B4E-9E18-365124C72793} = {D4C9B8AA-96E5-49F4-B8A4-765144E16548}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DC15751A-BB36-4EF1-BFF0-2DF1E419AC8F}
