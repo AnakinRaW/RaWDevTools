@@ -31,7 +31,7 @@ internal class BuildAndVerifyPipeline(RaWBuildOption buildOption, IPhysicalMod m
         return Task.FromResult<IList<IStep>>(new List<IStep>
         {
             new RunPipelineStep(new BuildPipeline(mod, buildOption, ServiceProvider), ServiceProvider),
-            new RunPipelineStep(new VerifyFocPipeline(gameLocations, ServiceProvider), ServiceProvider),
+            new RunPipelineStep(new VerifyFocPipeline(gameLocations, VerificationSettings.Default, ServiceProvider), ServiceProvider),
         });
     }
 }
