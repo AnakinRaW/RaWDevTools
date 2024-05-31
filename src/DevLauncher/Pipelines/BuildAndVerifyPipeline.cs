@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using AET.ModVerify;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
+using Microsoft.Extensions.DependencyInjection;
+using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Engine.FileSystem;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
@@ -21,17 +23,19 @@ internal class BuildAndVerifyPipeline(RaWBuildOption buildOption, IPhysicalMod m
 
     protected override Task<IList<IStep>> BuildSteps()
     {
-
         var gameLocations = new GameLocations(
             [mod.Directory.FullName],
             mod.Game.Directory.FullName,
             [fallbackGame.Directory.FullName, LauncherConstants.RaWFallbackAssetPathEaW]
         );
 
+        var repository = ServiceProvider.GetRequiredService<IGameRepositoryFactory>()
+            .Create(GameEngineType.Foc, gameLocations);
+
         return Task.FromResult<IList<IStep>>(new List<IStep>
         {
             new RunPipelineStep(new BuildPipeline(mod, buildOption, ServiceProvider), ServiceProvider),
-            new RunPipelineStep(new VerifyFocPipeline(gameLocations, VerificationSettings.Default, ServiceProvider), ServiceProvider),
+            new RunPipelineStep(new VerifyGamePipeline(repository, VerificationSettings.Default, ServiceProvider), ServiceProvider),
         });
     }
 }

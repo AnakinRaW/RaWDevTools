@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -34,6 +35,14 @@ namespace RepublicAtWar.DevLauncher;
 internal class Program : CliBootstrapper
 {
     protected override bool AutomaticUpdate => true;
+
+    protected override IEnumerable<string>? AdditionalNamespacesToLogToConsole
+    {
+        get
+        {
+            yield return "AET.ModVerify";
+        }
+    }
 
     private bool HasErrors { get; set; }
 
