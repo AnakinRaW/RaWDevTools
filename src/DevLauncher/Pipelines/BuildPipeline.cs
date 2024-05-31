@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Threading;
 using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
+using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Engine.Language;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Configuration;
@@ -12,29 +15,47 @@ using RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
-internal class BuildPipeline(IPhysicalMod mod, RaWBuildOption buildOption, IServiceProvider serviceProvider)
-    : ParallelPipeline(serviceProvider)
+internal sealed class BuildPipeline(IPhysicalMod mod, RaWBuildOption buildOption, IServiceProvider serviceProvider) : Pipeline(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly IGameLanguageManager _languageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
+
+    private CancellationTokenSource? _linkedCancellationTokenSource;
+
+    private readonly bool _failFast = false;
+    private readonly List<IStep> _buildSteps = new();
+    private readonly List<IStep> _preBuildSteps = new();
+
+    private readonly ParallelRunner _buildRunner = new(4, serviceProvider);
+    private readonly StepRunner _preBuildRunner = new(serviceProvider);
 
     public override string ToString()
     {
         return $"Building {mod.Name}";
     }
 
-    protected override Task<IList<IStep>> BuildSteps()
+    protected override Task<bool> PrepareCoreAsync()
     {
-        IList<IStep> steps = new List<IStep>
-        {
-            new PackMegFileStep(new RawAiPackMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider),
-            new PackMegFileStep(new RawCustomMapsPackMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider),
+        _preBuildSteps.Clear();
+        _preBuildSteps.AddRange(CreatePreBuildSteps());
+        foreach (var buildStep in _preBuildSteps)
+            _preBuildRunner.AddStep(buildStep);
 
-            new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider),
-            new PackIconsStep(buildOption, ServiceProvider),
-            new CompileLocalizationStep(ServiceProvider, buildOption)
-        };
+        _buildSteps.Clear();
+        _buildSteps.AddRange(CreateBuildSteps());
+        foreach (var buildStep in _buildSteps) 
+            _buildRunner.AddStep(buildStep);
 
+        return Task.FromResult(true);
+    }
+
+    private IEnumerable<IStep> CreateBuildSteps()
+    {
+        yield return new PackMegFileStep(new RawAiPackMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider);
+        yield return new PackMegFileStep(new RawCustomMapsPackMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider);
+        yield return new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider);
+        yield return new PackIconsStep(buildOption, ServiceProvider);
+        yield return new CompileLocalizationStep(ServiceProvider, buildOption);
 
         foreach (var focLanguage in _languageManager.FocSupportedLanguages)
         {
@@ -44,13 +65,71 @@ internal class BuildPipeline(IPhysicalMod mod, RaWBuildOption buildOption, IServ
             if (!isRaWSupported && !buildOption.CleanBuild)
                 continue;
 
-            steps.Add(new PackMegFileStep(
-                new RawLocalizedSFX2DMegConfiguration(focLanguage, isRaWSupported, mod, ServiceProvider), 
+            yield return new PackMegFileStep(
+                new RawLocalizedSFX2DMegConfiguration(focLanguage, isRaWSupported, mod, ServiceProvider),
                 buildOption,
-                ServiceProvider));
+                ServiceProvider);
         }
+    }
 
-        return Task.FromResult(steps);
+    private IList<IStep> CreatePreBuildSteps()
+    {
+        return new List<IStep>
+        {
+            new CleanOutdatedAssetsStep(mod, ServiceProvider)
+        };
+    }
+
+    protected override async Task RunCoreAsync(CancellationToken token)
+    {
+        try
+        {
+            _linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+
+            try
+            {
+                Logger?.LogInformation("Running Prebuild...");
+                _preBuildRunner.Error -= OnError;
+                await _preBuildRunner.RunAsync(_linkedCancellationTokenSource.Token);
+            }
+            finally
+            {
+                Logger?.LogInformation("Finished Prebuild...");
+                _preBuildRunner.Error -= OnError;
+            }
+
+            ThrowIfAnyStepsFailed(_preBuildSteps);
+
+            try
+            {
+                Logger?.LogInformation("Running Build...");
+                _buildRunner.Error -= OnError;
+                await _buildRunner.RunAsync(_linkedCancellationTokenSource.Token);
+            }
+            finally
+            {
+                Logger?.LogInformation("Finished Build...");
+                _buildRunner.Error -= OnError;
+            }
+
+            ThrowIfAnyStepsFailed(_buildSteps);
+
+        }
+        finally
+        {
+            if (_linkedCancellationTokenSource is not null)
+            {
+                _linkedCancellationTokenSource.Dispose();
+                _linkedCancellationTokenSource = null;
+            }
+        }
+    }
+    
+    private void OnError(object sender, StepErrorEventArgs e)
+    {
+        PipelineFailed = true;
+        if (_failFast || e.Cancel)
+            _linkedCancellationTokenSource?.Cancel();
     }
 
     private bool IsSupportedByRaw(LanguageType focLanguage)
