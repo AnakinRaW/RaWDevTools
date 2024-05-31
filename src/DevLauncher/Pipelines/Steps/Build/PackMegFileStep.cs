@@ -10,12 +10,13 @@ using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Files.MEG.Files;
 using PG.StarWarsGame.Files.MEG.Services.Builder;
 using RepublicAtWar.DevLauncher.Configuration;
+using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Utilities;
 using DirectoryInfoWrapper = Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoWrapper;
 
-namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
+namespace RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
 
-internal class PackMegFileStep(IPackMegConfiguration config, IServiceProvider serviceProvider)
+internal class PackMegFileStep(IPackMegConfiguration config, RaWBuildOption buildOption, IServiceProvider serviceProvider)
     : PipelineStep(serviceProvider)
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -38,13 +39,14 @@ internal class PackMegFileStep(IPackMegConfiguration config, IServiceProvider se
         var megFileName = _fileSystem.Path.GetFileName(megFilePath);
 
         var updateChecker = _serviceProvider.GetRequiredService<IBinaryRequiresUpdateChecker>();
-        if (!updateChecker.RequiresUpdate(megFilePath, files))
+
+        if (!buildOption.CleanBuild && !updateChecker.RequiresUpdate(megFilePath, files))
         {
-            _logger?.LogDebug($"MEG file '{megFileName}' is already up to date. Skipping build.");
+            _logger?.LogDebug($"MEG data '{megFileName}' is already up to date. Skipping build.");
             return;
         }
 
-        _logger?.LogInformation($"Writing MEG file '{megFileName}'...");
+        _logger?.LogInformation($"Writing MEG data '{megFileName}'...");
 
         using var megBuilder = new EmpireAtWarMegBuilder(_config.VirtualRootDirectory.FullName, _serviceProvider);
 
@@ -54,16 +56,20 @@ internal class PackMegFileStep(IPackMegConfiguration config, IServiceProvider se
             if (_config.FileNamesOnly)
                 filePath = _fileSystem.Path.GetFileName(filePath);
 
+            if (_config.ModifyFileNameAction is not null)
+                filePath = _config.ModifyFileNameAction(filePath);
+
             var entryPath = megBuilder.ResolveEntryPath(filePath);
             if (entryPath is null)
                 throw new InvalidOperationException($"Entry path for '{file}' could not be resolved.");
 
-            var result = megBuilder.AddFile(_fileSystem.Path.Combine(_config.VirtualRootDirectory.FullName, file), entryPath);
+            var result = megBuilder.AddFile(_fileSystem.Path.Combine(_config.VirtualRootDirectory.FullName, file),
+                entryPath);
             if (!result.Added)
                 throw new InvalidOperationException(result.Message);
         }
 
         megBuilder.Build(new MegFileInformation(megFilePath, MegFileVersion.V1), true);
-        _logger?.LogInformation($"Finished writing MEG file '{megFileName}'...");
+        _logger?.LogInformation($"Finished writing MEG data '{megFileName}'...");
     }
 }

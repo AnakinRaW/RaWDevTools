@@ -8,11 +8,12 @@ using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Files.DAT.Files;
 using PG.StarWarsGame.Files.DAT.Services.Builder;
 using RepublicAtWar.DevLauncher.Localization;
+using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Utilities;
 
-namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
+namespace RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
 
-internal class CompileLocalizationStep(IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
+internal class CompileLocalizationStep(IServiceProvider serviceProvider, RaWBuildOption buildOption) : PipelineStep(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CompileLocalizationStep));
@@ -31,17 +32,17 @@ internal class CompileLocalizationStep(IServiceProvider serviceProvider) : Pipel
         var datFileName = _fileSystem.Path.GetFileName(datFilePath);
 
         var updateChecker = Services.GetRequiredService<IBinaryRequiresUpdateChecker>();
-        if (!updateChecker.RequiresUpdate(datFilePath, new List<string> { file }))
+        if (!buildOption.CleanBuild && !updateChecker.RequiresUpdate(datFilePath, new List<string> { file }))
         {
-            _logger?.LogDebug($"DAT file '{datFileName}' is already up to date. Skipping build.");
+            _logger?.LogDebug($"DAT data '{datFileName}' is already up to date. Skipping build.");
             return;
         }
 
-        _logger?.LogInformation($"Writing DAT file '{datFileName}'...");
+        _logger?.LogInformation($"Writing DAT data '{datFileName}'...");
 
         var reader = new LocalizationFileReader(false, Services);
         var fileModel = reader.ReadFile(file);
-        
+
         using var builder = new EmpireAtWarMasterTextBuilder(false, Services);
 
         foreach (var entry in fileModel.Entries)
@@ -53,6 +54,6 @@ internal class CompileLocalizationStep(IServiceProvider serviceProvider) : Pipel
 
         builder.Build(new DatFileInformation { FilePath = _fileSystem.Path.GetFullPath(datFilePath) }, true);
 
-        _logger?.LogInformation($"Finished writing DAT file for language {fileModel.Language}");
+        _logger?.LogInformation($"Finished writing DAT data for language {fileModel.Language}");
     }
 }

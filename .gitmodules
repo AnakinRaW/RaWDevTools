@@ -1,6 +1,6 @@
 [submodule "ModdingToolBase"]
 	path = ModdingToolBase
 	url = https://github.com/AnakinRaW/ModdingToolBase
-[submodule "AlamoEngineTools"]
-	path = AlamoEngineTools
-	url = https://github.com/AlamoEngine-Tools/PetroglyphTools
+[submodule "ModVerify"]
+	path = ModVerify
+	url = https://github.com/AlamoEngine-Tools/ModVerify

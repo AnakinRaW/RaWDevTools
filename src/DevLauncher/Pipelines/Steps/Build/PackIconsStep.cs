@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Utilities;
 
-namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
+namespace RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
 
 internal class PackIconsStep(RaWBuildOption buildOption, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
@@ -57,7 +57,7 @@ internal class PackIconsStep(RaWBuildOption buildOption, IServiceProvider servic
 
         try
         {
-            _logger?.LogInformation("Creating Master Texture Database and TGA file...");
+            _logger?.LogInformation("Creating Master Texture Database and TGA data...");
 
             WriteDummyMasterTextFile();
             WriteModCompile();
@@ -70,7 +70,7 @@ internal class PackIconsStep(RaWBuildOption buildOption, IServiceProvider servic
             if (result != 0)
                 throw new Win32Exception();
 
-            _logger?.LogInformation("Finished creating Master Texture Database and TGA file.");
+            _logger?.LogInformation("Finished creating Master Texture Database and TGA data.");
         }
         finally
         {
@@ -79,7 +79,7 @@ internal class PackIconsStep(RaWBuildOption buildOption, IServiceProvider servic
                 _fileSystem.File.Delete(DummyMasterTextFileXml);
                 _fileSystem.Directory.Delete(MtCommandBarPath);
             }
-            catch (Exception e) when(e is UnauthorizedAccessException or IOException )
+            catch (Exception e) when (e is UnauthorizedAccessException or IOException)
             {
                 // Ignore
             }

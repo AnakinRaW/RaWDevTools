@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 
 namespace RepublicAtWar.DevLauncher.Configuration;
@@ -12,4 +13,6 @@ internal interface IPackMegConfiguration
     public bool FileNamesOnly { get; }
 
     public IDirectoryInfo VirtualRootDirectory { get; }
+
+    public Func<string, string>? ModifyFileNameAction { get; }
 }

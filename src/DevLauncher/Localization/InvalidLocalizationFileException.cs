@@ -2,4 +2,13 @@
 
 namespace RepublicAtWar.DevLauncher.Localization;
 
-internal class InvalidLocalizationFileException(string message) : Exception(message);
+internal class InvalidLocalizationFileException : Exception
+{
+    public InvalidLocalizationFileException()
+    {
+    }
+
+    public InvalidLocalizationFileException(string message) : base(message)
+    {
+    }
+}

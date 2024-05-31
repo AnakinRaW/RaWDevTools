@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -15,6 +16,8 @@ using CommandLine.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.Commons.Extensibility;
+using PG.StarWarsGame.Engine;
+using PG.StarWarsGame.Files.ALO;
 using PG.StarWarsGame.Files.DAT.Services.Builder;
 using PG.StarWarsGame.Files.MEG.Data.Archives;
 using PG.StarWarsGame.Infrastructure;
@@ -32,6 +35,14 @@ namespace RepublicAtWar.DevLauncher;
 internal class Program : CliBootstrapper
 {
     protected override bool AutomaticUpdate => true;
+
+    protected override IEnumerable<string>? AdditionalNamespacesToLogToConsole
+    {
+        get
+        {
+            yield return "AET.ModVerify";
+        }
+    }
 
     private bool HasErrors { get; set; }
 
@@ -180,7 +191,10 @@ internal class Program : CliBootstrapper
 
         RuntimeHelpers.RunClassConstructor(typeof(IDatBuilder).TypeHandle);
         RuntimeHelpers.RunClassConstructor(typeof(IMegArchive).TypeHandle);
+        AloServiceContribution.ContributeServices(serviceCollection);
         serviceCollection.CollectPgServiceContributions();
+
+        PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);
 
         serviceCollection.AddSingleton(sp => new GitService(".", options.WarnAsError, sp));
 

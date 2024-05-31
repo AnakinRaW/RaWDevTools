@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Utilities;
 
-namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
+namespace RepublicAtWar.DevLauncher.Pipelines.Steps.Release;
 
 internal class CopyReleaseStep : PipelineStep
 {
@@ -41,7 +41,7 @@ internal class CopyReleaseStep : PipelineStep
         matcher.AddExclude("/Data/Art/Textures/Icons/**/*.*");
         matcher.AddExclude("/Data/Art/Textures/MT_CommandBar/**/*.*");
         matcher.AddExclude("/Data/Audio/Units/**/*.*");
-        
+
         matcher.AddExclude("/Data/Text/**/*.txt");
         matcher.AddExclude("/Data/XML/DataMiner.exe");
 
@@ -68,7 +68,7 @@ internal class CopyReleaseStep : PipelineStep
         if (!_fileSystem.Directory.Exists(_releaseOptions.UploaderDirectory))
             throw new DirectoryNotFoundException("Unable to find SteamUploader directory");
 
-        if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(_releaseOptions.UploaderDirectory, "SteamWorkshopUploader.exe")) 
+        if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(_releaseOptions.UploaderDirectory, "SteamWorkshopUploader.exe"))
             || !_fileSystem.Directory.Exists(_fileSystem.Path.Combine(_releaseOptions.UploaderDirectory, "WorkshopContent")))
             throw new ArgumentException("The specified uploader directory is not valid.");
 
@@ -96,14 +96,14 @@ internal class CopyReleaseStep : PipelineStep
             .Wait(token);
 
         progressBar.Dispose();
-        
+
         _logger?.LogInformation($"Copied assets to SteamUploader at '{assetCopyPath}'");
     }
 
     private bool ShallCopyFile(string fileToCopy)
     {
         var currentDirLength = Environment.CurrentDirectory.Length;
-        var localPath = fileToCopy.Substring(currentDirLength + 1); 
+        var localPath = fileToCopy.Substring(currentDirLength + 1);
         return _fileCopyBlacklist.Match(localPath).HasMatches;
     }
 }

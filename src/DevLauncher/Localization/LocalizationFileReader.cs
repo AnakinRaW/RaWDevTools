@@ -32,13 +32,15 @@ internal class LocalizationFileReader(bool warningAsError, IServiceProvider serv
         var entryList = new List<LocalizationEntry>();
         var keys = new HashSet<string>();
 
+        var duplicates = new HashSet<string>();
+
         foreach (var entry in listContext.entry())
         {
             var key = entry.key().GetText();
             _validator.ValidateKey(key);
 
-            if (!keys.Add(key))
-                throw new InvalidLocalizationFileException($"The key '{key}' already exists.");
+            if (!keys.Add(key)) 
+                duplicates.Add(key);
 
             var value = GetTextFromValueContext(entry.value(), key);
             if (value is null)
@@ -48,6 +50,9 @@ internal class LocalizationFileReader(bool warningAsError, IServiceProvider serv
 
             entryList.Add(new LocalizationEntry(key, value));
         }
+
+        if (duplicates.Count > 0)
+            throw new DuplicateKeysException(duplicates);
 
         return new LocalizationFile(langName, entryList);
     }
@@ -103,7 +108,7 @@ internal class LocalizationFileReader(bool warningAsError, IServiceProvider serv
 
         var langName = LanguageNameFromFileName(filePath);
         if (localizationFile.Language != langName)
-            LogOrThrow($"The file name of '{filePath}' does not match the language content '{langName}'.");
+            LogOrThrow($"The data name of '{filePath}' does not match the language content '{langName}'.");
 
         return localizationFile;
     }

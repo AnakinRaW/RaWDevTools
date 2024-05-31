@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Options;
-using RepublicAtWar.DevLauncher.Pipelines.Steps;
+using RepublicAtWar.DevLauncher.Pipelines.Steps.Release;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
@@ -32,6 +32,14 @@ internal class ReleaseRawPipeline : SequentialPipeline
     protected override Task RunCoreAsync(CancellationToken token)
     {
         _logger?.LogInformation("Release Republic at War");
+
+        if (!_options.CleanBuild)
+        {
+            _logger?.LogWarning("Releasing without Clean build!!!");
+            _logger?.LogWarning("Releasing without Clean build!!!");
+            _logger?.LogWarning("Releasing without Clean build!!!");
+        }
+
         return base.RunCoreAsync(token);
     }
 
@@ -43,7 +51,7 @@ internal class ReleaseRawPipeline : SequentialPipeline
             return new List<IStep>
             {
                 // Build
-                new RunPipelineStep(new BuildPipeline(_options, _republicAtWar, ServiceProvider), ServiceProvider),
+                new RunPipelineStep(new BuildPipeline(_republicAtWar, _options, ServiceProvider), ServiceProvider),
                 // Verify
                 // new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _empireAtWarGame, ServiceProvider), ServiceProvider),
                 // Build Release artifacts
