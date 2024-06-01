@@ -87,4 +87,12 @@
 		<PackageReference Update="Nerdbank.GitVersioning" Version="3.6.133" />
 	</ItemGroup>
 
+	<PropertyGroup>
+		<WeaverConfiguration Condition="'$(Configuration)' == 'Release'">
+			<Weavers>
+				<Costura IncludeDebugSymbols="false" IgnoreSatelliteAssemblies="true" />
+			</Weavers>			
+		</WeaverConfiguration>
+	</PropertyGroup>
+
 </Project>
