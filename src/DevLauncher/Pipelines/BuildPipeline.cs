@@ -20,14 +20,13 @@ internal sealed class BuildPipeline(IPhysicalMod mod, RaWBuildOption buildOption
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly IGameLanguageManager _languageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
 
-    private CancellationTokenSource? _linkedCancellationTokenSource;
-
-    private readonly bool _failFast = false;
     private readonly List<IStep> _buildSteps = new();
     private readonly List<IStep> _preBuildSteps = new();
 
     private readonly ParallelRunner _buildRunner = new(4, serviceProvider);
     private readonly StepRunner _preBuildRunner = new(serviceProvider);
+
+    protected override bool FailFast => true;
 
     public override string ToString()
     {
@@ -84,52 +83,31 @@ internal sealed class BuildPipeline(IPhysicalMod mod, RaWBuildOption buildOption
     {
         try
         {
-            _linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-
-            try
-            {
-                Logger?.LogInformation("Running Prebuild...");
-                _preBuildRunner.Error -= OnError;
-                await _preBuildRunner.RunAsync(_linkedCancellationTokenSource.Token);
-            }
-            finally
-            {
-                Logger?.LogInformation("Finished Prebuild...");
-                _preBuildRunner.Error -= OnError;
-            }
-
-            ThrowIfAnyStepsFailed(_preBuildSteps);
-
-            try
-            {
-                Logger?.LogInformation("Running Build...");
-                _buildRunner.Error -= OnError;
-                await _buildRunner.RunAsync(_linkedCancellationTokenSource.Token);
-            }
-            finally
-            {
-                Logger?.LogInformation("Finished Build...");
-                _buildRunner.Error -= OnError;
-            }
-
-            ThrowIfAnyStepsFailed(_buildSteps);
-
+            Logger?.LogInformation("Running Prebuild...");
+            _preBuildRunner.Error -= OnError;
+            await _preBuildRunner.RunAsync(token);
         }
         finally
         {
-            if (_linkedCancellationTokenSource is not null)
-            {
-                _linkedCancellationTokenSource.Dispose();
-                _linkedCancellationTokenSource = null;
-            }
+            Logger?.LogInformation("Finished Prebuild...");
+            _preBuildRunner.Error -= OnError;
         }
-    }
-    
-    private void OnError(object sender, StepErrorEventArgs e)
-    {
-        PipelineFailed = true;
-        if (_failFast || e.Cancel)
-            _linkedCancellationTokenSource?.Cancel();
+
+        ThrowIfAnyStepsFailed(_preBuildSteps);
+
+        try
+        {
+            Logger?.LogInformation("Running Build...");
+            _buildRunner.Error -= OnError;
+            await _buildRunner.RunAsync(token);
+        }
+        finally
+        {
+            Logger?.LogInformation("Finished Build...");
+            _buildRunner.Error -= OnError;
+        }
+
+        ThrowIfAnyStepsFailed(_buildSteps);
     }
 
     private bool IsSupportedByRaw(LanguageType focLanguage)
