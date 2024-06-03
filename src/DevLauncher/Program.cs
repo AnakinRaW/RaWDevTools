@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using AET.ModVerify;
 using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
 using AnakinRaW.CommonUtilities.Hashing;
@@ -195,6 +196,7 @@ internal class Program : CliBootstrapper
         serviceCollection.CollectPgServiceContributions();
 
         PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);
+        ModVerifyServiceContribution.ContributeServices(serviceCollection);
 
         serviceCollection.AddSingleton(sp => new GitService(".", options.WarnAsError, sp));
 
