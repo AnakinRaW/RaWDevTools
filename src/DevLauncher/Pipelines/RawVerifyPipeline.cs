@@ -5,6 +5,7 @@ using AET.ModVerify.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Engine.Database;
+using RepublicAtWar.DevLauncher.Pipelines.Steps.Verification;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
@@ -22,5 +23,7 @@ internal class RawVerifyPipeline(
         {
             yield return verifier;
         }
+
+        yield return new VerifyAllAudioStep(database, Settings, ServiceProvider);
     }
 }
