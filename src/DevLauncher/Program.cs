@@ -185,6 +185,7 @@ internal class Program : CliBootstrapper
     private static IServiceProvider CreateAppServices(DevToolsOptionBase options, IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
+        serviceCollection.AddSingleton<IRegistry>(_ => new WindowsRegistry());
 
         SteamAbstractionLayer.InitializeServices(serviceCollection);
         PetroglyphGameClients.InitializeServices(serviceCollection);

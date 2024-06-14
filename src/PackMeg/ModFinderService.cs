@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Abstractions;
+﻿using System.IO.Abstractions;
 using EawModinfo.Model;
 using EawModinfo.Spec;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Infrastructure.Clients.Steam;
 using PG.StarWarsGame.Infrastructure.Games;
+using PG.StarWarsGame.Infrastructure.Mods;
 using PG.StarWarsGame.Infrastructure.Services;
 using PG.StarWarsGame.Infrastructure.Services.Detection;
 
@@ -45,12 +44,12 @@ internal class ModFinderService
         }, _serviceProvider, true);
 
         var focDetectionResult = gd.Detect(new GameDetectorOptions(GameType.Foc));
+        
+        if (focDetectionResult.Error is not null)
+            throw new GameException($"Unable to find game installation: {focDetectionResult.Error.Message}", focDetectionResult.Error);
 
         if (focDetectionResult.GameLocation is null)
             throw new GameException("Unable to find game installation: Wrong install path?");
-
-        if (focDetectionResult.Error is not null)
-            throw new GameException($"Unable to find game installation: {focDetectionResult.Error.Message}", focDetectionResult.Error);
 
         _logger?.LogInformation($"Found game {focDetectionResult.GameIdentity} at '{focDetectionResult.GameLocation.FullName}'");
 
@@ -71,4 +70,11 @@ internal class ModFinderService
 
         return new GameFinderResult(raw, eaw);
     }
+}
+
+public readonly struct GameFinderResult(IMod mod, IGame fallbackGame)
+{
+    public IMod Mod { get; } = mod;
+
+    public IGame FallbackGame { get; } = fallbackGame;
 }
