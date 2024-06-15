@@ -204,8 +204,7 @@ internal class Program : CliBootstrapper
         var forceRebuild = options is RaWBuildOption { CleanBuild: true };
         serviceCollection.AddTransient<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(forceRebuild, sp));
 
-        serviceCollection.AddTransient(sp => new LocalizationFileWriter(options.WarnAsError, sp));
-        serviceCollection.AddTransient(sp => new LocalizationFileReader(options.WarnAsError, sp));
+        serviceCollection.AddTransient(sp => new LocalizationFileWriter(options.WarnAsError, sp)); ;
 
         return serviceCollection.BuildServiceProvider();
     }

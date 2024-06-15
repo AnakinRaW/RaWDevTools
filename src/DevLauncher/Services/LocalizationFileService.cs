@@ -107,10 +107,9 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
 
         if (oldEnglishFileStream is null)
             throw new InvalidOperationException("Unable to find an oldest reference english master text data.");
-        
-        var oldEnglish = CreateModelFromLocalizationFile(
-            new LocalizationFileReader(false, serviceProvider).FromStream(oldEnglishFileStream));
 
+        using var reader = new LocalizationFileReader(oldEnglishFileStream, false, _serviceProvider);
+        var oldEnglish = CreateModelFromLocalizationFile(reader.Read());
         return oldEnglish;
     }
 
@@ -199,8 +198,9 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
     }
 
     private LocalizationFile ReadLocalizationFile(string path)
-    { 
-        return new LocalizationFileReader(false, serviceProvider).ReadFile(path);
+    {
+        using var reader = new LocalizationFileReader(path, false, serviceProvider);
+        return reader.Read();
     }
 
     private IDatModel CreateModelFromLocalizationFile(LocalizationFile file)
@@ -220,11 +220,8 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
 
     private void CrossValidate(string datFilePath, string localizationFilePath)
     {
-        using var locFileFs = _fileSystem.FileStream.New(localizationFilePath, FileMode.Open);
-        var reader = new LocalizationFileReader(false, _serviceProvider);
-
-        var locFile = reader.FromStream(locFileFs);
-
+        var locFile = ReadLocalizationFile(localizationFilePath);
+       
         var builder = new EmpireAtWarMasterTextBuilder(false, _serviceProvider);
 
         foreach (var entry in locFile.Entries)

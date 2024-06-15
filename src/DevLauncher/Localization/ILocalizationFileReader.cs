@@ -1,6 +1,8 @@
-﻿namespace RepublicAtWar.DevLauncher.Localization;
+﻿using System;
 
-internal interface ILocalizationFileReader
+namespace RepublicAtWar.DevLauncher.Localization;
+
+internal interface ILocalizationFileReader : IDisposable
 {
-    LocalizationFile ReadFile(string filePath);
+    LocalizationFile Read();
 }

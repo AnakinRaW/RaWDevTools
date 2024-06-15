@@ -3,20 +3,70 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.IO.Abstractions;
+using System.Text;
 using Antlr4.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace RepublicAtWar.DevLauncher.Localization;
 
-internal class LocalizationFileReader(bool warningAsError, IServiceProvider serviceProvider) : LocalizationGrammarBaseVisitor<LocalizationFile>, ILocalizationFileReader
+internal class LocalizationFileReader : LocalizationGrammarBaseVisitor<LocalizationFile>, ILocalizationFileReader
 {
-    private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()
-        ?.CreateLogger(typeof(LocalizationFileReader));
+    private readonly ILogger? _logger;
 
-    private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
+    private readonly IFileSystem _fileSystem;
 
-    private readonly LocalizationFileValidator _validator = new(warningAsError, serviceProvider);
+    private readonly LocalizationFileValidator _validator;
+    private readonly bool _warningAsError;
+
+    private readonly Stream _dataStream;
+
+    private readonly string? _fileName;
+
+    public LocalizationFileReader(string filePath, bool warningAsError, IServiceProvider serviceProvider) : this(warningAsError, serviceProvider)
+    {
+        if (filePath == null) 
+            throw new ArgumentNullException(nameof(filePath));
+        _dataStream = _fileSystem.FileStream.New(filePath, FileMode.Open, FileAccess.Read);
+        _fileName = Path.GetFileName(filePath);
+    }
+
+    public LocalizationFileReader(Stream stream, bool warningAsError, IServiceProvider serviceProvider) : this(warningAsError, serviceProvider)
+    {
+        _dataStream = stream ?? throw new ArgumentNullException(nameof(stream));
+        if (stream is FileSystemStream fsStream)
+            _fileName = fsStream.Name;
+        if (stream is FileStream fs)
+            _fileName = fs.Name;
+    }
+
+    private LocalizationFileReader(bool warningAsError, IServiceProvider serviceProvider)
+    {
+        _warningAsError = warningAsError;
+        _logger = serviceProvider.GetService<ILoggerFactory>()
+            ?.CreateLogger(typeof(LocalizationFileReader));
+        _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
+        _validator = new(warningAsError, serviceProvider);
+    }
+
+    public LocalizationFile Read()
+    {
+        var localizationFile = FromStream(_dataStream);
+
+        if (_fileName is not null)
+        {
+            var langName = LanguageNameFromFileName(_fileName);
+            if (localizationFile.Language != langName)
+                LogOrThrow($"The data name of '{_fileName}' does not match the language content '{langName}'.");
+        }
+        
+        return localizationFile;
+    }
+
+    public void Dispose()
+    {
+        _dataStream.Dispose();
+    }
 
     public override LocalizationFile VisitLocalizationFile(LocalizationGrammarParser.LocalizationFileContext context)
     {
@@ -55,6 +105,24 @@ internal class LocalizationFileReader(bool warningAsError, IServiceProvider serv
             throw new DuplicateKeysException(duplicates);
 
         return new LocalizationFile(langName, entryList);
+    }
+
+    internal LocalizationFile FromStream(Stream input)
+    {
+        return FromStream(new AntlrInputStream(input));
+    }
+
+    private LocalizationFile FromStream(AntlrInputStream input)
+    {
+        var lexer = new LocalizationGrammarLexer(input);
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new ThrowExceptionErrorListener(_fileName));
+
+        var parser = new LocalizationGrammarParser(new CommonTokenStream(lexer));
+        parser.RemoveErrorListeners();
+        parser.ErrorHandler = new StrictErrorStrategy(_fileName);
+
+        return VisitLocalizationFile(parser.localizationFile());
     }
 
     private string? GetTextFromValueContext(LocalizationGrammarParser.ValueContext valueContext, string key)
@@ -101,41 +169,6 @@ internal class LocalizationFileReader(bool warningAsError, IServiceProvider serv
         return value;
     }
 
-    public LocalizationFile ReadFile(string filePath)
-    {
-        using var fileStream = _fileSystem.FileStream.New(filePath, FileMode.Open, FileAccess.Read);
-        var localizationFile = FromStream(fileStream);
-
-        var langName = LanguageNameFromFileName(filePath);
-        if (localizationFile.Language != langName)
-            LogOrThrow($"The data name of '{filePath}' does not match the language content '{langName}'.");
-
-        return localizationFile;
-    }
-
-    public LocalizationFile FromText(string text)
-    {
-        return FromStream(new AntlrInputStream(text));
-    }
-
-    internal LocalizationFile FromStream(Stream input)
-    {
-        return FromStream(new AntlrInputStream(input));
-    }
-
-    internal LocalizationFile FromStream(AntlrInputStream input)
-    {
-        var lexer = new LocalizationGrammarLexer(input);
-        lexer.RemoveErrorListeners();
-        lexer.AddErrorListener(new ThrowExceptionErrorListener());
-
-        var parser = new LocalizationGrammarParser(new CommonTokenStream(lexer));
-        parser.RemoveErrorListeners();
-        parser.ErrorHandler = new StrictErrorStrategy();
-
-        return VisitLocalizationFile(parser.localizationFile());
-    }
-
     private string? LanguageNameFromFileName(string fileName)
     {
         if (fileName == null) 
@@ -150,41 +183,56 @@ internal class LocalizationFileReader(bool warningAsError, IServiceProvider serv
 
     private void LogOrThrow(string message)
     {
-        if (warningAsError)
+        if (_warningAsError)
             throw new InvalidLocalizationFileException(message);
         _logger?.LogWarning(message);
     }
 
-    private class ThrowExceptionErrorListener : BaseErrorListener, IAntlrErrorListener<int>
+    private class ThrowExceptionErrorListener(string? fileName) : BaseErrorListener, IAntlrErrorListener<int>
     {
         public void SyntaxError(TextWriter output, IRecognizer recognizer, int offendingSymbol, int line, int charPositionInLine,
             string msg, RecognitionException e)
         {
-            throw new SyntaxErrorException($"Syntax error: {msg} (line:{line}, position:{charPositionInLine})", e);
+           throw new SyntaxErrorException(MessageFromPosition(line, charPositionInLine, msg), e);
         }
 
         public override void SyntaxError(TextWriter output, IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine,
             string msg, RecognitionException e)
         {
-            throw new SyntaxErrorException($"Syntax error: {msg} (line:{line}, position:{charPositionInLine})", e);
+            throw new SyntaxErrorException(MessageFromPosition(line, charPositionInLine, msg), e);
+        }
+
+        private string MessageFromPosition(int line, int charPositionInLine, string msg)
+        {
+            var sb = new StringBuilder("Syntax error");
+            if (fileName is not null)
+                sb.Append($" in file '{fileName}'");
+            sb.Append($": {msg} (line:{line}, position:{charPositionInLine})");
+            return sb.ToString();
         }
     }
 
-    private class StrictErrorStrategy : DefaultErrorStrategy
+    private class StrictErrorStrategy(string? fileName) : DefaultErrorStrategy
     {
         public override void Recover(Parser recognizer, RecognitionException e)
         {
-            var token = recognizer.CurrentToken;
-            var message = $"Parse error at line {token.Line}, position {token.Column} right before {GetTokenErrorDisplay(token)} ";
+            var message = MessageFromToken(recognizer.CurrentToken);
             throw new SyntaxErrorException(message, e);
         }
 
-
         public override IToken RecoverInline(Parser recognizer)
         {
-            var token = recognizer.CurrentToken;
-            var message = $"Parse error at line {token.Line}, position {token.Column} right before {GetTokenErrorDisplay(token)} ";
+            var message = MessageFromToken(recognizer.CurrentToken);
             throw new SyntaxErrorException(message, new InputMismatchException(recognizer));
+        }
+
+        private string MessageFromToken(IToken token)
+        {
+            var sb = new StringBuilder("Parse error");
+            if (fileName is not null)
+                sb.Append($" in file '{fileName}'");
+            sb.Append($" at line {token.Line}, position {token.Column} right before {GetTokenErrorDisplay(token)}");
+            return sb.ToString();
         }
 
         public override void Sync(Parser recognizer)

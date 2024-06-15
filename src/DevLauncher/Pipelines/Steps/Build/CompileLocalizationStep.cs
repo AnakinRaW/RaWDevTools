@@ -40,8 +40,8 @@ internal class CompileLocalizationStep(IServiceProvider serviceProvider, RaWBuil
 
         _logger?.LogInformation($"Writing DAT data '{datFileName}'...");
 
-        var reader = new LocalizationFileReader(false, Services);
-        var fileModel = reader.ReadFile(file);
+        using var reader = new LocalizationFileReader(file, false, Services);
+        var fileModel = reader.Read();
 
         using var builder = new EmpireAtWarMasterTextBuilder(false, Services);
 
