@@ -1,4 +1,7 @@
-﻿using System.IO.Abstractions;
+﻿using System;
+using System.Collections.Generic;
+using System.IO.Abstractions;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +11,7 @@ using RepublicAtWar.DevTools.PipelineSteps.Build.Meg;
 using RepublicAtWar.DevTools.PipelineSteps.Build.Meg.Config;
 using RepublicAtWar.DevTools.PipelineSteps.Settings;
 
-namespace PackMeg;
+namespace RepublicAtWar.MegCompile;
 
 internal class PackSfxMegPipeline(IPhysicalMod mod, BuildSettings settings, IServiceProvider serviceProvider) : SimplePipeline<ParallelRunner>(serviceProvider)
 {

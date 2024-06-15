@@ -1,34 +1,35 @@
-﻿using System.IO.Abstractions;
+﻿using System;
 using AET.SteamAbstraction;
 using AnakinRaW.CommonUtilities.Hashing;
-using Microsoft.Extensions.DependencyInjection;
-using PG.StarWarsGame.Infrastructure.Clients;
-using PG.StarWarsGame.Infrastructure;
-using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevLauncher.Services;
-using System.Runtime.CompilerServices;
-using PG.Commons.Extensibility;
-using PG.StarWarsGame.Files.DAT.Services.Builder;
-using PG.StarWarsGame.Files.MEG.Data.Archives;
 using AnakinRaW.CommonUtilities.Registry.Windows;
 using AnakinRaW.CommonUtilities.Registry;
-using PG.StarWarsGame.Engine;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using RepublicAtWar.DevTools.PipelineSteps.Settings;
+using PG.StarWarsGame.Engine;
+using PG.StarWarsGame.Files.DAT.Services.Builder;
+using PG.StarWarsGame.Files.MEG.Data.Archives;
+using PG.StarWarsGame.Infrastructure.Clients;
+using PG.StarWarsGame.Infrastructure;
 using RepublicAtWar.DevTools.Services;
+using System.IO.Abstractions;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using PG.Commons.Extensibility;
+using Microsoft.Extensions.Logging.Console;
+using RepublicAtWar.DevTools.PipelineSteps.Settings;
 
-namespace PackMeg;
+namespace RepublicAtWar.TextCompile;
 
-internal class MegPacker(IServiceProvider serviceProvider)
+internal class TextCompile(IServiceProvider serviceProvider)
 {
-    private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(MegPacker));
+    public static bool HasErrors { get; set; }
 
     static async Task Main()
     {
         try
         {
             var services = CreateAppServices();
-            await new MegPacker(services).Run();
+            await new TextCompile(services).Run();
         }
         finally
         {
@@ -47,18 +48,12 @@ internal class MegPacker(IServiceProvider serviceProvider)
     {
         var gameFinderResult = new ModFinderService(serviceProvider).FindAndAddModInCurrentDirectory();
 
-        if (gameFinderResult.Mod is not IPhysicalMod raw)
-            throw new InvalidOperationException("Unable to find physical mod Republic at War");
-
-        var fs = raw.Directory.FileSystem;
-        if (!fs.Directory.Exists(fs.Path.Combine(raw.Directory.FullName, "Data")))
+        var settings = new BuildSettings
         {
-            _logger?.LogError("Unable to find Republic at War!");
-            return;
-        }
+            CleanBuild = true
+        };
 
-        var pipeline = new PackSfxMegPipeline(raw, new BuildSettings { CleanBuild = true }, serviceProvider);
-        await pipeline.RunAsync();
+        await new CompileTextDiffsPipeline(settings, serviceProvider).RunAsync();
     }
 
     private static IServiceProvider CreateAppServices()
@@ -70,7 +65,7 @@ internal class MegPacker(IServiceProvider serviceProvider)
         serviceCollection.AddSingleton<IFileSystem>(new FileSystem());
         serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
         serviceCollection.AddSingleton<IRegistry>(new WindowsRegistry());
-        
+
         serviceCollection.AddSingleton<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(true, sp));
 
         SteamAbstractionLayer.InitializeServices(serviceCollection);
@@ -103,7 +98,18 @@ internal class MegPacker(IServiceProvider serviceProvider)
                 HasErrors = true;
             return true;
         });
-    }
 
-    public static bool HasErrors { get; set; }
+        loggingBuilder.AddFilter<ConsoleLoggerProvider>((category, level) =>
+        {
+            if (level < logLevel)
+                return false;
+            if (string.IsNullOrEmpty(category))
+                return false;
+
+            if (category!.StartsWith("RepublicAtWar."))
+                return true;
+
+            return false;
+        });
+    }
 }

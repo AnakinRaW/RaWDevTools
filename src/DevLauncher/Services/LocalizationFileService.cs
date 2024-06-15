@@ -24,6 +24,7 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
     private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly IDatModelService _modelService= serviceProvider.GetRequiredService<IDatModelService>();
+    private readonly IDatFileService _datFileService = serviceProvider.GetRequiredService<IDatFileService>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(LocalizationFileService));
 
     private DevToolsOptionBase Options { get; } = options;
@@ -164,7 +165,44 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
         }
     }
 
-    public void MergeDiffsInfoFiles()
+
+    public void MergeDiffsIntoDatFiles()
+    {
+        foreach (var diffFile in _fileSystem.Directory.EnumerateFiles("Data\\Text", "Diff_MasterTextFile_*.txt"))
+        {
+            var datFile = _fileSystem.Path.ChangeExtension(diffFile.Replace("Diff_", ""), "dat");
+            if (!_fileSystem.File.Exists(datFile))
+            {
+                LogOrThrow($"Unable to find DAT  file '{datFile}' for DIFF data '{diffFile}'");
+                continue;
+            }
+
+            var currentDiff = ReadLocalizationFile(diffFile);
+            
+            if (currentDiff.Language.ToUpperInvariant() == "ENGLISH")
+                LogOrThrow("ENGLISH language should not use diff files.");
+
+            using var datModel = _datFileService.LoadAs(datFile, DatFileType.OrderedByCrc32);
+
+            var builder = new EmpireAtWarMasterTextBuilder(true, _serviceProvider);
+
+            foreach (var entry in datModel.Content) 
+                builder.AddEntry(entry.Key, entry.Value);
+
+            foreach (var diffEntry in currentDiff.Entries)
+            {
+                var addResult = builder.AddEntry(diffEntry.Key, diffEntry.Key);
+                if (!addResult.Added)
+                    LogOrThrow($"Unable to add KEY '{diffEntry.Key}' to the DAT model.");
+
+                if (diffEntry.IsDeletedValue() && addResult.Added) 
+                    builder.Remove(addResult.AddedEntry.Value);
+
+            }
+        }
+    }
+
+    public void MergeDiffsIntoTextFiles()
     {
         foreach (var diffFile in _fileSystem.Directory.EnumerateFiles("Data\\Text", "Diff_MasterTextFile_*.txt"))
         {
@@ -175,12 +213,16 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
                 continue;
             }
 
-            var masterTextLoc = ReadLocalizationFile(locFile);
-
-            if (masterTextLoc.Language.ToUpperInvariant() == "ENGLISH") 
+            var currentDiff = ReadLocalizationFile(diffFile);
+            
+            if (currentDiff.Language.ToUpperInvariant() == "ENGLISH") 
                 LogOrThrow("ENGLISH language should not use diff files.");
 
-            var currentDiff = ReadLocalizationFile(diffFile);
+            var masterTextLoc = ReadLocalizationFile(locFile);
+
+            if (!string.Equals(currentDiff.Language, masterTextLoc.Language, StringComparison.InvariantCultureIgnoreCase))
+                throw new InvalidOperationException($"Diff file is using a different language than its MasterTextFile.txt: {currentDiff.Language} <--> {masterTextLoc.Language}");
+
 
             var maxItemCount = masterTextLoc.Entries.Count + currentDiff.Entries.Count;
             var entries = new OrderedDictionary<string, LocalizationEntry>(maxItemCount);
@@ -197,13 +239,13 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
         }
     }
 
-    private LocalizationFile ReadLocalizationFile(string path)
+    public LocalizationFile ReadLocalizationFile(string path)
     {
         using var reader = new LocalizationFileReader(path, false, serviceProvider);
         return reader.Read();
     }
 
-    private IDatModel CreateModelFromLocalizationFile(LocalizationFile file)
+    public IDatModel CreateModelFromLocalizationFile(LocalizationFile file)
     {
         var builder = new EmpireAtWarMasterTextBuilder(false, _serviceProvider);
         
@@ -269,12 +311,6 @@ internal class LocalizationFileService(DevToolsOptionBase options, IServiceProvi
         if (Options.WarnAsError)
             throw new InvalidOperationException(message);
         _logger?.LogWarning(message);
-    }
-
-    public IDatModel LoadLocalization(string localizationFileName)
-    {
-        return CreateModelFromLocalizationFile(
-            ReadLocalizationFile(_fileSystem.Path.Combine("Data/Text", localizationFileName)));
     }
 }
 

@@ -1,4 +1,6 @@
-﻿using System.IO.Abstractions;
+﻿using System;
+using System.Collections.Generic;
+using System.IO.Abstractions;
 using EawModinfo.Model;
 using EawModinfo.Spec;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,9 +11,9 @@ using PG.StarWarsGame.Infrastructure.Mods;
 using PG.StarWarsGame.Infrastructure.Services;
 using PG.StarWarsGame.Infrastructure.Services.Detection;
 
-namespace RepublicAtWar.DevLauncher.Services;
+namespace RepublicAtWar.DevTools.Services;
 
-internal class ModFinderService
+public class ModFinderService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IFileSystem _fileSystem;
@@ -32,7 +34,7 @@ internal class ModFinderService
     {
         var currentDirectory = _fileSystem.DirectoryInfo.New(Environment.CurrentDirectory);
 
-        // Assuming the currentDir is inside a Mod's directory, we need to go up two level (Game/Mods/ModDir)
+        // Assuming the currentDir is inside a RepublicAtWar's directory, we need to go up two level (Game/Mods/ModDir)
         var potentialGameDirectory = currentDirectory.Parent?.Parent;
         if (potentialGameDirectory is null)
             throw new GameException("Unable to find game installation: Wrong install path?");
@@ -55,6 +57,9 @@ internal class ModFinderService
 
         var foc = _gameFactory.CreateGame(focDetectionResult);
 
+        if (!_fileSystem.Directory.Exists(_fileSystem.Path.Combine(currentDirectory.FullName, "Data")))
+            throw new InvalidOperationException("Unable to find physical mod Republic at War");
+
         var rawId = new ModReference(currentDirectory.FullName, ModType.Default);
         var raw = _modFactory.FromReference(foc, rawId, false);
         foc.AddMod(raw);
@@ -72,9 +77,9 @@ internal class ModFinderService
     }
 }
 
-public readonly struct GameFinderResult(IMod mod, IGame fallbackGame)
+public readonly struct GameFinderResult(IPhysicalMod republicAtWar, IGame fallbackGame)
 {
-    public IMod Mod { get; } = mod;
+    public IPhysicalMod RepublicAtWar { get; } = republicAtWar;
 
     public IGame FallbackGame { get; } = fallbackGame;
 }

@@ -14,7 +14,7 @@
 
 	<PropertyGroup>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-		<ApplicationIcon>RAW.ico</ApplicationIcon>
+		<ApplicationIcon>$(SolutionDir)RAW.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
@@ -36,10 +36,6 @@
 			<GAtn>false</GAtn>
 			<Error>true</Error>
 		</Antlr4>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include="RAW.ico" />
 	</ItemGroup>
 
 	<ItemGroup>

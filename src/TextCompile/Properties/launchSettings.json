@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TextCompile": {
+      "commandName": "Project",
+      "workingDirectory": "D:\\SteamLibrary\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
+    }
+  }
+}

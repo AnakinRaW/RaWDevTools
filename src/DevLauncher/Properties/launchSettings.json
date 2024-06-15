@@ -17,7 +17,7 @@
     },
     "Release Republic at War": {
       "commandName": "Project",
-      "commandLineArgs": "release --uploaderDir E:\\Modding\\eawUploader --skipUpdate",
+      "commandLineArgs": "release --uploaderDir D:\\Modding\\eawuploader --skipUpdate",
       "workingDirectory": "D:\\SteamLibrary\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
     },
     "Merge Diffs into Localization": {

@@ -91,8 +91,6 @@ internal class Program : CliBootstrapper
             {
                 toolResult = await Run((DevToolsOptionBase)o, serviceCollection);
             }).Wait();
-
-
         });
         parseResult.WithNotParsed(e =>
         {
@@ -146,7 +144,7 @@ internal class Program : CliBootstrapper
                     launcherPipeline = new ReleaseRawPipeline(releaseOptions, raw, gameFinderResult.FallbackGame, services);
                     break;
                 case MergeLocalizationOption:
-                    new LocalizationFileService(options, services).MergeDiffsInfoFiles();
+                    new LocalizationFileService(options, services).MergeDiffsIntoTextFiles();
                     break;
                 case VerifyOption verifyOption:
                     launcherPipeline = new BuildAndVerifyPipeline(verifyOption, raw, gameFinderResult.FallbackGame, services);
