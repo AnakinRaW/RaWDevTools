@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PG.StarWarsGame.Engine.Language;
 using PG.StarWarsGame.Files.DAT.Data;
 using PG.StarWarsGame.Files.DAT.Files;
 using PG.StarWarsGame.Files.DAT.Services;
@@ -33,7 +34,7 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
             WriteEntry(entry, writer);
     }
 
-    public IDatModel DatToLocalizationFile(string datFilePath)
+    public IDatModel DatToLocalizationFile(string datFilePath, LanguageType language)
     {
         var masterText = LoadAndRemoveDuplicates(datFilePath);
 
@@ -42,7 +43,7 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
         using var locFs = _fileSystem.FileStream.New(localizationFilePath, FileMode.Create);
         using var writer = new StreamWriter(locFs);
 
-        WriteLanguage(GetLanguageName(datFilePath), writer);
+        WriteLanguage(language, writer);
 
         WriteInstructions(writer);
 
@@ -53,7 +54,7 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
     }
 
 
-    public void InitializeFromDatAndEnglishReference(string datFilePath, IDatModel referenceModel)
+    public void InitializeFromDatAndEnglishReference(string datFilePath, IDatModel referenceModel, LanguageType language)
     {
         var masterText = LoadAndRemoveDuplicates(datFilePath);
 
@@ -87,7 +88,7 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
             }
         }
 
-        WriteLanguage(GetLanguageName(datFilePath), writer);
+        WriteLanguage(language, writer);
 
         WriteInstructions(writer);
         
@@ -105,7 +106,7 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
 
     }
 
-    public void CreateDiffFile(FileSystemStream fileStream, string language, MasterTextDifference diffEntries)
+    public void CreateDiffFile(FileSystemStream fileStream, MasterTextDifference diffEntries, LanguageType language)
     {
         using var writer = new StreamWriter(fileStream, Encoding.Unicode, 1024, true);
 
@@ -144,9 +145,9 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
     }
 
 
-    private void WriteLanguage(string language, TextWriter writer)
+    private void WriteLanguage(LanguageType language, TextWriter writer)
     {
-        writer.WriteLine($"LANGUAGE='{language}';");
+        writer.WriteLine($"LANGUAGE='{language.ToString().ToUpperInvariant()}';");
     }
 
     private void WriteInstructions(StreamWriter tw)
@@ -160,11 +161,6 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
         WriteCommentLine(" If you wish to use a double quote inside the value either use '\"\"' [2 times double quote] or \\\" [backslash + double quote]", tw);
         tw.WriteLine();
         tw.WriteLine();
-    }
-
-    private string GetLanguageName(string filePath)
-    {
-        return _fileSystem.Path.GetFileNameWithoutExtension(filePath).Split('_').Last().ToUpperInvariant();
     }
 
     private IDatModel LoadAndRemoveDuplicates(string datFilePath)

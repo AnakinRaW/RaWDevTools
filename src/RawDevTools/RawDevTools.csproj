@@ -18,6 +18,8 @@
 
 	<ItemGroup>
 		<None Remove="Localization\LocalizationGrammar.g4" />
+		<None Remove="Resources\DummyMasterTextFile.xml" />
+		<None Remove="Resources\ModCompile.exe" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -30,10 +32,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <EmbeddedResource Include="Resources\DummyMasterTextFile.xml" />
+	  <EmbeddedResource Include="Resources\ModCompile.exe" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
 		<PackageReference Include="Antlr4BuildTasks" Version="12.8.0" />
 		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure" Version="3.1.5" />
 		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure.Clients" Version="3.1.5" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.FileSystem" Version="12.0.19-beta" />
 		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.0.19-beta" />
 		<PackageReference Include="Required" Version="1.0.0">
 			<PrivateAssets>all</PrivateAssets>

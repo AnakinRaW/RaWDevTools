@@ -1,18 +1,11 @@
 ﻿using System.Collections.Generic;
-using AnakinRaW.CommonUtilities;
+using PG.StarWarsGame.Engine.Language;
 
 namespace RepublicAtWar.DevTools.Localization;
 
-public class LocalizationFile
+public class LocalizationFile(LanguageType language, ICollection<LocalizationEntry> entries)
 {
-    public string Language { get; }
+    public LanguageType Language { get; } = language;
 
-    public ICollection<LocalizationEntry> Entries { get; }
-
-    public LocalizationFile(string language, ICollection<LocalizationEntry> entries)
-    {
-        ThrowHelper.ThrowIfNullOrEmpty(language);
-        Language = language;
-        Entries = entries;
-    }
+    public ICollection<LocalizationEntry> Entries { get; } = entries;
 }

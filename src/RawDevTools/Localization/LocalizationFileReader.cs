@@ -19,7 +19,7 @@ internal class LocalizationFileReader : LocalizationGrammarBaseVisitor<Localizat
     private readonly LocalizationFileValidator _validator;
     private readonly bool _warningAsError;
 
-    private readonly Stream _dataStream;
+    private readonly Stream _dataStream = null!;
 
     private readonly string? _fileName;
 
@@ -51,16 +51,7 @@ internal class LocalizationFileReader : LocalizationGrammarBaseVisitor<Localizat
 
     public LocalizationFile Read()
     {
-        var localizationFile = FromStream(_dataStream);
-
-        if (_fileName is not null)
-        {
-            var langName = LanguageNameFromFileName(_fileName);
-            if (localizationFile.Language != langName)
-                LogOrThrow($"The data name of '{_fileName}' does not match the language content '{langName}'.");
-        }
-        
-        return localizationFile;
+        return FromStream(_dataStream);
     }
 
     public void Dispose()
@@ -73,11 +64,11 @@ internal class LocalizationFileReader : LocalizationGrammarBaseVisitor<Localizat
         var languageSpec = context.languageSpec();
 
         var langName = languageSpec.language().GetText().Trim('\'');
-        _validator.ValidateLanguage(langName);
+        var language = _validator.GetLanguage(langName);
 
         var listContext = context.entryList();
         if (listContext is null)
-            return new LocalizationFile(langName, Array.Empty<LocalizationEntry>());
+            return new LocalizationFile(language, Array.Empty<LocalizationEntry>());
         
         var entryList = new List<LocalizationEntry>();
         var keys = new HashSet<string>();
@@ -104,7 +95,7 @@ internal class LocalizationFileReader : LocalizationGrammarBaseVisitor<Localizat
         if (duplicates.Count > 0)
             throw new DuplicateKeysException(duplicates);
 
-        return new LocalizationFile(langName, entryList);
+        return new LocalizationFile(language, entryList);
     }
 
     internal LocalizationFile FromStream(Stream input)
@@ -167,18 +158,6 @@ internal class LocalizationFileReader : LocalizationGrammarBaseVisitor<Localizat
         value = value.Replace("\\#", "#");
 
         return value;
-    }
-
-    private string? LanguageNameFromFileName(string fileName)
-    {
-        if (fileName == null) 
-            throw new ArgumentNullException(nameof(fileName));
-        var fileNameWithoutExtension = _fileSystem.Path.GetFileNameWithoutExtension(fileName);
-        var underScore = fileNameWithoutExtension.LastIndexOf('_');
-        if (underScore == -1)
-            return null!;
-        return fileNameWithoutExtension.Substring(underScore + 1, fileNameWithoutExtension.Length - underScore - 1)
-            .ToUpperInvariant();
     }
 
     private void LogOrThrow(string message)

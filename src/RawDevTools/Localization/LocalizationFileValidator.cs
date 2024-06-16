@@ -13,6 +13,7 @@ internal class LocalizationFileValidator
     // Since we don't want to 'correct' them, just mute the error
     private static readonly List<string> SuppressedKeys =
     [
+        // ReSharper disable StringLiteralTypo
         "Hint_IDC_CUSTOM_CAMPAIGN_BUTTON",
         "Hint_IDC_NEW_CAMPAIGN_BUTTON",
         "Hint_IDC_NEW_CAMPAIGN_BUTTON_DEMO",
@@ -96,12 +97,12 @@ internal class LocalizationFileValidator
         "TEXT_STORY_ALZOCIII_INTIMIDATION_OBJECTIVE_01g",
         "TEXT_STORY_ALZOCIII_INTIMIDATION_OBJECTIVE_01h",
         "TEXT_STORY_ALZOCIII_INTIMIDATION_OBJECTIVE_01i"
+        // ReSharper restore StringLiteralTypo
     ];
 
     private readonly bool _warningAsError;
     private readonly ILogger? _logger;
-
-    private readonly List<string> _supportedLanguages;
+    private readonly IGameLanguageManager _languageManager;
 
     public LocalizationFileValidator(bool warningAsError, IServiceProvider serviceProvider)
     {
@@ -109,17 +110,18 @@ internal class LocalizationFileValidator
             throw new ArgumentNullException(nameof(serviceProvider));
         _warningAsError = warningAsError;
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
-        var gameLanguageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
-
-        _supportedLanguages = gameLanguageManager.FocSupportedLanguages
-            .Select(x => x.ToString().ToUpperInvariant())
-            .ToList();
+        _languageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
     }
 
-    public void ValidateLanguage(string language)
+    public LanguageType GetLanguage(string language)
     {
-        if (!_supportedLanguages.Contains(language))
+        if (_languageManager.TryGetLanguage(language, out var languageType))
+        {
             LogOrThrow($"Unrecognized language '{language}'");
+            // If we don't throw, we return English
+            _logger?.LogWarning($"Language '{language}' is not supported. Fallback to English!");
+        }
+        return languageType;
     }
 
     public void ValidateKey(string key)

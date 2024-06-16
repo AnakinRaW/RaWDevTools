@@ -3,11 +3,13 @@ using System.IO;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PG.StarWarsGame.Engine.Language;
 using PG.StarWarsGame.Files.DAT.Data;
 using PG.StarWarsGame.Files.DAT.Files;
 using PG.StarWarsGame.Files.DAT.Services;
 using PG.StarWarsGame.Files.DAT.Services.Builder;
 using RepublicAtWar.DevTools.Localization;
+using AnakinRaW.CommonUtilities.FileSystem;
 
 namespace RepublicAtWar.DevTools.Services;
 
@@ -20,8 +22,7 @@ public class LocalizationFileService(IServiceProvider serviceProvider, bool warn
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly IDatFileService _datFileService = serviceProvider.GetRequiredService<IDatFileService>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(LocalizationFileService));
-
-    private LocalizationFileWriter LocalizationFileWriter => serviceProvider.GetRequiredService<LocalizationFileWriter>();
+    private readonly IGameLanguageManager _languageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
 
     public void MergeDiffsIntoDatFiles(string diffFile, string datFile)
     {
@@ -32,7 +33,7 @@ public class LocalizationFileService(IServiceProvider serviceProvider, bool warn
 
         var currentDiff = ReadLocalizationFile(diffFile);
 
-        if (currentDiff.Language.ToUpperInvariant() == "ENGLISH")
+        if (currentDiff.Language == LanguageType.English)
             LogOrThrow("ENGLISH language should not use diff files.");
 
         using var datModel = _datFileService.LoadAs(datFile, DatFileType.OrderedByCrc32);
@@ -59,7 +60,15 @@ public class LocalizationFileService(IServiceProvider serviceProvider, bool warn
     public LocalizationFile ReadLocalizationFile(string path)
     {
         using var reader = new LocalizationFileReader(path, false, serviceProvider);
-        return reader.Read();
+        var localizationFile = reader.Read();
+
+        var fileName = _fileSystem.Path.GetFileName(path).AsSpan();
+        var langName = LanguageNameFromFileName(fileName);
+        if (localizationFile.Language != langName)
+            LogOrThrow($"The file '{fileName.ToString()}' does not match the language content '{langName}'.");
+
+
+        return localizationFile;
     }
 
     public IDatModel CreateModelFromLocalizationFile(LocalizationFile file)
@@ -74,6 +83,37 @@ public class LocalizationFileService(IServiceProvider serviceProvider, bool warn
         }
 
         return builder.BuildModel();
+    }
+
+    public void CompileLocalizationFile(LocalizationFile localizationFile, string datFile, bool overwrite)
+    {
+        using var builder = new EmpireAtWarMasterTextBuilder(false, _serviceProvider);
+
+        foreach (var entry in localizationFile.Entries)
+        {
+            var result = builder.AddEntry(entry.Key, entry.Value);
+            if (!result.Added)
+                _logger?.LogWarning($"Unable to add KEY '{entry.Key}' to the DAT for language {localizationFile.Language}: {result.Message}");
+        }
+
+        builder.Build(new DatFileInformation { FilePath = _fileSystem.Path.GetFullPath(datFile) }, overwrite);
+    }
+
+    /// <summary>
+    /// This works for MasterTextFile and Diff files
+    /// </summary>
+    public LanguageType LanguageNameFromFileName(ReadOnlySpan<char> fileName)
+    {
+        var fileNameWithoutExtension = _fileSystem.Path.GetFileNameWithoutExtension(fileName);
+        var underScore = fileNameWithoutExtension.LastIndexOf('_');
+        if (underScore == -1)
+            throw new ArgumentException("Unable to get language from filename", nameof(fileName));
+
+        var languageName = fileNameWithoutExtension.Slice(underScore + 1, fileNameWithoutExtension.Length - underScore - 1);
+        if (!_languageManager.TryGetLanguage(languageName.ToString(), out var language))
+            throw new ArgumentException($"Unable to get language form file name '{fileName.ToString()}'.", nameof(fileName));
+        
+        return language;
     }
 
     private void LogOrThrow(string message)
