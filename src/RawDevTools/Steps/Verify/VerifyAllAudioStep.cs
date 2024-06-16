@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -9,7 +8,7 @@ using PG.StarWarsGame.Engine.Database;
 
 namespace RepublicAtWar.DevTools.PipelineSteps.Verify;
 
-internal class VerifyAllAudioStep(IGameDatabase gameDatabase, VerificationSettings settings, IServiceProvider serviceProvider) : GameVerificationStep(gameDatabase, settings, serviceProvider)
+public class VerifyAllAudioStep(IGameDatabase gameDatabase, ModVerifySettings settings, IServiceProvider serviceProvider) : GameVerificationStep(gameDatabase, settings, serviceProvider)
 {
     protected override string LogFileName => "AudioFiles";
     public override string Name => "Audio Files";

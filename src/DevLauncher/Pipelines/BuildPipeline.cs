@@ -9,16 +9,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Engine.Language;
 using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevLauncher.Configuration;
-using RepublicAtWar.DevLauncher.Options;
-using RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
+using RepublicAtWar.DevTools.PipelineSteps.Build;
+using RepublicAtWar.DevTools.PipelineSteps.Build.Meg;
+using RepublicAtWar.DevTools.PipelineSteps.Build.Meg.Config;
+using RepublicAtWar.DevTools.PipelineSteps.Settings;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
-internal sealed class BuildPipeline(IPhysicalMod mod, RaWBuildOption buildOption, IServiceProvider serviceProvider) : Pipeline(serviceProvider)
+internal sealed class BuildPipeline(IPhysicalMod mod, BuildSettings settings, IServiceProvider serviceProvider)
+    : Pipeline(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly IGameLanguageManager _languageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
+    private readonly BuildSettings _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
     private readonly List<IStep> _buildSteps = new();
     private readonly List<IStep> _preBuildSteps = new();
@@ -50,23 +53,23 @@ internal sealed class BuildPipeline(IPhysicalMod mod, RaWBuildOption buildOption
 
     private IEnumerable<IStep> CreateBuildSteps()
     {
-        yield return new PackMegFileStep(new RawAiPackMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider);
-        yield return new PackMegFileStep(new RawCustomMapsPackMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider);
-        yield return new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider);
-        yield return new PackIconsStep(buildOption, ServiceProvider);
-        yield return new CompileLocalizationStep(ServiceProvider, buildOption);
+        yield return new PackMegFileStep(new RawAiPackMegConfiguration(mod, ServiceProvider), _settings, ServiceProvider);
+        yield return new PackMegFileStep(new RawCustomMapsPackMegConfiguration(mod, ServiceProvider), _settings, ServiceProvider);
+        yield return new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(mod, ServiceProvider), _settings, ServiceProvider);
+        yield return new PackIconsStep(_settings, ServiceProvider);
+        yield return new CompileLocalizationStep(_settings, ServiceProvider);
 
         foreach (var focLanguage in _languageManager.FocSupportedLanguages)
         {
             var isRaWSupported = IsSupportedByRaw(focLanguage);
 
             // There is no need to build non-supported languages if we don't do a release or force a clean build
-            if (!isRaWSupported && !buildOption.CleanBuild)
+            if (!isRaWSupported && !_settings.CleanBuild)
                 continue;
 
             yield return new PackMegFileStep(
                 new RawLocalizedSFX2DMegConfiguration(focLanguage, isRaWSupported, mod, ServiceProvider),
-                buildOption,
+                _settings,
                 ServiceProvider);
         }
     }

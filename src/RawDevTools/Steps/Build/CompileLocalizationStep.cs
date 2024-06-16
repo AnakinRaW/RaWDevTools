@@ -5,15 +5,12 @@ using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PG.StarWarsGame.Files.DAT.Files;
-using PG.StarWarsGame.Files.DAT.Services.Builder;
-using RepublicAtWar.DevTools.Localization;
 using RepublicAtWar.DevTools.PipelineSteps.Settings;
 using RepublicAtWar.DevTools.Services;
 
 namespace RepublicAtWar.DevTools.PipelineSteps.Build;
 
-internal class CompileLocalizationStep(BuildSettings settings, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
+public class CompileLocalizationStep(BuildSettings settings, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CompileLocalizationStep));

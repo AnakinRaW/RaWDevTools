@@ -12,7 +12,7 @@ using Semver;
 
 namespace RepublicAtWar.DevTools.PipelineSteps.Release;
 
-internal class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : SynchronizedStep(serviceProvider)
+public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : SynchronizedStep(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CreateUploadMetaArtifactsStep));

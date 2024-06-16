@@ -6,11 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 using PG.StarWarsGame.Infrastructure.Clients.Arguments;
 using PG.StarWarsGame.Infrastructure.Clients.Arguments.GameArguments;
 using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevLauncher.Options;
+using RepublicAtWar.DevLauncher.Pipelines.Settings;
+using RepublicAtWar.DevLauncher.Services;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class LaunchStep(BuildAndRunOption options, IMod mod, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
+internal class LaunchStep(LaunchSettings options, IMod mod, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
     private readonly IMod _mod = mod ?? throw new ArgumentNullException(nameof(mod));
 

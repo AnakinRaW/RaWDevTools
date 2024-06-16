@@ -8,32 +8,38 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevLauncher.Options;
-using RepublicAtWar.DevLauncher.Pipelines.Steps.Release;
+using RepublicAtWar.DevTools.PipelineSteps.Release;
+using RepublicAtWar.DevTools.PipelineSteps.Settings;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
 internal class ReleaseRawPipeline : SequentialPipeline
 {
     private readonly ILogger? _logger;
-
-    private readonly ReleaseRepublicAtWarOption _options;
+    private readonly BuildSettings _buildSettings;
+    private readonly ReleaseSettings _releaseSettings;
     private readonly IPhysicalMod _republicAtWar;
     private readonly IGame _empireAtWarGame;
 
-    public ReleaseRawPipeline(ReleaseRepublicAtWarOption options, IPhysicalMod republicAtWar, IGame empireAtWarGame, IServiceProvider serviceProvider) : base(serviceProvider)
+    public ReleaseRawPipeline(
+        IPhysicalMod republicAtWar, 
+        IGame empireAtWarGame,
+        BuildSettings buildSettings,
+        ReleaseSettings releaseSettings,
+        IServiceProvider serviceProvider) 
+        : base(serviceProvider)
     {
-        _options = options;
+        _buildSettings = buildSettings ?? throw new ArgumentNullException(nameof(buildSettings));
+        _releaseSettings = releaseSettings ?? throw new ArgumentNullException(nameof(releaseSettings));
         _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
         _empireAtWarGame = empireAtWarGame;
-
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }
     protected override Task RunCoreAsync(CancellationToken token)
     {
         _logger?.LogInformation("Release Republic at War");
 
-        if (!_options.CleanBuild)
+        if (!_buildSettings.CleanBuild)
         {
             _logger?.LogWarning("Releasing without Clean build!!!");
             _logger?.LogWarning("Releasing without Clean build!!!");
@@ -51,13 +57,13 @@ internal class ReleaseRawPipeline : SequentialPipeline
             return new List<IStep>
             {
                 // Build
-                new RunPipelineStep(new BuildPipeline(_republicAtWar, _options, ServiceProvider), ServiceProvider),
+                new RunPipelineStep(new BuildPipeline(_republicAtWar, _buildSettings, ServiceProvider), ServiceProvider),
                 // Verify
                 // new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _empireAtWarGame, ServiceProvider), ServiceProvider),
                 // Build Release artifacts
                 createArtifactStep,
                 // Copy to Release
-                new CopyReleaseStep(createArtifactStep, _options, ServiceProvider),
+                new CopyReleaseStep(createArtifactStep, null!, _releaseSettings, ServiceProvider),
             };
         });
     }

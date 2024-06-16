@@ -19,26 +19,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="Localization\LocalizationGrammar.g4" />
-		<None Remove="Resources\DummyMasterTextFile.xml" />
-		<None Remove="Resources\ModCompile.exe" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<EmbeddedResource Include="Resources\ModCompile.exe" />
-		<EmbeddedResource Include="Resources\DummyMasterTextFile.xml" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Antlr4 Include="Localization\LocalizationGrammar.g4">
-			<Listener>true</Listener>
-			<Visitor>true</Visitor>
-			<GAtn>false</GAtn>
-			<Error>true</Error>
-		</Antlr4>
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure.Clients" Version="3.1.5" />
 		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="3.1.5" />
 		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.0.19-beta" />
@@ -71,12 +51,11 @@
 		<ProjectReference Include="..\..\ModVerify\src\ModVerify\ModVerify.csproj" />
 		<ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Engine\PG.StarWarsGame.Engine.csproj" />
 		<ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Files.ALO\PG.StarWarsGame.Files.ALO.csproj" />
+		<ProjectReference Include="..\RawDevTools\RawDevTools.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Update="Pipelines\Steps\Releasing\CopyReleaseStep.cs">
-			<CustomToolNamespace></CustomToolNamespace>
-		</Compile>
+	  <Folder Include="Actions\" />
 	</ItemGroup>
 
 	<PropertyGroup>

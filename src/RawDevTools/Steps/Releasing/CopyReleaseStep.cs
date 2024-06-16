@@ -13,7 +13,7 @@ using RepublicAtWar.DevTools.PipelineSteps.Settings;
 
 namespace RepublicAtWar.DevTools.PipelineSteps.Release;
 
-internal class CopyReleaseStep : PipelineStep, IProgressStep
+public class CopyReleaseStep : PipelineStep, IProgressStep
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger? _logger;

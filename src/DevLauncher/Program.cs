@@ -23,12 +23,11 @@ using PG.StarWarsGame.Files.DAT.Services.Builder;
 using PG.StarWarsGame.Files.MEG.Data.Archives;
 using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Clients;
-using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevLauncher.Localization;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Pipelines;
+using RepublicAtWar.DevLauncher.Pipelines.Actions;
 using RepublicAtWar.DevLauncher.Services;
-using RepublicAtWar.DevLauncher.Utilities;
+using RepublicAtWar.DevTools.Services;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace RepublicAtWar.DevLauncher;
@@ -123,38 +122,35 @@ internal class Program : CliBootstrapper
         try
         {
             var gameFinderResult = new ModFinderService(services).FindAndAddModInCurrentDirectory();
+            var raw = gameFinderResult.RepublicAtWar;
 
-            if (gameFinderResult.Mod is not IPhysicalMod raw)
-                throw new InvalidOperationException("Unable to find physical mod Republic at War");
-
-            IPipeline? launcherPipeline = null;
+            IPipeline launcherPipeline;
 
             switch (options)
             {
                 case BuildAndRunOption runOptions:
-                    launcherPipeline = new BuildAndRunPipeline(runOptions, raw, services);
+                    launcherPipeline = new BuildAndRunPipeline(raw, null, null, services);
                     break;
                 case InitializeLocalizationOption:
-                    new LocalizationFileService(options, services).InitializeFromDatFiles();
+                    launcherPipeline = new InitializeLocalizationAction(services);
                     break;
                 case PrepareLocalizationsOption:
-                    new LocalizationFileService(options, services).CreateForeignDiffFiles();
+                    launcherPipeline = new CreateLocalizationDiffsAction(services);
                     break;
                 case ReleaseRepublicAtWarOption releaseOptions:
-                    launcherPipeline = new ReleaseRawPipeline(releaseOptions, raw, gameFinderResult.FallbackGame, services);
+                    launcherPipeline = new ReleaseRawPipeline(raw, gameFinderResult.FallbackGame, null, null, services);
                     break;
                 case MergeLocalizationOption:
-                    new LocalizationFileService(options, services).MergeDiffsIntoTextFiles();
+                    launcherPipeline = new MergeLocalizationsAction(services);
                     break;
                 case VerifyOption verifyOption:
-                    launcherPipeline = new BuildAndVerifyPipeline(verifyOption, raw, gameFinderResult.FallbackGame, services);
+                    launcherPipeline = new BuildAndVerifyPipeline(raw, gameFinderResult.FallbackGame, null, services);
                     break;
                 default:
                     throw new ArgumentException($"The option '{options.GetType().FullName}' is not implemented", nameof(options));
             }
-            
-            if (launcherPipeline is not null) 
-                await launcherPipeline.RunAsync(ApplicationCancellationTokenSource.Token);
+
+            await launcherPipeline.RunAsync(ApplicationCancellationTokenSource.Token);
 
             if (!HasErrors && !HasWarning)
                 logger?.LogInformation("DONE");
@@ -200,9 +196,7 @@ internal class Program : CliBootstrapper
         serviceCollection.AddSingleton(sp => new GitService(".", options.WarnAsError, sp));
 
         var forceRebuild = options is RaWBuildOption { CleanBuild: true };
-        serviceCollection.AddTransient<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(forceRebuild, sp));
-
-        serviceCollection.AddTransient(sp => new LocalizationFileWriter(options.WarnAsError, sp)); ;
+        serviceCollection.AddSingleton<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(forceRebuild, sp));
 
         return serviceCollection.BuildServiceProvider();
     }

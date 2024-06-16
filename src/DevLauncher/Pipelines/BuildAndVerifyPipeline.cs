@@ -7,11 +7,11 @@ using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevLauncher.Options;
+using RepublicAtWar.DevTools.PipelineSteps.Settings;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
-internal class BuildAndVerifyPipeline(RaWBuildOption buildOption, IPhysicalMod mod, IGame fallbackGame, IServiceProvider serviceProvider)
+internal class BuildAndVerifyPipeline(IPhysicalMod mod, IGame fallbackGame, BuildSettings buildSettings, IServiceProvider serviceProvider)
     : SequentialPipeline(serviceProvider)
 {
     public override string ToString()
@@ -29,8 +29,8 @@ internal class BuildAndVerifyPipeline(RaWBuildOption buildOption, IPhysicalMod m
 
         return Task.FromResult<IList<IStep>>(new List<IStep>
         {
-            new RunPipelineStep(new BuildPipeline(mod, buildOption, ServiceProvider), ServiceProvider),
-            new RunPipelineStep(new RawVerifyPipeline(GameEngineType.Foc, gameLocations, VerificationSettings.Default, ServiceProvider), ServiceProvider),
+            new RunPipelineStep(new BuildPipeline(mod, buildSettings, ServiceProvider), ServiceProvider),
+            new RunPipelineStep(new RawVerifyPipeline(GameEngineType.Foc, gameLocations, ModVerifySettings.Default, ServiceProvider), ServiceProvider),
         });
     }
 }

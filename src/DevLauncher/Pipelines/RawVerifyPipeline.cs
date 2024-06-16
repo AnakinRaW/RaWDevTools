@@ -5,14 +5,14 @@ using AET.ModVerify.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Engine.Database;
-using RepublicAtWar.DevLauncher.Pipelines.Steps.Verification;
+using RepublicAtWar.DevTools.PipelineSteps.Verify;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
 internal class RawVerifyPipeline(
     GameEngineType targetType,
     GameLocations gameLocations,
-    VerificationSettings settings,
+    ModVerifySettings settings,
     IServiceProvider serviceProvider)
     : VerifyGamePipeline(targetType, gameLocations, settings, serviceProvider)
 {
