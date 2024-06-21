@@ -115,7 +115,7 @@ internal class LocalizationFileValidator
 
     public LanguageType GetLanguage(string language)
     {
-        if (_languageManager.TryGetLanguage(language, out var languageType))
+        if (!_languageManager.TryGetLanguage(language, out var languageType))
         {
             LogOrThrow($"Unrecognized language '{language}'");
             // If we don't throw, we return English

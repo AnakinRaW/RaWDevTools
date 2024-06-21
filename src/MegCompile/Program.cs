@@ -15,8 +15,8 @@ using PG.StarWarsGame.Files.DAT.Services.Builder;
 using PG.StarWarsGame.Files.MEG.Data.Archives;
 using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Clients;
-using RepublicAtWar.DevTools.PipelineSteps.Settings;
 using RepublicAtWar.DevTools.Services;
+using RepublicAtWar.DevTools.Steps.Settings;
 
 namespace RepublicAtWar.MegCompile;
 

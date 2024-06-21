@@ -54,10 +54,6 @@
 		<ProjectReference Include="..\RawDevTools\RawDevTools.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Actions\" />
-	</ItemGroup>
-
 	<PropertyGroup>
 		<WeaverConfiguration Condition="'$(Configuration)' == 'Release'">
 			<Weavers>

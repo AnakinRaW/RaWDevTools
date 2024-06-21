@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using RepublicAtWar.DevLauncher.Localization;
+using PG.StarWarsGame.Engine;
+using PG.StarWarsGame.Engine.Language;
+using RepublicAtWar.DevTools.Localization;
 using Testably.Abstractions.Testing;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace DevLauncher.Tests;
 
@@ -18,6 +19,7 @@ public class LocalizationParserTest
     {
         var sc = new ServiceCollection();
         sc.AddSingleton<IFileSystem>(_fileSystem);
+        PetroglyphEngineServiceContribution.ContributeServices(sc);
         _serviceProvider = sc.BuildServiceProvider();
     }
 
@@ -79,7 +81,7 @@ LANGUAGE='LANG';
 key=value
 key=value1
 ";
-        Assert.Throws<InvalidLocalizationFileException>(() => Setup(text).Read());
+        Assert.Throws<DuplicateKeysException>(() => Setup(text).Read());
     }
 
 
@@ -88,7 +90,7 @@ key=value1
     {
         const string text = "LANGUAGE='ENGLISH';";
         var localizationFile = Setup(text).Read();
-        Assert.Equal("ENGLISH", localizationFile.Language);
+        Assert.Equal(LanguageType.English, localizationFile.Language);
         Assert.Equal(new List<LocalizationEntry>(), localizationFile.Entries);
     }
 
@@ -118,9 +120,8 @@ quoteOnly=\""
 trailingSpace=""dqstring with trailing space should get ignored""          
 ";
 
-        Setup(text);
         var localizationFile = Setup(text).Read();
-        Assert.Equal("ENGLISH", localizationFile.Language);
+        Assert.Equal(LanguageType.English, localizationFile.Language);
         Assert.Equal(new List<LocalizationEntry>
             {
                 new("test123", @"test string # with "" all "" sorts of ' special = characters and a line break"),

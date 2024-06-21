@@ -8,8 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevTools.PipelineSteps.Release;
-using RepublicAtWar.DevTools.PipelineSteps.Settings;
+using RepublicAtWar.DevLauncher.Utilities;
+using RepublicAtWar.DevTools.Steps.Release;
+using RepublicAtWar.DevTools.Steps.Settings;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
@@ -63,7 +64,7 @@ internal class ReleaseRawPipeline : SequentialPipeline
                 // Build Release artifacts
                 createArtifactStep,
                 // Copy to Release
-                new CopyReleaseStep(createArtifactStep, null!, _releaseSettings, ServiceProvider),
+                new CopyReleaseStep(createArtifactStep, new ProgressBarReporter(), _releaseSettings, ServiceProvider),
             };
         });
     }

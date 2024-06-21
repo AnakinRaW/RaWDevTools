@@ -6,7 +6,7 @@ using AET.ModVerify;
 using AET.ModVerify.Steps;
 using PG.StarWarsGame.Engine.Database;
 
-namespace RepublicAtWar.DevTools.PipelineSteps.Verify;
+namespace RepublicAtWar.DevTools.Steps.Verify;
 
 public class VerifyAllAudioStep(IGameDatabase gameDatabase, ModVerifySettings settings, IServiceProvider serviceProvider) : GameVerificationStep(gameDatabase, settings, serviceProvider)
 {

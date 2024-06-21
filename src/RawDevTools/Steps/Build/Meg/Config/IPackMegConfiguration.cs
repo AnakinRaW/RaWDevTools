@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 
-namespace RepublicAtWar.DevTools.PipelineSteps.Build.Meg.Config;
+namespace RepublicAtWar.DevTools.Steps.Build.Meg.Config;
 
 public interface IPackMegConfiguration
 {

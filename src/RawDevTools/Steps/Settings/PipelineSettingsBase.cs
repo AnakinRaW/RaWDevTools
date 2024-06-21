@@ -1,4 +1,4 @@
-﻿namespace RepublicAtWar.DevTools.PipelineSteps.Settings;
+﻿namespace RepublicAtWar.DevTools.Steps.Settings;
 
 public abstract class PipelineSettingsBase
 {

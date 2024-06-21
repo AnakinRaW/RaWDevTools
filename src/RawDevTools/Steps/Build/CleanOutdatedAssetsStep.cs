@@ -8,7 +8,7 @@ using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Infrastructure.Mods;
 
-namespace RepublicAtWar.DevTools.PipelineSteps.Build;
+namespace RepublicAtWar.DevTools.Steps.Build;
 
 public class CleanOutdatedAssetsStep(IPhysicalMod mod, IServiceProvider serviceProvider)
     : PipelineStep(serviceProvider)

@@ -26,8 +26,10 @@ using PG.StarWarsGame.Infrastructure.Clients;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Pipelines.Actions;
+using RepublicAtWar.DevLauncher.Pipelines.Settings;
 using RepublicAtWar.DevLauncher.Services;
 using RepublicAtWar.DevTools.Services;
+using RepublicAtWar.DevTools.Steps.Settings;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace RepublicAtWar.DevLauncher;
@@ -40,6 +42,7 @@ internal class Program : CliBootstrapper
     {
         get
         {
+            yield return "RepublicAtWar";
             yield return "AET.ModVerify";
         }
     }
@@ -122,14 +125,13 @@ internal class Program : CliBootstrapper
         try
         {
             var gameFinderResult = new ModFinderService(services).FindAndAddModInCurrentDirectory();
-            var raw = gameFinderResult.RepublicAtWar;
 
             IPipeline launcherPipeline;
 
             switch (options)
             {
-                case BuildAndRunOption runOptions:
-                    launcherPipeline = new BuildAndRunPipeline(raw, null, null, services);
+                case BuildAndRunOption buildRun:
+                    launcherPipeline = CreateBuildRunPipeline(buildRun, gameFinderResult, services);
                     break;
                 case InitializeLocalizationOption:
                     launcherPipeline = new InitializeLocalizationAction(services);
@@ -137,17 +139,18 @@ internal class Program : CliBootstrapper
                 case PrepareLocalizationsOption:
                     launcherPipeline = new CreateLocalizationDiffsAction(services);
                     break;
-                case ReleaseRepublicAtWarOption releaseOptions:
-                    launcherPipeline = new ReleaseRawPipeline(raw, gameFinderResult.FallbackGame, null, null, services);
+                case ReleaseRepublicAtWarOption rawRelease:
+                    launcherPipeline = CreateReleasePipeline(rawRelease, gameFinderResult, services);
                     break;
                 case MergeLocalizationOption:
                     launcherPipeline = new MergeLocalizationsAction(services);
                     break;
                 case VerifyOption verifyOption:
-                    launcherPipeline = new BuildAndVerifyPipeline(raw, gameFinderResult.FallbackGame, null, services);
+                    launcherPipeline = CreateBuildVerifyPipeline(verifyOption, gameFinderResult, services);
                     break;
                 default:
-                    throw new ArgumentException($"The option '{options.GetType().FullName}' is not implemented", nameof(options));
+                    throw new ArgumentException($"The option '{options.GetType().FullName}' is not implemented",
+                        nameof(options));
             }
 
             await launcherPipeline.RunAsync(ApplicationCancellationTokenSource.Token);
@@ -174,6 +177,47 @@ internal class Program : CliBootstrapper
                 Console.ReadLine();
             }
         }
+    }
+
+    private static IPipeline CreateBuildVerifyPipeline(VerifyOption options, GameFinderResult gameFinderResult, IServiceProvider services)
+    {
+        var buildSettings = new BuildSettings
+        {
+            WarnAsError = options.WarnAsError,
+            CleanBuild = options.CleanBuild
+        };
+        return new BuildAndVerifyPipeline(gameFinderResult.RepublicAtWar, gameFinderResult.FallbackGame, buildSettings, services);
+    }
+
+    private static IPipeline CreateBuildRunPipeline(BuildAndRunOption options, GameFinderResult gameFinderResult, IServiceProvider services)
+    {
+        var buildSettings = new BuildSettings
+        {
+            CleanBuild = options.CleanBuild,
+            WarnAsError = options.WarnAsError
+        };
+        var launchSettings = new LaunchSettings
+        {
+            RunGame = !options.SkipRun,
+            Debug = options.Debug,
+            Windowed = options.Windowed
+        };
+        return new BuildAndRunPipeline(gameFinderResult.RepublicAtWar, buildSettings, launchSettings, services);
+    }
+
+    private static IPipeline CreateReleasePipeline(ReleaseRepublicAtWarOption options, GameFinderResult gameFinderResult, IServiceProvider services)
+    {
+        var buildSettings = new BuildSettings
+        {
+            CleanBuild = options.CleanBuild,
+            WarnAsError = options.WarnAsError
+        };
+        var releaseSettings = new ReleaseSettings
+        {
+            UploaderDirectory = options.UploaderDirectory,
+            WarnAsError = options.WarnAsError
+        }; 
+        return new ReleaseRawPipeline(gameFinderResult.RepublicAtWar, gameFinderResult.FallbackGame, buildSettings, releaseSettings, services);
     }
 
     private static IServiceProvider CreateAppServices(DevToolsOptionBase options, IServiceCollection serviceCollection)

@@ -7,7 +7,7 @@ using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevTools.PipelineSteps.Settings;
+using RepublicAtWar.DevTools.Steps.Settings;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 

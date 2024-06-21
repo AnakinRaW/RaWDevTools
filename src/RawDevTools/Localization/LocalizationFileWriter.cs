@@ -53,63 +53,8 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
         return masterText;
     }
 
-
-    public void InitializeFromDatAndEnglishReference(string datFilePath, IDatModel referenceModel, LanguageType language)
+    public void CreateDiffFile(TextWriter writer, MasterTextDifference diffEntries, LanguageType language)
     {
-        var masterText = LoadAndRemoveDuplicates(datFilePath);
-
-        var localizationFilePath = _fileSystem.Path.ChangeExtension(datFilePath, "txt");
-
-        using var locFs = _fileSystem.FileStream.New(localizationFilePath, FileMode.Create);
-        using var writer = new StreamWriter(locFs);
-
-        var normalEntries = new List<DatStringEntry>();
-        var entriesWithMissingValue = new List<DatStringEntry>();
-        var englishValueEntries = new List<DatStringEntry>();
-
-        foreach (var entry in masterText)
-        {
-            var englishEntry = referenceModel.EntriesWithCrc(entry.Crc32).First();
-
-            if (entry.Value == string.Empty)
-            {
-                if (englishEntry.Value == string.Empty)
-                    normalEntries.Add(entry);
-                else
-                    entriesWithMissingValue.Add(englishEntry);
-            }
-            else
-            {
-                if (entry.Value.Equals(englishEntry.Value) && !string.IsNullOrWhiteSpace(entry.Value))
-                    englishValueEntries.Add(entry);
-                else
-                    normalEntries.Add(entry);
-                
-            }
-        }
-
-        WriteLanguage(language, writer);
-
-        WriteInstructions(writer);
-        
-        foreach (var entry in normalEntries.OrderBy(e => e.Key)) 
-            WriteEntry(entry, writer);
-
-        writer.WriteLine();
-        writer.WriteLine();
-
-        if (englishValueEntries.Count > 0)
-        {
-            foreach (var entry in englishValueEntries.Union(entriesWithMissingValue).OrderBy(e => e.Key))
-                WriteEntry(entry, writer);
-        }
-
-    }
-
-    public void CreateDiffFile(FileSystemStream fileStream, MasterTextDifference diffEntries, LanguageType language)
-    {
-        using var writer = new StreamWriter(fileStream, Encoding.Unicode, 1024, true);
-
         WriteLanguage(language, writer);
         WriteInstructions(writer);
 
@@ -132,7 +77,7 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
         }
     }
 
-    private void WriteCommentSection(string comment, StreamWriter writer)
+    private void WriteCommentSection(string comment, TextWriter writer)
     {
         writer.WriteLine();
         WriteComment(comment, writer);
@@ -150,7 +95,7 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
         writer.WriteLine($"LANGUAGE='{language.ToString().ToUpperInvariant()}';");
     }
 
-    private void WriteInstructions(StreamWriter tw)
+    private void WriteInstructions(TextWriter tw)
     {
         tw.WriteLine();
         WriteCommentLine(" Instructions how to use this data:", tw);

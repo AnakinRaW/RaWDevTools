@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Abstractions;
 using System.Threading;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Progress;
@@ -9,9 +10,9 @@ using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
-using RepublicAtWar.DevTools.PipelineSteps.Settings;
+using RepublicAtWar.DevTools.Steps.Settings;
 
-namespace RepublicAtWar.DevTools.PipelineSteps.Release;
+namespace RepublicAtWar.DevTools.Steps.Release;
 
 public class CopyReleaseStep : PipelineStep, IProgressStep
 {
@@ -26,7 +27,7 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
 
     public IStepProgressReporter ProgressReporter { get; }
 
-    public long Size { get; private set; }
+    public long Size => 1;
 
 
     private static readonly ProgressType CopyRelease = new()
@@ -45,6 +46,7 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
         _buildArtifactsStep = buildArtifactsStep;
         _settings = releaseOptions;
         _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
+
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CopyReleaseStep));
         ProgressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter)); 
 
@@ -104,19 +106,17 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
         var steamJsonFile = _buildArtifactsStep.SteamJsonName;
         _fileSystem.File.Copy(steamJsonFile, _fileSystem.Path.Combine(uploaderWsContentPath, steamJsonFile), true);
 
-        throw new NotImplementedException();
 
-        //var progressBar = new ProgressBar();
-
-        //Task.Run(async () =>
-        //    {
-        //        await new DirectoryCopier(_fileSystem).CopyDirectoryAsync(source, assetCopyPath, progressBar, ShallCopyFile, 4,
-        //            token);
-        //    }, default)
-        //    .Wait(token);
-
-        //progressBar.Dispose();
-
+        Task.Run(async () =>
+            {
+                await new DirectoryCopier(_fileSystem).CopyDirectoryAsync(source, 
+                    assetCopyPath, 
+                    new Progress(this),
+                    ShallCopyFile, 4,
+                    token);
+            }, default)
+            .Wait(token);
+        
         _logger?.LogInformation($"Copied assets to SteamUploader at '{assetCopyPath}'");
     }
 
@@ -125,5 +125,18 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
         var currentDirLength = Environment.CurrentDirectory.Length;
         var localPath = fileToCopy.Substring(currentDirLength + 1);
         return _fileCopyBlacklist.Match(localPath).HasMatches;
+    }
+
+    private void OnProgress(double progress) 
+    {
+        ProgressReporter.Report(this, progress);
+    }
+
+    private class Progress(CopyReleaseStep releaseStep) : IProgress<double>
+    {
+        public void Report(double value)
+        {
+            releaseStep.OnProgress(value);
+        }
     }
 }

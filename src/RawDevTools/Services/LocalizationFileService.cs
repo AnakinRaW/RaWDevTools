@@ -10,6 +10,7 @@ using PG.StarWarsGame.Files.DAT.Services;
 using PG.StarWarsGame.Files.DAT.Services.Builder;
 using RepublicAtWar.DevTools.Localization;
 using AnakinRaW.CommonUtilities.FileSystem;
+using System.Text;
 
 namespace RepublicAtWar.DevTools.Services;
 
@@ -24,6 +25,7 @@ public class LocalizationFileService(IServiceProvider serviceProvider, bool warn
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(LocalizationFileService));
     private readonly IGameLanguageManager _languageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
 
+    // TODO: Move to actual operation code
     public void MergeDiffsIntoDatFiles(string diffFile, string datFile)
     {
         if (!_fileSystem.File.Exists(diffFile))
@@ -66,9 +68,13 @@ public class LocalizationFileService(IServiceProvider serviceProvider, bool warn
         var langName = LanguageNameFromFileName(fileName);
         if (localizationFile.Language != langName)
             LogOrThrow($"The file '{fileName.ToString()}' does not match the language content '{langName}'.");
-
-
         return localizationFile;
+    }
+
+    public LocalizationFile ReadLocalizationFile(Stream localizationFile)
+    {
+        using var reader = new LocalizationFileReader(localizationFile, warningAsError, serviceProvider);
+        return reader.Read();
     }
 
     public IDatModel CreateModelFromLocalizationFile(LocalizationFile file)
@@ -102,18 +108,31 @@ public class LocalizationFileService(IServiceProvider serviceProvider, bool warn
     /// <summary>
     /// This works for MasterTextFile and Diff files
     /// </summary>
-    public LanguageType LanguageNameFromFileName(ReadOnlySpan<char> fileName)
+    public LanguageType LanguageNameFromFileName(ReadOnlySpan<char> path)
     {
-        var fileNameWithoutExtension = _fileSystem.Path.GetFileNameWithoutExtension(fileName);
+        var fileNameWithoutExtension = _fileSystem.Path.GetFileNameWithoutExtension(path);
         var underScore = fileNameWithoutExtension.LastIndexOf('_');
         if (underScore == -1)
-            throw new ArgumentException("Unable to get language from filename", nameof(fileName));
+            throw new ArgumentException("Unable to get language from filename", nameof(path));
 
         var languageName = fileNameWithoutExtension.Slice(underScore + 1, fileNameWithoutExtension.Length - underScore - 1);
         if (!_languageManager.TryGetLanguage(languageName.ToString(), out var language))
-            throw new ArgumentException($"Unable to get language form file name '{fileName.ToString()}'.", nameof(fileName));
+            throw new ArgumentException($"Unable to get language form file name '{path.ToString()}'.", nameof(path));
         
         return language;
+    }
+
+    public void WriteLocalizationFile(FileSystemStream fileStream, LocalizationFile localizationFile)
+    {
+        var writer = new LocalizationFileWriter(warningAsError, serviceProvider);
+        writer.WriteFile(fileStream, localizationFile);
+    }
+
+    public void WriteDiffFile(FileSystemStream fileStream, MasterTextDifference diffEntries, LanguageType language)
+    {
+        using var writer = new StreamWriter(fileStream, Encoding.Unicode, 1024, true);
+        var locFileWriter = new LocalizationFileWriter(warningAsError, serviceProvider);
+        locFileWriter.CreateDiffFile(writer, diffEntries, language);
     }
 
     private void LogOrThrow(string message)

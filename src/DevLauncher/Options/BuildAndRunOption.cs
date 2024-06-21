@@ -3,7 +3,7 @@
 namespace RepublicAtWar.DevLauncher.Options;
 
 [Verb("buildRun", true)]
-public sealed class BuildAndRunOption : RaWBuildOption
+internal sealed class BuildAndRunOption : RaWBuildOption
 {
     [Option('w', "windowed", Default = false)]
     public bool Windowed { get; init; }

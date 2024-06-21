@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
-using RepublicAtWar.DevTools.PipelineSteps.Settings;
+using RepublicAtWar.DevTools.Steps.Settings;
 
 namespace RepublicAtWar.TextCompile;
 

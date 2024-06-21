@@ -7,9 +7,9 @@ using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using PG.StarWarsGame.Engine.Language;
 using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevTools.PipelineSteps.Build.Meg;
-using RepublicAtWar.DevTools.PipelineSteps.Build.Meg.Config;
-using RepublicAtWar.DevTools.PipelineSteps.Settings;
+using RepublicAtWar.DevTools.Steps.Build.Meg;
+using RepublicAtWar.DevTools.Steps.Build.Meg.Config;
+using RepublicAtWar.DevTools.Steps.Settings;
 
 namespace RepublicAtWar.MegCompile;
 

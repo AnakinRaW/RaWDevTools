@@ -9,12 +9,12 @@ using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Files.MEG.Files;
 using PG.StarWarsGame.Files.MEG.Services.Builder;
-using RepublicAtWar.DevTools.PipelineSteps.Build.Meg.Config;
-using RepublicAtWar.DevTools.PipelineSteps.Settings;
 using RepublicAtWar.DevTools.Services;
+using RepublicAtWar.DevTools.Steps.Build.Meg.Config;
+using RepublicAtWar.DevTools.Steps.Settings;
 using DirectoryInfoWrapper = Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoWrapper;
 
-namespace RepublicAtWar.DevTools.PipelineSteps.Build.Meg;
+namespace RepublicAtWar.DevTools.Steps.Build.Meg;
 
 public class PackMegFileStep(IPackMegConfiguration config, BuildSettings settings, IServiceProvider serviceProvider)
     : PipelineStep(serviceProvider)

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using PG.StarWarsGame.Infrastructure;
 
-namespace RepublicAtWar.DevTools.PipelineSteps.Build.Meg.Config;
+namespace RepublicAtWar.DevTools.Steps.Build.Meg.Config;
 
 public class RawNonLocalizedSFXMegConfiguration(
     IPhysicalPlayableObject physicalGameObject,

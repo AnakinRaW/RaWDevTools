@@ -5,10 +5,10 @@ using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using RepublicAtWar.DevTools.PipelineSteps.Settings;
 using RepublicAtWar.DevTools.Services;
+using RepublicAtWar.DevTools.Steps.Settings;
 
-namespace RepublicAtWar.DevTools.PipelineSteps.Build;
+namespace RepublicAtWar.DevTools.Steps.Build;
 
 public class CompileLocalizationStep(BuildSettings settings, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {

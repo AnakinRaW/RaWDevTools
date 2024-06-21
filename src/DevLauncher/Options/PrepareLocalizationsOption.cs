@@ -3,4 +3,4 @@
 namespace RepublicAtWar.DevLauncher.Options;
 
 [Verb("prepareLoc")]
-public sealed class PrepareLocalizationsOption : DevToolsOptionBase;
+internal sealed class PrepareLocalizationsOption : DevToolsOptionBase;

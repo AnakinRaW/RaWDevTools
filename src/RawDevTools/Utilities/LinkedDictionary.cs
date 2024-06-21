@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RepublicAtWar.DevLauncher.Services;
+namespace RepublicAtWar.DevTools.Utilities;
 
 /// <summary>
 /// Special dictionary which keeps key-value pairs in order they were inserted.
@@ -10,7 +10,7 @@ namespace RepublicAtWar.DevLauncher.Services;
 /// <typeparam name="TKey"></typeparam>
 /// <typeparam name="TValue"></typeparam>
 /// <param name="capacity"></param>
-internal class LinkedDictionary<TKey, TValue>(int capacity) where TKey : notnull
+public class LinkedDictionary<TKey, TValue>(int capacity) where TKey : notnull
 {
     private readonly Dictionary<TKey, int> _keys = new(capacity, EqualityComparer<TKey>.Default);
     private readonly List<TValue> _items = new(capacity);

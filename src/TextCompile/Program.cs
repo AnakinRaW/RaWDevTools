@@ -16,7 +16,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using PG.Commons.Extensibility;
 using Microsoft.Extensions.Logging.Console;
-using RepublicAtWar.DevTools.PipelineSteps.Settings;
+using RepublicAtWar.DevTools.Steps.Settings;
 
 namespace RepublicAtWar.TextCompile;
 

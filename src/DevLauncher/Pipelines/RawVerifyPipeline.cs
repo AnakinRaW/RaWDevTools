@@ -5,7 +5,7 @@ using AET.ModVerify.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Engine.Database;
-using RepublicAtWar.DevTools.PipelineSteps.Verify;
+using RepublicAtWar.DevTools.Steps.Verify;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 

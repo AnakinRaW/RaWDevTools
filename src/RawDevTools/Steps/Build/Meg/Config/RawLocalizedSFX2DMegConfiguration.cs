@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Engine.Language;
 using PG.StarWarsGame.Infrastructure;
 
-namespace RepublicAtWar.DevTools.PipelineSteps.Build.Meg.Config;
+namespace RepublicAtWar.DevTools.Steps.Build.Meg.Config;
 
 public sealed class RawLocalizedSFX2DMegConfiguration : RawPackMegConfiguration
 {

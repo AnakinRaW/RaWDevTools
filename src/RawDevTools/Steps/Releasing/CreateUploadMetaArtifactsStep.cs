@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Semver;
 
-namespace RepublicAtWar.DevTools.PipelineSteps.Release;
+namespace RepublicAtWar.DevTools.Steps.Release;
 
 public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : SynchronizedStep(serviceProvider)
 {
