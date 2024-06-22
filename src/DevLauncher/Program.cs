@@ -41,7 +41,7 @@ namespace RepublicAtWar.DevLauncher;
 internal class Program : CliBootstrapper
 {
 
-    private const string XmlParserNamespace = nameof(PG.StarWarsGame.Engine.Xml.Parsers);
+    private const string XmlParserNamespace = "PG.StarWarsGame.Engine.Xml.Parsers";
 
     protected override bool AutomaticUpdate => true;
 
