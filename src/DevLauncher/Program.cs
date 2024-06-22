@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AET.ModVerify;
 using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
+using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.Hashing;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
@@ -30,12 +31,18 @@ using RepublicAtWar.DevLauncher.Pipelines.Settings;
 using RepublicAtWar.DevLauncher.Services;
 using RepublicAtWar.DevTools.Services;
 using RepublicAtWar.DevTools.Steps.Settings;
+using Serilog;
+using Serilog.Events;
+using Serilog.Filters;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace RepublicAtWar.DevLauncher;
 
 internal class Program : CliBootstrapper
 {
+
+    private const string XmlParserNamespace = nameof(PG.StarWarsGame.Engine.Xml.Parsers);
+
     protected override bool AutomaticUpdate => true;
 
     protected override IEnumerable<string>? AdditionalNamespacesToLogToConsole
@@ -106,6 +113,8 @@ internal class Program : CliBootstrapper
         IApplicationEnvironment applicationEnvironment)
     {
         base.ConfigureLogging(loggingBuilder, fileSystem, applicationEnvironment);
+        
+        SetupXmlParseLogging(loggingBuilder, fileSystem);
 
         loggingBuilder.AddFilter(level =>
         {
@@ -115,6 +124,27 @@ internal class Program : CliBootstrapper
                 HasErrors = true;
             return true;
         });
+    }
+
+    protected override bool ExcludeFromGlobalLogging(LogEvent arg)
+    {
+        return Matching.FromSource(XmlParserNamespace)(arg);
+    }
+
+    private void SetupXmlParseLogging(ILoggingBuilder loggingBuilder, IFileSystem fileSystem)
+    {
+        const string xmlParseLogFileName = "XmlParseLog.txt";
+
+        fileSystem.File.TryDeleteWithRetry(xmlParseLogFileName);
+
+        var logger = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .MinimumLevel.Warning()
+            .Filter.ByIncludingOnly(Matching.FromSource(XmlParserNamespace))
+            .WriteTo.File(xmlParseLogFileName, outputTemplate: "[{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
+            .CreateLogger();
+
+        loggingBuilder.AddSerilog(logger);
     }
 
     private async Task<int> Run(DevToolsOptionBase options, IServiceCollection serviceCollection)
