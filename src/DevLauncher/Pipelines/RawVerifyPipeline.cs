@@ -12,7 +12,7 @@ namespace RepublicAtWar.DevLauncher.Pipelines;
 internal class RawVerifyPipeline(
     GameEngineType targetType,
     GameLocations gameLocations,
-    ModVerifySettings settings,
+    GameVerifySettings settings,
     IServiceProvider serviceProvider)
     : VerifyGamePipeline(targetType, gameLocations, settings, serviceProvider)
 {
@@ -23,7 +23,7 @@ internal class RawVerifyPipeline(
         {
             yield return verifier;
         }
-
+        
         yield return new VerifyAllAudioStep(database, Settings, ServiceProvider);
     }
 }

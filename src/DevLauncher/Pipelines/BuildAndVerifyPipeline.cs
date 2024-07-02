@@ -30,7 +30,7 @@ internal class BuildAndVerifyPipeline(IPhysicalMod mod, IGame fallbackGame, Buil
         return Task.FromResult<IList<IStep>>(new List<IStep>
         {
             new RunPipelineStep(new BuildPipeline(mod, buildSettings, ServiceProvider), ServiceProvider),
-            new RunPipelineStep(new RawVerifyPipeline(GameEngineType.Foc, gameLocations, ModVerifySettings.Default, ServiceProvider), ServiceProvider),
+            new RunPipelineStep(new RawVerifyPipeline(GameEngineType.Foc, gameLocations, GameVerifySettings.Default, ServiceProvider), ServiceProvider),
         });
     }
 }

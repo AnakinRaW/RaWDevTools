@@ -22,6 +22,7 @@ using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Files.ALO;
 using PG.StarWarsGame.Files.DAT.Services.Builder;
 using PG.StarWarsGame.Files.MEG.Data.Archives;
+using PG.StarWarsGame.Files.XML;
 using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Clients;
 using RepublicAtWar.DevLauncher.Options;
@@ -41,7 +42,8 @@ namespace RepublicAtWar.DevLauncher;
 internal class Program : CliBootstrapper
 {
 
-    private const string XmlParserNamespace = "PG.StarWarsGame.Engine.Xml.Parsers";
+    private const string EngineXmlParserNamespace = "PG.StarWarsGame.Engine.Xml.Parsers";
+    private const string XmlParserNamespace = "PG.StarWarsGame.Files.XML.Parsers.Primitives";
 
     protected override bool AutomaticUpdate => true;
 
@@ -128,7 +130,7 @@ internal class Program : CliBootstrapper
 
     protected override bool ExcludeFromGlobalLogging(LogEvent arg)
     {
-        return Matching.FromSource(XmlParserNamespace)(arg);
+        return IsXmlParserLogging(arg);
     }
 
     private void SetupXmlParseLogging(ILoggingBuilder loggingBuilder, IFileSystem fileSystem)
@@ -140,12 +142,19 @@ internal class Program : CliBootstrapper
         var logger = new LoggerConfiguration()
             .Enrich.FromLogContext()
             .MinimumLevel.Warning()
-            .Filter.ByIncludingOnly(Matching.FromSource(XmlParserNamespace))
+            .Filter.ByIncludingOnly(IsXmlParserLogging)
             .WriteTo.File(xmlParseLogFileName, outputTemplate: "[{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
             .CreateLogger();
 
         loggingBuilder.AddSerilog(logger);
     }
+
+
+    private static bool IsXmlParserLogging(LogEvent logEvent)
+    {
+        return Matching.FromSource(XmlParserNamespace)(logEvent) || Matching.FromSource(EngineXmlParserNamespace)(logEvent);
+    }
+
 
     private async Task<int> Run(DevToolsOptionBase options, IServiceCollection serviceCollection)
     {
@@ -263,6 +272,7 @@ internal class Program : CliBootstrapper
         RuntimeHelpers.RunClassConstructor(typeof(IMegArchive).TypeHandle);
         AloServiceContribution.ContributeServices(serviceCollection);
         serviceCollection.CollectPgServiceContributions();
+        XmlServiceContribution.ContributeServices(serviceCollection);
 
         PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);
         ModVerifyServiceContribution.ContributeServices(serviceCollection);
