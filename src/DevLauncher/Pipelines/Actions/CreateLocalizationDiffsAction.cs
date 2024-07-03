@@ -61,7 +61,7 @@ internal class CreateLocalizationDiffsAction(IServiceProvider serviceProvider) :
                 if (!masterText.TryGetValue(entry.Crc32, out var currentValue))
                     newEntries.Add(entry);
                 else
-                    changedEntries.Add((entry, currentValue));
+                    changedEntries.Add((new DatStringEntry(entry.Key, entry.Crc32, currentValue), entry.Value));
             }
 
             var diff = new MasterTextDifference(newEntries, changedEntries, keysToDelete);

@@ -68,10 +68,11 @@ internal class LocalizationFileWriter(bool warningAsError, IServiceProvider serv
         foreach (var newEntry in diffEntries.NewEntries) WriteEntry(newEntry, writer);
 
         if (diffEntries.ChangedEntries.Count > 0)
-            WriteCommentSection("The following entries have been changed in the english language", writer);
-        foreach (var (entry, oldValue) in diffEntries.ChangedEntries)
+            WriteCommentSection("The following entries have been changed in English", writer);
+        
+        foreach (var (entry, changedValue) in diffEntries.ChangedEntries.OrderBy(x => x.baseEntry.Key))
         {
-            WriteComment($"ORG Value: \"{EscapeQuotes(oldValue)}\"", writer);
+            WriteComment($"Changed English Value: \"{EscapeQuotes(changedValue)}\"", writer);
             WriteEntry(entry, writer);
             writer.WriteLine();
         }

@@ -5,12 +5,12 @@ namespace RepublicAtWar.DevTools.Localization;
 
 public class MasterTextDifference(
     ICollection<DatStringEntry> newEntries,
-    ICollection<(DatStringEntry entry, string oldValue)> changedEntries,
+    ICollection<(DatStringEntry baseEntry, string changedValue)> changedEntries,
     ISet<string> deletedKeys)
 {
     public ICollection<DatStringEntry> NewEntries { get; } = newEntries;
 
-    public ICollection<(DatStringEntry entry, string oldValue)> ChangedEntries { get; } = changedEntries;
+    public ICollection<(DatStringEntry baseEntry, string changedValue)> ChangedEntries { get; } = changedEntries;
 
     public ISet<string> DeletedKeys { get; } = deletedKeys;
 }
