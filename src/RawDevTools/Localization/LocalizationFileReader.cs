@@ -93,7 +93,7 @@ internal class LocalizationFileReader : LocalizationGrammarBaseVisitor<Localizat
         }
 
         if (duplicates.Count > 0)
-            throw new DuplicateKeysException(duplicates);
+            throw new DuplicateKeysException(language, duplicates);
 
         return new LocalizationFile(language, entryList);
     }

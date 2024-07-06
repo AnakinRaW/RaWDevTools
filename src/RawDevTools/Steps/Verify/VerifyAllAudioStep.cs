@@ -5,13 +5,15 @@ using System.IO.Abstractions;
 using System.Threading;
 using AET.ModVerify;
 using AET.ModVerify.Steps;
-using AnakinRaW.CommonUtilities.FileSystem;
 using Microsoft.Extensions.DependencyInjection;
 using PG.Commons.Hashing;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Engine.Database;
 using PG.StarWarsGame.Engine.DataTypes;
 using PG.StarWarsGame.Files.MEG.Services.Builder.Normalization;
+#if NETSTANDARD2_0
+using AnakinRaW.CommonUtilities.FileSystem;
+#endif
 
 namespace RepublicAtWar.DevTools.Steps.Verify;
 
