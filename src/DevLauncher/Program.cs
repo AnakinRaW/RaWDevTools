@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AET.ModVerify;
+using AET.ModVerify.Reporting.Reporters;
 using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
 using AnakinRaW.CommonUtilities.FileSystem;
@@ -276,6 +277,8 @@ internal class Program : CliBootstrapper
 
         PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);
         ModVerifyServiceContribution.ContributeServices(serviceCollection);
+        serviceCollection.RegisterJsonReporter();
+        serviceCollection.RegisterTextFileReporter();
 
         serviceCollection.AddSingleton(sp => new GitService(".", options.WarnAsError, sp));
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Engine.Language;
 using PG.StarWarsGame.Infrastructure;
 
@@ -32,7 +33,8 @@ public sealed class RawLocalizedSFX2DMegConfiguration : RawPackMegConfiguration
     {
         _language = language;
         IsLanguageSupported = languageSupported;
-        _gameLanguageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
+        _gameLanguageManager = serviceProvider.GetRequiredService<IGameLanguageManagerProvider>()
+            .GetLanguageManager(GameEngineType.Foc);
 
         _lazyLocalizeFileName = new Lazy<Func<string, string>?>(() =>
         {

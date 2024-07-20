@@ -9,8 +9,11 @@ using PG.StarWarsGame.Files.DAT.Files;
 using PG.StarWarsGame.Files.DAT.Services;
 using PG.StarWarsGame.Files.DAT.Services.Builder;
 using RepublicAtWar.DevTools.Localization;
-using AnakinRaW.CommonUtilities.FileSystem;
 using System.Text;
+using PG.StarWarsGame.Engine;
+#if NETSTANDARD2_0
+using AnakinRaW.CommonUtilities.FileSystem;
+#endif
 
 namespace RepublicAtWar.DevTools.Services;
 
@@ -23,7 +26,9 @@ public class LocalizationFileService(IServiceProvider serviceProvider, bool warn
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly IDatFileService _datFileService = serviceProvider.GetRequiredService<IDatFileService>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(LocalizationFileService));
-    private readonly IGameLanguageManager _languageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
+
+    private readonly IGameLanguageManager _languageManager = serviceProvider
+        .GetRequiredService<IGameLanguageManagerProvider>().GetLanguageManager(GameEngineType.Foc);
 
     // TODO: Move to actual operation code
     public void MergeDiffsIntoDatFiles(string diffFile, string datFile)

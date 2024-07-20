@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
+using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Engine.Language;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevTools.Steps.Build.Meg;
@@ -24,10 +25,11 @@ internal class PackSfxMegPipeline(IPhysicalMod mod, BuildSettings settings, ISer
 
     protected override Task<IList<IStep>> BuildSteps()
     {
-        var languageManager = ServiceProvider.GetRequiredService<IGameLanguageManager>();
+        var languageManager = ServiceProvider.GetRequiredService<IGameLanguageManagerProvider>()
+            .GetLanguageManager(GameEngineType.Foc);
 
         IList<IStep> steps = new List<IStep>();
-        foreach (var focLanguage in languageManager.FocSupportedLanguages)
+        foreach (var focLanguage in languageManager.SupportedLanguages)
         {
             var isRaWSupported = IsSupportedByRaw(focLanguage);
 

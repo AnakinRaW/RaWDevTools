@@ -7,6 +7,7 @@ using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Engine.Language;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevTools.Steps.Build;
@@ -20,7 +21,10 @@ internal sealed class BuildPipeline(IPhysicalMod mod, BuildSettings settings, IS
     : Pipeline(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-    private readonly IGameLanguageManager _languageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
+
+    private readonly IGameLanguageManager _languageManager = serviceProvider
+        .GetRequiredService<IGameLanguageManagerProvider>().GetLanguageManager(GameEngineType.Foc);
+
     private readonly BuildSettings _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
     private readonly List<IStep> _buildSteps = new();
@@ -59,7 +63,7 @@ internal sealed class BuildPipeline(IPhysicalMod mod, BuildSettings settings, IS
         yield return new PackIconsStep(_settings, ServiceProvider);
         yield return new CompileLocalizationStep(_settings, ServiceProvider);
 
-        foreach (var focLanguage in _languageManager.FocSupportedLanguages)
+        foreach (var focLanguage in _languageManager.SupportedLanguages)
         {
             var isRaWSupported = IsSupportedByRaw(focLanguage);
 
