@@ -17,6 +17,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Steps\Verify\**" />
+	  <EmbeddedResource Remove="Steps\Verify\**" />
+	  <None Remove="Steps\Verify\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Remove="Localization\LocalizationGrammar.g4" />
 		<None Remove="Resources\DummyMasterTextFile.xml" />
 		<None Remove="Resources\ModCompile.exe" />
@@ -66,10 +72,6 @@
 			<Listener>true</Listener>
 			<GAtn>false</GAtn>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Steps\Verify\" />
 	</ItemGroup>
 
 </Project>
