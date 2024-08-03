@@ -26,7 +26,7 @@ internal class LaunchStep(LaunchSettings options, IMod mod, IServiceProvider ser
     {
         var modArgFactory = Services.GetRequiredService<IModArgumentListFactory>();
         var modArgs = modArgFactory.BuildArgumentList(_mod, false);
-        var gameArgsBuilder = Services.GetRequiredService<IArgumentCollectionBuilder>();
+        var gameArgsBuilder = new UniqueArgumentCollectionBuilder();
         gameArgsBuilder
             .Add(new LanguageArgument(LanguageInfo.Default))
             .Add(new NoArtProcessArgument())

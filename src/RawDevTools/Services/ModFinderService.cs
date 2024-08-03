@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO.Abstractions;
 using EawModinfo.Model;
 using EawModinfo.Spec;
@@ -55,23 +56,23 @@ public class ModFinderService
 
         _logger?.LogInformation($"Found game {focDetectionResult.GameIdentity} at '{focDetectionResult.GameLocation.FullName}'");
 
-        var foc = _gameFactory.CreateGame(focDetectionResult);
+        var foc = _gameFactory.CreateGame(focDetectionResult, CultureInfo.InvariantCulture);
 
         if (!_fileSystem.Directory.Exists(_fileSystem.Path.Combine(currentDirectory.FullName, "Data")))
             throw new InvalidOperationException("Unable to find physical mod Republic at War");
 
         var rawId = new ModReference(currentDirectory.FullName, ModType.Default);
-        var raw = _modFactory.FromReference(foc, rawId, false);
+        var raw = _modFactory.FromReference(foc, rawId, false, CultureInfo.InvariantCulture);
         foc.AddMod(raw);
 
-        var eawDetectionResult = gd.Detect(new GameDetectorOptions(GameType.EaW));
+        var eawDetectionResult = gd.Detect(new GameDetectorOptions(GameType.Eaw));
         if (eawDetectionResult.GameLocation is null)
             throw new GameException("Unable to find Empire at War installation.");
         if (eawDetectionResult.Error is not null)
             throw new GameException($"Unable to find game installation: {eawDetectionResult.Error.Message}", eawDetectionResult.Error);
         _logger?.LogInformation($"Found game {eawDetectionResult.GameIdentity} at '{eawDetectionResult.GameLocation.FullName}'");
 
-        var eaw = _gameFactory.CreateGame(eawDetectionResult);
+        var eaw = _gameFactory.CreateGame(eawDetectionResult, CultureInfo.InvariantCulture);
 
         return new GameFinderResult(raw, eaw);
     }
