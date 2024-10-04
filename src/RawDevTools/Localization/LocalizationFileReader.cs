@@ -202,7 +202,7 @@ internal class LocalizationFileReader : LocalizationGrammarBaseVisitor<Localizat
         public override IToken RecoverInline(Parser recognizer)
         {
             var message = MessageFromToken(recognizer.CurrentToken);
-            throw new SyntaxErrorException(message, new InputMismatchException(recognizer));
+           throw new SyntaxErrorException(message, new InputMismatchException(recognizer));
         }
 
         private string MessageFromToken(IToken token)
