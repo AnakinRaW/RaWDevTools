@@ -23,14 +23,14 @@
 		
 		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure.Clients" Version="4.0.17-beta" />
 		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="4.0.17-beta" />
-		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.0.23-beta" />
-		<PackageReference Include="AnakinRaW.CommonUtilities.Xml" Version="12.0.23-beta" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.0.25-beta" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.Xml" Version="12.0.25-beta" />
 		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
 		<PackageReference Include="Antlr4BuildTasks" Version="12.8.0" />
 		<PackageReference Include="Costura.Fody" Version="5.7.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="AnakinRaW.CommonUtilities.Registry" Version="12.0.23-beta" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.Registry" Version="12.0.25-beta" />
 		<PackageReference Include="Glob" Version="1.1.9" />
 		<PackageReference Include="IsExternalInit" Version="1.0.3">
 			<PrivateAssets>all</PrivateAssets>
