@@ -3,7 +3,6 @@ using System.IO;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PG.StarWarsGame.Engine.Language;
 using PG.StarWarsGame.Files.DAT.Data;
 using PG.StarWarsGame.Files.DAT.Files;
 using PG.StarWarsGame.Files.DAT.Services;
@@ -11,6 +10,7 @@ using PG.StarWarsGame.Files.DAT.Services.Builder;
 using RepublicAtWar.DevTools.Localization;
 using System.Text;
 using PG.StarWarsGame.Engine;
+using PG.StarWarsGame.Engine.Localization;
 #if NETSTANDARD2_0
 using AnakinRaW.CommonUtilities.FileSystem;
 #endif

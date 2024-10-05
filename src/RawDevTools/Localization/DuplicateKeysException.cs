@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using PG.StarWarsGame.Engine.Language;
+using PG.StarWarsGame.Engine.Localization;
 
 namespace RepublicAtWar.DevTools.Localization;
 

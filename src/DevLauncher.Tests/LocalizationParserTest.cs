@@ -4,7 +4,6 @@ using System.Data;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using PG.StarWarsGame.Engine;
-using PG.StarWarsGame.Engine.Language;
 using RepublicAtWar.DevTools.Localization;
 using Testably.Abstractions.Testing;
 

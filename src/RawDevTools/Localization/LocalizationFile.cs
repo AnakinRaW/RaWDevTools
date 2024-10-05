@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using PG.StarWarsGame.Engine.Language;
+using PG.StarWarsGame.Engine.Localization;
 
 namespace RepublicAtWar.DevTools.Localization;
 

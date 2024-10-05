@@ -5,7 +5,7 @@ using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Engine;
-using PG.StarWarsGame.Engine.Language;
+using PG.StarWarsGame.Engine.Localization;
 using PG.StarWarsGame.Infrastructure;
 
 namespace RepublicAtWar.DevTools.Steps.Build.Meg.Config;
