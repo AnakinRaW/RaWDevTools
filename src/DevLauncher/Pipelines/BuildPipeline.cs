@@ -7,27 +7,33 @@ using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PG.StarWarsGame.Engine.Language;
+using PG.StarWarsGame.Engine;
+using PG.StarWarsGame.Engine.Localization;
 using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevLauncher.Configuration;
-using RepublicAtWar.DevLauncher.Options;
-using RepublicAtWar.DevLauncher.Pipelines.Steps.Build;
+using RepublicAtWar.DevTools.Steps.Build;
+using RepublicAtWar.DevTools.Steps.Build.Meg;
+using RepublicAtWar.DevTools.Steps.Build.Meg.Config;
+using RepublicAtWar.DevTools.Steps.Settings;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
-internal sealed class BuildPipeline(IPhysicalMod mod, RaWBuildOption buildOption, IServiceProvider serviceProvider) : Pipeline(serviceProvider)
+internal sealed class BuildPipeline(IPhysicalMod mod, BuildSettings settings, IServiceProvider serviceProvider)
+    : Pipeline(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-    private readonly IGameLanguageManager _languageManager = serviceProvider.GetRequiredService<IGameLanguageManager>();
 
-    private CancellationTokenSource? _linkedCancellationTokenSource;
+    private readonly IGameLanguageManager _languageManager = serviceProvider
+        .GetRequiredService<IGameLanguageManagerProvider>().GetLanguageManager(GameEngineType.Foc);
 
-    private readonly bool _failFast = false;
+    private readonly BuildSettings _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+
     private readonly List<IStep> _buildSteps = new();
     private readonly List<IStep> _preBuildSteps = new();
 
-    private readonly ParallelRunner _buildRunner = new(4, serviceProvider);
-    private readonly StepRunner _preBuildRunner = new(serviceProvider);
+    private readonly ParallelStepRunner _buildRunner = new(4, serviceProvider);
+    private readonly SequentialStepRunner _preBuildRunner = new(serviceProvider);
+
+    protected override bool FailFast => true;
 
     public override string ToString()
     {
@@ -51,23 +57,23 @@ internal sealed class BuildPipeline(IPhysicalMod mod, RaWBuildOption buildOption
 
     private IEnumerable<IStep> CreateBuildSteps()
     {
-        yield return new PackMegFileStep(new RawAiPackMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider);
-        yield return new PackMegFileStep(new RawCustomMapsPackMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider);
-        yield return new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(mod, ServiceProvider), buildOption, ServiceProvider);
-        yield return new PackIconsStep(buildOption, ServiceProvider);
-        yield return new CompileLocalizationStep(ServiceProvider, buildOption);
+        yield return new PackMegFileStep(new RawAiPackMegConfiguration(mod, ServiceProvider), _settings, ServiceProvider);
+        yield return new PackMegFileStep(new RawCustomMapsPackMegConfiguration(mod, ServiceProvider), _settings, ServiceProvider);
+        yield return new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(mod, ServiceProvider), _settings, ServiceProvider);
+        yield return new PackIconsStep(_settings, ServiceProvider);
+        yield return new CompileLocalizationStep(_settings, ServiceProvider);
 
-        foreach (var focLanguage in _languageManager.FocSupportedLanguages)
+        foreach (var focLanguage in _languageManager.SupportedLanguages)
         {
             var isRaWSupported = IsSupportedByRaw(focLanguage);
 
             // There is no need to build non-supported languages if we don't do a release or force a clean build
-            if (!isRaWSupported && !buildOption.CleanBuild)
+            if (!isRaWSupported && !_settings.CleanBuild)
                 continue;
 
             yield return new PackMegFileStep(
                 new RawLocalizedSFX2DMegConfiguration(focLanguage, isRaWSupported, mod, ServiceProvider),
-                buildOption,
+                _settings,
                 ServiceProvider);
         }
     }
@@ -84,52 +90,31 @@ internal sealed class BuildPipeline(IPhysicalMod mod, RaWBuildOption buildOption
     {
         try
         {
-            _linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-
-            try
-            {
-                Logger?.LogInformation("Running Prebuild...");
-                _preBuildRunner.Error -= OnError;
-                await _preBuildRunner.RunAsync(_linkedCancellationTokenSource.Token);
-            }
-            finally
-            {
-                Logger?.LogInformation("Finished Prebuild...");
-                _preBuildRunner.Error -= OnError;
-            }
-
-            ThrowIfAnyStepsFailed(_preBuildSteps);
-
-            try
-            {
-                Logger?.LogInformation("Running Build...");
-                _buildRunner.Error -= OnError;
-                await _buildRunner.RunAsync(_linkedCancellationTokenSource.Token);
-            }
-            finally
-            {
-                Logger?.LogInformation("Finished Build...");
-                _buildRunner.Error -= OnError;
-            }
-
-            ThrowIfAnyStepsFailed(_buildSteps);
-
+            Logger?.LogInformation("Running Prebuild...");
+            _preBuildRunner.Error -= OnError;
+            await _preBuildRunner.RunAsync(token);
         }
         finally
         {
-            if (_linkedCancellationTokenSource is not null)
-            {
-                _linkedCancellationTokenSource.Dispose();
-                _linkedCancellationTokenSource = null;
-            }
+            Logger?.LogInformation("Finished Prebuild...");
+            _preBuildRunner.Error -= OnError;
         }
-    }
-    
-    private void OnError(object sender, StepErrorEventArgs e)
-    {
-        PipelineFailed = true;
-        if (_failFast || e.Cancel)
-            _linkedCancellationTokenSource?.Cancel();
+
+        ThrowIfAnyStepsFailed(_preBuildSteps);
+
+        try
+        {
+            Logger?.LogInformation("Running Build...");
+            _buildRunner.Error -= OnError;
+            await _buildRunner.RunAsync(token);
+        }
+        finally
+        {
+            Logger?.LogInformation("Finished Build...");
+            _buildRunner.Error -= OnError;
+        }
+
+        ThrowIfAnyStepsFailed(_buildSteps);
     }
 
     private bool IsSupportedByRaw(LanguageType focLanguage)

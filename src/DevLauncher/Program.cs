@@ -5,8 +5,11 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using AET.ModVerify;
+using AET.ModVerify.Reporting.Reporters;
 using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
+using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.Hashing;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
@@ -15,31 +18,42 @@ using CommandLine;
 using CommandLine.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PG.Commons.Extensibility;
+using PG.Commons;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Files.ALO;
+using PG.StarWarsGame.Files.DAT;
 using PG.StarWarsGame.Files.DAT.Services.Builder;
+using PG.StarWarsGame.Files.MEG;
 using PG.StarWarsGame.Files.MEG.Data.Archives;
+using PG.StarWarsGame.Files.XML;
 using PG.StarWarsGame.Infrastructure;
-using PG.StarWarsGame.Infrastructure.Clients;
-using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevLauncher.Localization;
+using PG.StarWarsGame.Infrastructure.Clients.Steam;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Pipelines;
+using RepublicAtWar.DevLauncher.Pipelines.Actions;
+using RepublicAtWar.DevLauncher.Pipelines.Settings;
 using RepublicAtWar.DevLauncher.Services;
-using RepublicAtWar.DevLauncher.Utilities;
+using RepublicAtWar.DevTools.Services;
+using RepublicAtWar.DevTools.Steps.Settings;
+using Serilog;
+using Serilog.Events;
+using Serilog.Filters;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace RepublicAtWar.DevLauncher;
 
 internal class Program : CliBootstrapper
 {
+    private const string EngineXmlParserNamespace = "PG.StarWarsGame.Engine.Xml.Parsers";
+    private const string XmlParserNamespace = "PG.StarWarsGame.Files.XML.Parsers.Primitives";
+
     protected override bool AutomaticUpdate => true;
 
     protected override IEnumerable<string>? AdditionalNamespacesToLogToConsole
     {
         get
         {
+            yield return "RepublicAtWar";
             yield return "AET.ModVerify";
         }
     }
@@ -90,8 +104,6 @@ internal class Program : CliBootstrapper
             {
                 toolResult = await Run((DevToolsOptionBase)o, serviceCollection);
             }).Wait();
-
-
         });
         parseResult.WithNotParsed(e =>
         {
@@ -105,6 +117,8 @@ internal class Program : CliBootstrapper
         IApplicationEnvironment applicationEnvironment)
     {
         base.ConfigureLogging(loggingBuilder, fileSystem, applicationEnvironment);
+        
+        SetupXmlParseLogging(loggingBuilder, fileSystem);
 
         loggingBuilder.AddFilter(level =>
         {
@@ -116,6 +130,34 @@ internal class Program : CliBootstrapper
         });
     }
 
+    protected override bool ExcludeFromGlobalLogging(LogEvent arg)
+    {
+        return IsXmlParserLogging(arg);
+    }
+
+    private void SetupXmlParseLogging(ILoggingBuilder loggingBuilder, IFileSystem fileSystem)
+    {
+        const string xmlParseLogFileName = "XmlParseLog.txt";
+
+        fileSystem.File.TryDeleteWithRetry(xmlParseLogFileName);
+
+        var logger = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .MinimumLevel.Warning()
+            .Filter.ByIncludingOnly(IsXmlParserLogging)
+            .WriteTo.File(xmlParseLogFileName, outputTemplate: "[{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
+            .CreateLogger();
+
+        loggingBuilder.AddSerilog(logger);
+    }
+
+
+    private static bool IsXmlParserLogging(LogEvent logEvent)
+    {
+        return Matching.FromSource(XmlParserNamespace)(logEvent) || Matching.FromSource(EngineXmlParserNamespace)(logEvent);
+    }
+
+
     private async Task<int> Run(DevToolsOptionBase options, IServiceCollection serviceCollection)
     {
         var services = CreateAppServices(options, serviceCollection);
@@ -125,37 +167,34 @@ internal class Program : CliBootstrapper
         {
             var gameFinderResult = new ModFinderService(services).FindAndAddModInCurrentDirectory();
 
-            if (gameFinderResult.Mod is not IPhysicalMod raw)
-                throw new InvalidOperationException("Unable to find physical mod Republic at War");
-
-            IPipeline? launcherPipeline = null;
+            IPipeline launcherPipeline;
 
             switch (options)
             {
-                case BuildAndRunOption runOptions:
-                    launcherPipeline = new BuildAndRunPipeline(runOptions, raw, services);
+                case BuildAndRunOption buildRun:
+                    launcherPipeline = CreateBuildRunPipeline(buildRun, gameFinderResult, services);
                     break;
                 case InitializeLocalizationOption:
-                    new LocalizationFileService(options, services).InitializeFromDatFiles();
+                    launcherPipeline = new InitializeLocalizationAction(services);
                     break;
                 case PrepareLocalizationsOption:
-                    new LocalizationFileService(options, services).CreateForeignDiffFiles();
+                    launcherPipeline = new CreateLocalizationDiffsAction(services);
                     break;
-                case ReleaseRepublicAtWarOption releaseOptions:
-                    launcherPipeline = new ReleaseRawPipeline(releaseOptions, raw, gameFinderResult.FallbackGame, services);
+                case ReleaseRepublicAtWarOption rawRelease:
+                    launcherPipeline = CreateReleasePipeline(rawRelease, gameFinderResult, services);
                     break;
                 case MergeLocalizationOption:
-                    new LocalizationFileService(options, services).MergeDiffsInfoFiles();
+                    launcherPipeline = new MergeLocalizationsAction(services);
                     break;
                 case VerifyOption verifyOption:
-                    launcherPipeline = new BuildAndVerifyPipeline(verifyOption, raw, gameFinderResult.FallbackGame, services);
+                    launcherPipeline = CreateBuildVerifyPipeline(verifyOption, gameFinderResult, services);
                     break;
                 default:
-                    throw new ArgumentException($"The option '{options.GetType().FullName}' is not implemented", nameof(options));
+                    throw new ArgumentException($"The option '{options.GetType().FullName}' is not implemented",
+                        nameof(options));
             }
-            
-            if (launcherPipeline is not null) 
-                await launcherPipeline.RunAsync(ApplicationCancellationTokenSource.Token);
+
+            await launcherPipeline.RunAsync(ApplicationCancellationTokenSource.Token);
 
             if (!HasErrors && !HasWarning)
                 logger?.LogInformation("DONE");
@@ -181,28 +220,73 @@ internal class Program : CliBootstrapper
         }
     }
 
+    private static IPipeline CreateBuildVerifyPipeline(VerifyOption options, GameFinderResult gameFinderResult, IServiceProvider services)
+    {
+        var buildSettings = new BuildSettings
+        {
+            WarnAsError = options.WarnAsError,
+            CleanBuild = options.CleanBuild
+        };
+        return new BuildAndVerifyPipeline(gameFinderResult.RepublicAtWar, gameFinderResult.FallbackGame, buildSettings, services);
+    }
+
+    private static IPipeline CreateBuildRunPipeline(BuildAndRunOption options, GameFinderResult gameFinderResult, IServiceProvider services)
+    {
+        var buildSettings = new BuildSettings
+        {
+            CleanBuild = options.CleanBuild,
+            WarnAsError = options.WarnAsError
+        };
+        var launchSettings = new LaunchSettings
+        {
+            RunGame = !options.SkipRun,
+            Debug = options.Debug,
+            Windowed = options.Windowed
+        };
+        return new BuildAndRunPipeline(gameFinderResult.RepublicAtWar, buildSettings, launchSettings, services);
+    }
+
+    private static IPipeline CreateReleasePipeline(ReleaseRepublicAtWarOption options, GameFinderResult gameFinderResult, IServiceProvider services)
+    {
+        var buildSettings = new BuildSettings
+        {
+            CleanBuild = options.CleanBuild,
+            WarnAsError = options.WarnAsError
+        };
+        var releaseSettings = new ReleaseSettings
+        {
+            UploaderDirectory = options.UploaderDirectory,
+            WarnAsError = options.WarnAsError
+        }; 
+        return new ReleaseRawPipeline(gameFinderResult.RepublicAtWar, gameFinderResult.FallbackGame, buildSettings, releaseSettings, services);
+    }
+
     private static IServiceProvider CreateAppServices(DevToolsOptionBase options, IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
+        serviceCollection.AddSingleton<IRegistry>(_ => new WindowsRegistry());
 
         SteamAbstractionLayer.InitializeServices(serviceCollection);
-        PetroglyphGameClients.InitializeServices(serviceCollection);
+        SteamPetroglyphStarWarsGameClients.InitializeServices(serviceCollection);
         PetroglyphGameInfrastructure.InitializeServices(serviceCollection);
 
+        serviceCollection.SupportDAT();
+        serviceCollection.SupportMEG();
+        PetroglyphCommons.ContributeServices(serviceCollection);
         RuntimeHelpers.RunClassConstructor(typeof(IDatBuilder).TypeHandle);
         RuntimeHelpers.RunClassConstructor(typeof(IMegArchive).TypeHandle);
         AloServiceContribution.ContributeServices(serviceCollection);
-        serviceCollection.CollectPgServiceContributions();
+        XmlServiceContribution.ContributeServices(serviceCollection);
 
         PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);
+        ModVerifyServiceContribution.ContributeServices(serviceCollection);
+        serviceCollection.RegisterJsonReporter();
+        serviceCollection.RegisterTextFileReporter();
 
         serviceCollection.AddSingleton(sp => new GitService(".", options.WarnAsError, sp));
 
         var forceRebuild = options is RaWBuildOption { CleanBuild: true };
-        serviceCollection.AddTransient<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(forceRebuild, sp));
-
-        serviceCollection.AddTransient(sp => new LocalizationFileWriter(options.WarnAsError, sp));
-        serviceCollection.AddTransient(sp => new LocalizationFileReader(options.WarnAsError, sp));
+        serviceCollection.AddSingleton<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(forceRebuild, sp));
 
         return serviceCollection.BuildServiceProvider();
     }

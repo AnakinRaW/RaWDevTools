@@ -3,4 +3,4 @@
 namespace RepublicAtWar.DevLauncher.Options;
 
 [Verb("initLoc")]
-public sealed class InitializeLocalizationOption : DevToolsOptionBase;
+internal sealed class InitializeLocalizationOption : DevToolsOptionBase;

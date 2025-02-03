@@ -3,4 +3,4 @@
 namespace RepublicAtWar.DevLauncher.Options;
 
 [Verb("mergeLoc")]
-public sealed class MergeLocalizationOption : RaWBuildOption;
+internal sealed class MergeLocalizationOption : RaWBuildOption;

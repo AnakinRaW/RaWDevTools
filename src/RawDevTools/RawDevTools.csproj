@@ -1,0 +1,77 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Product>Republic at War Developer Tools Library</Product>
+		<Description>Base library for building Republic at War mod.</Description>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+		<RootNamespace>RepublicAtWar.DevTools</RootNamespace>
+		<AssemblyName>RepublicAtWar.DevTools</AssemblyName>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Steps\Verify\**" />
+	  <EmbeddedResource Remove="Steps\Verify\**" />
+	  <None Remove="Steps\Verify\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Localization\LocalizationGrammar.g4" />
+		<None Remove="Resources\DummyMasterTextFile.xml" />
+		<None Remove="Resources\ModCompile.exe" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Antlr4 Include="Localization\LocalizationGrammar.g4">
+			<Listener>true</Listener>
+			<Visitor>true</Visitor>
+			<GAtn>false</GAtn>
+			<Error>true</Error>
+		</Antlr4>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Resources\DummyMasterTextFile.xml" />
+	  <EmbeddedResource Include="Resources\ModCompile.exe" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Files.DAT" Version="2.0.187" />
+		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+		<PackageReference Include="Antlr4BuildTasks" Version="12.8.0" />
+		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure" Version="4.0.26" />
+		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure.Steam" Version="4.0.26" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.FileSystem" Version="12.0.91" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.0.91" />
+		<PackageReference Include="Required" Version="1.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="IsExternalInit" Version="1.0.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\ModVerify\src\ModVerify\ModVerify.csproj" />
+		<ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Engine\PG.StarWarsGame.Engine.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Localization\LocalizationGrammar.g4">
+			<Visitor>true</Visitor>
+			<Error>true</Error>
+			<Listener>true</Listener>
+			<GAtn>false</GAtn>
+		</None>
+	</ItemGroup>
+
+</Project>

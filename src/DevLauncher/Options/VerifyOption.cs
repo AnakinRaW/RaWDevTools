@@ -3,4 +3,4 @@
 namespace RepublicAtWar.DevLauncher.Options;
 
 [Verb("verify")]
-public class VerifyOption : RaWBuildOption;
+internal class VerifyOption : RaWBuildOption;

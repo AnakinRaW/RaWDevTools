@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Threading;
+using AET.Modinfo.Model;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
-using EawModinfo.Model;
-using Microsoft.Extensions.DependencyInjection;
 using PG.StarWarsGame.Infrastructure.Clients.Arguments;
 using PG.StarWarsGame.Infrastructure.Clients.Arguments.GameArguments;
 using PG.StarWarsGame.Infrastructure.Mods;
-using RepublicAtWar.DevLauncher.Options;
+using RepublicAtWar.DevLauncher.Pipelines.Settings;
+using RepublicAtWar.DevLauncher.Services;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Steps;
 
-internal class LaunchStep(BuildAndRunOption options, IMod mod, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
+internal class LaunchStep(LaunchSettings options, IPhysicalMod mod, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
-    private readonly IMod _mod = mod ?? throw new ArgumentNullException(nameof(mod));
+    private readonly IPhysicalMod _mod = mod ?? throw new ArgumentNullException(nameof(mod));
 
     protected override void RunCore(CancellationToken token)
     {
@@ -21,15 +21,13 @@ internal class LaunchStep(BuildAndRunOption options, IMod mod, IServiceProvider 
         launcher.Launch(args);
     }
 
-    private IArgumentCollection CreateGameArgs()
+    private ArgumentCollection CreateGameArgs()
     {
-        var modArgFactory = Services.GetRequiredService<IModArgumentListFactory>();
-        var modArgs = modArgFactory.BuildArgumentList(_mod, false);
-        var gameArgsBuilder = Services.GetRequiredService<IArgumentCollectionBuilder>();
+        var gameArgsBuilder = new GameArgumentsBuilder();
         gameArgsBuilder
             .Add(new LanguageArgument(LanguageInfo.Default))
             .Add(new NoArtProcessArgument())
-            .Add(modArgs);
+            .AddSingleMod(_mod);
 
         if (options.Windowed)
             gameArgsBuilder.Add(new WindowedArgument());

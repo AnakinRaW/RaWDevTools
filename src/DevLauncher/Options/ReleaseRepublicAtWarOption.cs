@@ -3,7 +3,7 @@
 namespace RepublicAtWar.DevLauncher.Options;
 
 [Verb("release")]
-public sealed class ReleaseRepublicAtWarOption : RaWBuildOption
+internal sealed class ReleaseRepublicAtWarOption : RaWBuildOption
 {
     public override bool CleanBuild { get; init; } = true;
 

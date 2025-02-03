@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace RepublicAtWar.DevLauncher.Utilities;
 
-public class ProgressBar : IDisposable, IProgress<double>
+internal sealed class ProgressBar : IDisposable, IProgress<double>
 {
     private const int BlockCount = 10;
     private readonly TimeSpan _animationInterval = TimeSpan.FromSeconds(1.0 / 8);

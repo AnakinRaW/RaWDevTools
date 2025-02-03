@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using RepublicAtWar.DevLauncher.Localization;
+using PG.StarWarsGame.Engine;
+using PG.StarWarsGame.Engine.Localization;
+using RepublicAtWar.DevTools.Localization;
 using Testably.Abstractions.Testing;
 
 namespace DevLauncher.Tests;
@@ -10,18 +13,21 @@ namespace DevLauncher.Tests;
 public class LocalizationParserTest
 {
     private readonly MockFileSystem _fileSystem = new();
-    private readonly LocalizationFileReader _reader;
+    private readonly IServiceProvider _serviceProvider;
 
     public LocalizationParserTest()
     {
         var sc = new ServiceCollection();
         sc.AddSingleton<IFileSystem>(_fileSystem);
-        _reader = new LocalizationFileReader(false, sc.BuildServiceProvider());
+        PetroglyphEngineServiceContribution.ContributeServices(sc);
+        _serviceProvider = sc.BuildServiceProvider();
     }
 
-    private void Setup(string text)
+    private LocalizationFileReader Setup(string text)
     {
-        _fileSystem.Initialize().WithFile("textFile.txt").Which(a => a.HasStringContent(text));
+        _fileSystem.Initialize().WithFile("textFile.txt")
+            .Which(a => a.HasStringContent(text));
+        return new LocalizationFileReader("textFile.txt", false, _serviceProvider);
     }
 
 
@@ -32,8 +38,7 @@ public class LocalizationParserTest
     [InlineData("LANGUAGE=ENGLISH")]
     public void Test_InvalidText_Language(string text)
     {
-        Setup(text);
-        Assert.Throws<SyntaxErrorException>(() => _reader.ReadFile("textFile.txt"));
+        Assert.Throws<SyntaxErrorException>(Setup(text).Read);
     }
 
     [Fact]
@@ -43,8 +48,7 @@ public class LocalizationParserTest
 LANGUAGE='LANG';
 key=
 ";
-        Setup(text);
-        Assert.Throws<SyntaxErrorException>(() => _reader.ReadFile("textFile.txt"));
+        Assert.Throws<SyntaxErrorException>(Setup(text).Read);
     }
 
     [Fact]
@@ -55,8 +59,7 @@ LANGUAGE='LANG';
 key=
 key=""""
 ";
-        Setup(text);
-        Assert.Throws<SyntaxErrorException>(() => _reader.ReadFile("textFile.txt"));
+        Assert.Throws<SyntaxErrorException>(Setup(text).Read);
     }
 
     [Fact]
@@ -67,8 +70,7 @@ LANGUAGE='LANG';
 quoteOnly=""This value is interpreted as DQString
 leadingQuotes=""""key\=123 value
 ";
-        Setup(text);
-        Assert.Throws<SyntaxErrorException>(() => _reader.ReadFile("textFile.txt"));
+        Assert.Throws<SyntaxErrorException>(() => Setup(text).Read());
     }
 
     [Fact]
@@ -79,17 +81,16 @@ LANGUAGE='LANG';
 key=value
 key=value1
 ";
-        Setup(text);
-        Assert.Throws<InvalidLocalizationFileException>(() => _reader.ReadFile("textFile.txt"));
+        Assert.Throws<DuplicateKeysException>(() => Setup(text).Read());
     }
 
 
     [Fact]
     public void Test_EmptyList()
     {
-        Setup("LANGUAGE='ENGLISH';");
-        var localizationFile = _reader.ReadFile("textFile.txt");
-        Assert.Equal("ENGLISH", localizationFile.Language);
+        const string text = "LANGUAGE='ENGLISH';";
+        var localizationFile = Setup(text).Read();
+        Assert.Equal(LanguageType.English, localizationFile.Language);
         Assert.Equal(new List<LocalizationEntry>(), localizationFile.Entries);
     }
 
@@ -119,9 +120,8 @@ quoteOnly=\""
 trailingSpace=""dqstring with trailing space should get ignored""          
 ";
 
-        Setup(text);
-        var localizationFile = _reader.ReadFile("textFile.txt");
-        Assert.Equal("ENGLISH", localizationFile.Language);
+        var localizationFile = Setup(text).Read();
+        Assert.Equal(LanguageType.English, localizationFile.Language);
         Assert.Equal(new List<LocalizationEntry>
             {
                 new("test123", @"test string # with "" all "" sorts of ' special = characters and a line break"),
