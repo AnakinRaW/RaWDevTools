@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Text.RegularExpressions;
 using System.Threading;
+using AET.Modinfo.Model;
+using AET.Modinfo.Spec;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
-using EawModinfo.Model;
-using EawModinfo.Spec;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Semver;
@@ -72,8 +72,8 @@ public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : S
         SteamTitle = combined.SteamData.Title;
         SteamJsonName = $"{SteamTitle}.workshop.json";
 
-        _fileSystem.File.WriteAllText("modinfo.json", combined.ToJson(true));
-        _fileSystem.File.WriteAllText(SteamJsonName, combined.SteamData.ToJson(true));
+        _fileSystem.File.WriteAllText("modinfo.json", combined.ToJson());
+        _fileSystem.File.WriteAllText(SteamJsonName, combined.SteamData.ToJson());
 
         _logger?.LogInformation("Finish build release artifacts");
     }

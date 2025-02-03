@@ -27,22 +27,21 @@ internal class GameLauncher
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }
 
-    public void Launch(IArgumentCollection gameArguments)
+    public void Launch(ArgumentCollection gameArguments)
     {
         var game = _playableObject.Game;
         if (game.Platform == GamePlatform.SteamGold)
             StartSteam();
 
-        var client = _clientFactory.CreateClient(_playableObject.Game.Platform, _serviceProvider);
+        var client = _clientFactory.CreateClient(_playableObject.Game);
         _logger?.LogInformation("Starting Game...");
 #if DEBUG
         _logger?.LogWarning("Game will not start in DEBUG mode");
 #else
-        if (client is IDebugableGameClient debugClient && debugClient.IsDebugAvailable(_playableObject) && 
-            _launchSettings.Debug)
-            debugClient.Debug(_playableObject, gameArguments, false);
+        if (client.IsDebugAvailable() && _launchSettings.Debug)
+            client.Debug(gameArguments, false);
         else
-            client.Play(_playableObject, gameArguments);
+            client.Play(gameArguments);
 #endif
     }
 

@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using PG.StarWarsGame.Engine.Localization;
 using RepublicAtWar.DevTools.Localization;
 using RepublicAtWar.DevTools.Services;
 using RepublicAtWar.DevTools.Steps;

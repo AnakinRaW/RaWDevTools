@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using PG.StarWarsGame.Engine.Localization;
 using RepublicAtWar.DevTools.Localization;
 using RepublicAtWar.DevTools.Services;
 using RepublicAtWar.DevTools.Steps.Settings;
@@ -16,7 +16,6 @@ namespace RepublicAtWar.TextCompile;
 internal class MergeDiffIntoDatStep(IServiceProvider serviceProvider, BuildSettings buildSettings) : PipelineStep(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-    private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(MergeDiffIntoDatStep));
 
     private readonly LocalizationFileService _localizationFileService = new(serviceProvider, buildSettings.WarnAsError);
 

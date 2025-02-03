@@ -8,6 +8,7 @@ using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Engine;
+using PG.StarWarsGame.Engine.Localization;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevTools.Steps.Build;
 using RepublicAtWar.DevTools.Steps.Build.Meg;
@@ -29,8 +30,8 @@ internal sealed class BuildPipeline(IPhysicalMod mod, BuildSettings settings, IS
     private readonly List<IStep> _buildSteps = new();
     private readonly List<IStep> _preBuildSteps = new();
 
-    private readonly ParallelRunner _buildRunner = new(4, serviceProvider);
-    private readonly StepRunner _preBuildRunner = new(serviceProvider);
+    private readonly ParallelStepRunner _buildRunner = new(4, serviceProvider);
+    private readonly SequentialStepRunner _preBuildRunner = new(serviceProvider);
 
     protected override bool FailFast => true;
 

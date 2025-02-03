@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
-using AnakinRaW.CommonUtilities.SimplePipeline.Runners;
 using Microsoft.Extensions.DependencyInjection;
 using PG.StarWarsGame.Engine;
+using PG.StarWarsGame.Engine.Localization;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevTools.Steps.Build.Meg;
 using RepublicAtWar.DevTools.Steps.Build.Meg.Config;
@@ -13,15 +13,10 @@ using RepublicAtWar.DevTools.Steps.Settings;
 
 namespace RepublicAtWar.MegCompile;
 
-internal class PackSfxMegPipeline(IPhysicalMod mod, BuildSettings settings, IServiceProvider serviceProvider) : SimplePipeline<ParallelRunner>(serviceProvider)
+internal class PackSfxMegPipeline(IPhysicalMod mod, BuildSettings settings, IServiceProvider serviceProvider) : ParallelPipeline(serviceProvider, 2)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
-
-    protected override ParallelRunner CreateRunner()
-    {
-        return new ParallelRunner(2, ServiceProvider);
-    }
-
+    
     protected override Task<IList<IStep>> BuildSteps()
     {
         var languageManager = ServiceProvider.GetRequiredService<IGameLanguageManagerProvider>()

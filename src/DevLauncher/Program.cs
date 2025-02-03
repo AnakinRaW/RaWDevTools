@@ -18,14 +18,16 @@ using CommandLine;
 using CommandLine.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PG.Commons.Extensibility;
+using PG.Commons;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Files.ALO;
+using PG.StarWarsGame.Files.DAT;
 using PG.StarWarsGame.Files.DAT.Services.Builder;
+using PG.StarWarsGame.Files.MEG;
 using PG.StarWarsGame.Files.MEG.Data.Archives;
 using PG.StarWarsGame.Files.XML;
 using PG.StarWarsGame.Infrastructure;
-using PG.StarWarsGame.Infrastructure.Clients;
+using PG.StarWarsGame.Infrastructure.Clients.Steam;
 using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Pipelines;
 using RepublicAtWar.DevLauncher.Pipelines.Actions;
@@ -42,7 +44,6 @@ namespace RepublicAtWar.DevLauncher;
 
 internal class Program : CliBootstrapper
 {
-
     private const string EngineXmlParserNamespace = "PG.StarWarsGame.Engine.Xml.Parsers";
     private const string XmlParserNamespace = "PG.StarWarsGame.Files.XML.Parsers.Primitives";
 
@@ -266,13 +267,15 @@ internal class Program : CliBootstrapper
         serviceCollection.AddSingleton<IRegistry>(_ => new WindowsRegistry());
 
         SteamAbstractionLayer.InitializeServices(serviceCollection);
-        PetroglyphGameClients.InitializeServices(serviceCollection);
+        SteamPetroglyphStarWarsGameClients.InitializeServices(serviceCollection);
         PetroglyphGameInfrastructure.InitializeServices(serviceCollection);
 
+        serviceCollection.SupportDAT();
+        serviceCollection.SupportMEG();
+        PetroglyphCommons.ContributeServices(serviceCollection);
         RuntimeHelpers.RunClassConstructor(typeof(IDatBuilder).TypeHandle);
         RuntimeHelpers.RunClassConstructor(typeof(IMegArchive).TypeHandle);
         AloServiceContribution.ContributeServices(serviceCollection);
-        serviceCollection.CollectPgServiceContributions();
         XmlServiceContribution.ContributeServices(serviceCollection);
 
         PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);

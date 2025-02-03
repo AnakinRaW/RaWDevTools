@@ -6,17 +6,16 @@ using AnakinRaW.CommonUtilities.Registry;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Engine;
-using PG.StarWarsGame.Files.DAT.Services.Builder;
-using PG.StarWarsGame.Files.MEG.Data.Archives;
-using PG.StarWarsGame.Infrastructure.Clients;
 using PG.StarWarsGame.Infrastructure;
 using RepublicAtWar.DevTools.Services;
 using System.IO.Abstractions;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using PG.Commons.Extensibility;
 using Microsoft.Extensions.Logging.Console;
+using PG.Commons;
+using PG.StarWarsGame.Files.DAT;
+using PG.StarWarsGame.Infrastructure.Clients.Steam;
 using RepublicAtWar.DevTools.Steps.Settings;
+using Testably.Abstractions;
 
 namespace RepublicAtWar.TextCompile;
 
@@ -62,20 +61,19 @@ internal class TextCompile(IServiceProvider serviceProvider)
 
         serviceCollection.AddLogging(ConfigureLogging);
 
-        serviceCollection.AddSingleton<IFileSystem>(new FileSystem());
+        serviceCollection.AddSingleton<IFileSystem>(new RealFileSystem());
         serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
         serviceCollection.AddSingleton<IRegistry>(new WindowsRegistry());
 
         serviceCollection.AddSingleton<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(true, sp));
 
         SteamAbstractionLayer.InitializeServices(serviceCollection);
-        PetroglyphGameClients.InitializeServices(serviceCollection);
+        SteamPetroglyphStarWarsGameClients.InitializeServices(serviceCollection);
         PetroglyphGameInfrastructure.InitializeServices(serviceCollection);
         PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);
 
-        RuntimeHelpers.RunClassConstructor(typeof(IDatBuilder).TypeHandle);
-        RuntimeHelpers.RunClassConstructor(typeof(IMegArchive).TypeHandle);
-        serviceCollection.CollectPgServiceContributions();
+        serviceCollection.SupportDAT();
+        PetroglyphCommons.ContributeServices(serviceCollection);
 
         return serviceCollection.BuildServiceProvider();
     }
