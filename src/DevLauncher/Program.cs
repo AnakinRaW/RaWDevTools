@@ -272,11 +272,9 @@ internal class Program : CliBootstrapper
 
         serviceCollection.SupportDAT();
         serviceCollection.SupportMEG();
+        serviceCollection.SupportXML();
+        serviceCollection.SupportALO();
         PetroglyphCommons.ContributeServices(serviceCollection);
-        RuntimeHelpers.RunClassConstructor(typeof(IDatBuilder).TypeHandle);
-        RuntimeHelpers.RunClassConstructor(typeof(IMegArchive).TypeHandle);
-        AloServiceContribution.ContributeServices(serviceCollection);
-        XmlServiceContribution.ContributeServices(serviceCollection);
 
         PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);
         ModVerifyServiceContribution.ContributeServices(serviceCollection);
