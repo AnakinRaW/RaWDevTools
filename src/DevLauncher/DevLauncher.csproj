@@ -23,7 +23,6 @@
 		
 		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="4.0.26" />
 		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.0.91" />
-		<PackageReference Include="AnakinRaW.CommonUtilities.Xml" Version="12.0.25-beta" />
 		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
 		<PackageReference Include="Antlr4BuildTasks" Version="12.8.0" />
 		<PackageReference Include="Costura.Fody" Version="6.0.0">
