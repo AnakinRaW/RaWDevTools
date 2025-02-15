@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AET.ModVerify;
@@ -22,9 +21,7 @@ using PG.Commons;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Files.ALO;
 using PG.StarWarsGame.Files.DAT;
-using PG.StarWarsGame.Files.DAT.Services.Builder;
 using PG.StarWarsGame.Files.MEG;
-using PG.StarWarsGame.Files.MEG.Data.Archives;
 using PG.StarWarsGame.Files.XML;
 using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Clients.Steam;

@@ -28,8 +28,6 @@ public class PackIconsStep(BuildSettings settings, IServiceProvider serviceProvi
     private const string DummyMasterTextFileXml = "Data\\Text\\MasterTextFile.xml";
     private const string ModCompileExe = "ModCompile.exe";
 
-
-
     protected override void RunCore(CancellationToken token)
     {
         if (!_fileSystem.Directory.Exists(IconsDirectory))
@@ -68,7 +66,7 @@ public class PackIconsStep(BuildSettings settings, IServiceProvider serviceProvi
 
             var result = p.ExitCode;
             if (result != 0)
-                throw new Win32Exception();
+                throw new Win32Exception($"Process '{p.ProcessName}' failed with error: {result}");
 
             _logger?.LogInformation("Finished creating Master Texture Database and TGA data.");
         }
