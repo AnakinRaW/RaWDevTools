@@ -21,10 +21,10 @@
 	<ItemGroup>
 		<PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
 		
-		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="4.0.32" />
+		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="4.0.35" />
 		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.1.8" />
 		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
-		<PackageReference Include="Antlr4BuildTasks" Version="12.9.0" />
+		<PackageReference Include="Antlr4BuildTasks" Version="12.10.0" />
 		<PackageReference Include="Costura.Fody" Version="6.0.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
