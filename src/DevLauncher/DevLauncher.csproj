@@ -19,7 +19,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
 		
 		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="4.0.35" />
 		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.1.8" />
