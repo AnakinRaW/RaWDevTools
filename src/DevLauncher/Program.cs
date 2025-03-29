@@ -274,7 +274,6 @@ internal class Program : CliBootstrapper
         PetroglyphCommons.ContributeServices(serviceCollection);
 
         PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);
-        ModVerifyServiceContribution.ContributeServices(serviceCollection);
         serviceCollection.RegisterJsonReporter();
         serviceCollection.RegisterTextFileReporter();
 
