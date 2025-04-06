@@ -3,7 +3,7 @@
     "Build & Run Mod": {
       "commandName": "Project",
       "commandLineArgs": "--skipUpdate",
-      "workingDirectory": "D:\\SteamLibrary\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
+      "workingDirectory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\Republic_at_War"
     },
     "DAT2LocFile": {
       "commandName": "Project",
@@ -13,17 +13,17 @@
     "Diff Localizations": {
       "commandName": "Project",
       "commandLineArgs": "prepareLoc --skipUpdate",
-      "workingDirectory": "C:\\Privat\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
+      "workingDirectory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\Republic_at_War"
     },
     "Release Republic at War": {
       "commandName": "Project",
       "commandLineArgs": "release --uploaderDir D:\\Modding\\eawuploader --skipUpdate",
-      "workingDirectory": "D:\\SteamLibrary\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
+      "workingDirectory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\Republic_at_War"
     },
     "Merge Diffs into Localization": {
       "commandName": "Project",
       "commandLineArgs": "mergeLoc --skipUpdate",
-      "workingDirectory": "C:\\Privat\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
+      "workingDirectory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\Republic_at_War"
     },
     "Build & Verify Republic at War": {
       "commandName": "Project",

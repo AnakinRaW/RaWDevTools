@@ -19,6 +19,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CompuMaster.Text.Diff" Version="2024.11.4.100" />
 		<PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
 		
 		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="4.0.35" />

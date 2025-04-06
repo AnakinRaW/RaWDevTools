@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Abstractions;
-using System.Threading;
-using AnakinRaW.CommonUtilities.FileSystem.Normalization;
+﻿using AnakinRaW.CommonUtilities.FileSystem.Normalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Engine.Localization;
@@ -13,6 +8,13 @@ using RepublicAtWar.DevLauncher.Services;
 using RepublicAtWar.DevTools.Localization;
 using RepublicAtWar.DevTools.Services;
 using RepublicAtWar.DevTools.Steps;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Threading;
+using RepublicAtWar.DevLauncher.Utilities;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Actions;
 
@@ -29,6 +31,9 @@ internal class CreateLocalizationDiffsAction(IServiceProvider serviceProvider) :
     protected override void RunAction(CancellationToken cancellationToken)
     {
         var englishDiff = CreateEnglishDiff();
+
+        ManuallyChooseDiffedText(englishDiff.ChangedEntries);
+
         var englishFile = _localizationFileService.CreateModelFromLocalizationFile(_localizationFileService.ReadLocalizationFile(_fileSystem.Path.Combine("Data\\Text", EnglishText)));
 
         var foreignLangFiles = _fileSystem.Directory.GetFiles("Data\\Text", "MasterTextFile_*.txt");
@@ -61,7 +66,9 @@ internal class CreateLocalizationDiffsAction(IServiceProvider serviceProvider) :
                 if (!masterText.TryGetValue(entry.Crc32, out var currentValue))
                     newEntries.Add(entry);
                 else
+                {
                     changedEntries.Add((new DatStringEntry(entry.Key, entry.Crc32, currentValue), entry.Value));
+                }
             }
 
             var diff = new MasterTextDifference(newEntries, changedEntries, keysToDelete);
@@ -126,4 +133,148 @@ internal class CreateLocalizationDiffsAction(IServiceProvider serviceProvider) :
         
         return _localizationFileService.CreateModelFromLocalizationFile(locFile);
     }
+
+    private void ManuallyChooseDiffedText(ICollection<(DatStringEntry baseEntry, string changedValue)> diffedEntries)
+    {
+        if (diffedEntries.Count == 0)
+            return;
+
+        using var diffFile = new TempDiffEntriesFile("Data/Text/diffEntries.diff", _fileSystem);
+        
+        Console.Clear();
+
+        var copy = diffedEntries.ToList();
+        var total = copy.Count;
+        var counter = 0;
+
+        foreach (var valueTuple in copy)
+        {
+            var oldText = valueTuple.baseEntry.Value;
+            var newText = valueTuple.changedValue;
+            var key = valueTuple.baseEntry.Key;
+
+            if (string.IsNullOrEmpty(oldText) ^ string.IsNullOrEmpty(newText))
+            {
+                counter++;
+                continue;
+            }
+
+            if (diffFile.TryGet(key, out var action))
+            {
+                if (action == TempDiffEntriesFile.DiffAction.Ignore)
+                    diffedEntries.Remove(valueTuple);
+                counter++;
+                continue;
+            }
+
+            Console.WriteLine($"Progress: ({counter++}/{total})");
+            Console.WriteLine();
+            Console.WriteLine($"{valueTuple.baseEntry.Key}:");
+            CompuMaster.Text.Diffs.DumpDiffToConsole(newText, oldText, true);
+            Console.WriteLine();
+
+
+            var keepEntry = ConsoleUtilities.UserQuestionOnSameLine("Keep? [y/n]: ", (string input, out bool keep) =>
+            {
+                if (input.Equals("y", StringComparison.OrdinalIgnoreCase))
+                {
+                    keep = true;
+                    return true;
+                }
+                if (input.Equals("n", StringComparison.OrdinalIgnoreCase))
+                {
+                    keep = false;
+                    return true;
+                }
+
+                keep = false;
+                return false;
+            });
+
+            diffFile.Add(key, keepEntry ? TempDiffEntriesFile.DiffAction.Keep : TempDiffEntriesFile.DiffAction.Ignore);
+            if (!keepEntry)
+                diffedEntries.Remove(valueTuple);
+
+            Console.Clear();
+        }
+    }
+
+    private class TempDiffEntriesFile : IDisposable
+    {
+        public enum DiffAction
+        {
+            Keep,
+            Ignore
+        }
+
+        private readonly HashSet<string> _keeps = new();
+        private readonly HashSet<string> _ignores = new();
+        private readonly StreamWriter _writer;
+
+        public TempDiffEntriesFile(string filePath, IFileSystem fileSystem)
+        {
+            if (!fileSystem.File.Exists(filePath))
+                fileSystem.File.Create(filePath).Dispose();
+
+            // Read existing entries
+            foreach (var line in fileSystem.File.ReadAllLines(filePath))
+            {
+                if (line.Length< 2) continue;
+
+                var actionChar = line[0];
+                var entry = line[1..];
+
+                if (actionChar == '+')
+                    _keeps.Add(entry);
+                else if (actionChar == '-')
+                    _ignores.Add(entry);
+            }
+
+            // Open the file in append mode for writing new entries
+            _writer = new StreamWriter(filePath, append: true) { AutoFlush = true };
+        }
+
+        public bool Add(string entry, DiffAction result)
+        {
+            if (_keeps.Contains(entry) || _ignores.Contains(entry))
+                return false;
+
+            switch (result)
+            {
+                case DiffAction.Keep:
+                    _keeps.Add(entry);
+                    _writer.WriteLine("+" + entry);
+                    break;
+                case DiffAction.Ignore:
+                    _ignores.Add(entry);
+                    _writer.WriteLine("-" + entry);
+                    break;
+            }
+
+            return true;
+        }
+
+        public bool TryGet(string entry, out DiffAction result)
+        {
+            if (_keeps.Contains(entry))
+            {
+                result = DiffAction.Keep;
+                return true;
+            }
+
+            if (_ignores.Contains(entry))
+            {
+                result = DiffAction.Ignore;
+                return true;
+            }
+
+            result = default;
+            return false;
+        }
+
+        public void Dispose()
+        {
+            _writer?.Dispose();
+        }
+}
 }
