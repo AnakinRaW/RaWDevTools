@@ -43,13 +43,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Files.DAT" Version="2.0.187" />
+		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Files.DAT" Version="2.1.7" />
 		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
-		<PackageReference Include="Antlr4BuildTasks" Version="12.8.0" />
-		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure" Version="4.0.26" />
-		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure.Steam" Version="4.0.26" />
-		<PackageReference Include="AnakinRaW.CommonUtilities.FileSystem" Version="12.0.91" />
-		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.0.91" />
+		<PackageReference Include="Antlr4BuildTasks" Version="12.10.0" />
+		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure" Version="4.0.35" />
+		<PackageReference Include="AlamoEngineTools.PG.StarWarsGame.Infrastructure.Steam" Version="4.0.35" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.FileSystem" Version="12.3.4" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.3.4" />
 		<PackageReference Include="Required" Version="1.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

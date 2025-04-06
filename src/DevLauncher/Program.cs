@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using AET.ModVerify;
 using AET.ModVerify.Reporting.Reporters;
 using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
@@ -22,9 +20,7 @@ using PG.Commons;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Files.ALO;
 using PG.StarWarsGame.Files.DAT;
-using PG.StarWarsGame.Files.DAT.Services.Builder;
 using PG.StarWarsGame.Files.MEG;
-using PG.StarWarsGame.Files.MEG.Data.Archives;
 using PG.StarWarsGame.Files.XML;
 using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Clients.Steam;
@@ -212,6 +208,7 @@ internal class Program : CliBootstrapper
         }
         finally
         {
+           
             if (HasErrors || HasWarning)
             {
                 Console.WriteLine("Press any key to exit.");
@@ -272,14 +269,11 @@ internal class Program : CliBootstrapper
 
         serviceCollection.SupportDAT();
         serviceCollection.SupportMEG();
+        serviceCollection.SupportXML();
+        serviceCollection.SupportALO();
         PetroglyphCommons.ContributeServices(serviceCollection);
-        RuntimeHelpers.RunClassConstructor(typeof(IDatBuilder).TypeHandle);
-        RuntimeHelpers.RunClassConstructor(typeof(IMegArchive).TypeHandle);
-        AloServiceContribution.ContributeServices(serviceCollection);
-        XmlServiceContribution.ContributeServices(serviceCollection);
 
         PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);
-        ModVerifyServiceContribution.ContributeServices(serviceCollection);
         serviceCollection.RegisterJsonReporter();
         serviceCollection.RegisterTextFileReporter();
 

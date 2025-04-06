@@ -1,21 +1,35 @@
-﻿using AnakinRaW.CommonUtilities.SimplePipeline;
+﻿using AnakinRaW.CommonUtilities;
+using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Progress;
+using System;
 
 namespace RepublicAtWar.DevLauncher.Utilities;
 
-internal sealed class ProgressBarReporter : IStepProgressReporter
+internal sealed class ProgressBarReporter : DisposableObject
 {
+    private readonly IProgressStep _step;
     private ProgressBar? _progressBar;
 
-    public void Report(IProgressStep step, double progress)
+    public ProgressBarReporter(IProgressStep step)
     {
-        if (_progressBar is null)
-            _progressBar = new ProgressBar();
-        _progressBar.Report(progress);
-        if (progress == 1.0)
+        _step = step;
+        step.Progress += OnProgress;
+    }
+
+    private void OnProgress(object sender, ProgressEventArgs<object?> e)
+    {
+        _progressBar ??= new ProgressBar();
+        _progressBar.Report(e.Progress);
+        if (e.Progress >= 1.0)
         {
             _progressBar.Dispose();
             _progressBar = null;
         }
+    }
+
+    protected override void DisposeResources()
+    {
+        _step.Progress -= OnProgress;
+        base.DisposeResources();
     }
 }

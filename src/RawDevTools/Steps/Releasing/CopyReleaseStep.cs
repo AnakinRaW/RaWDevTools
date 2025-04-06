@@ -25,10 +25,8 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
 
     public ProgressType Type => CopyRelease;
 
-    public IStepProgressReporter ProgressReporter { get; }
-
     public long Size => 1;
-
+    public event EventHandler<ProgressEventArgs<object?>>? Progress;
 
     private static readonly ProgressType CopyRelease = new()
     {
@@ -38,7 +36,6 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
 
     public CopyReleaseStep(
         CreateUploadMetaArtifactsStep buildArtifactsStep,
-        IStepProgressReporter progressReporter,
         ReleaseSettings releaseOptions, 
         IServiceProvider serviceProvider) 
         : base(serviceProvider)
@@ -48,8 +45,6 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
         _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
 
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CopyReleaseStep));
-        ProgressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter)); 
-
         _fileCopyBlacklist = CreateBlacklist();
     }
 
@@ -106,12 +101,11 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
         var steamJsonFile = _buildArtifactsStep.SteamJsonName;
         _fileSystem.File.Copy(steamJsonFile, _fileSystem.Path.Combine(uploaderWsContentPath, steamJsonFile), true);
 
-
         Task.Run(async () =>
             {
                 await new DirectoryCopier(_fileSystem).CopyDirectoryAsync(source, 
                     assetCopyPath, 
-                    new Progress(this),
+                    new CopyProgress(this),
                     ShallCopyFile, 4,
                     token);
             }, default)
@@ -129,10 +123,10 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
 
     private void OnProgress(double progress) 
     {
-        ProgressReporter.Report(this, progress);
+        Progress?.Invoke(this, new ProgressEventArgs<object?>(progress, null));
     }
 
-    private class Progress(CopyReleaseStep releaseStep) : IProgress<double>
+    private class CopyProgress(CopyReleaseStep releaseStep) : IProgress<double>
     {
         public void Report(double value)
         {
