@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AET.ModVerify.Pipeline;
+using AET.ModVerify.Pipeline.Progress;
 using AET.ModVerify.Reporting;
 using AET.ModVerify.Reporting.Settings;
 using AET.ModVerify.Settings;
 using AnakinRaW.CommonUtilities.SimplePipeline;
+using AnakinRaW.CommonUtilities.SimplePipeline.Progress;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
+using Microsoft.Extensions.DependencyInjection;
 using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
@@ -51,6 +55,26 @@ internal class BuildAndVerifyPipeline(IPhysicalMod mod, IGame fallbackGame, Buil
             Suppressions = SuppressionList.Empty
         };
 
-        return new GameVerifyPipeline(GameEngineType.Foc, gameLocations, settings, globalReportSettings, ServiceProvider);
+        var gameEngineService = ServiceProvider.GetRequiredService<IPetroglyphStarWarsGameEngineService>();
+
+        var engineErrorReporter = new ConcurrentGameEngineErrorReporter();
+
+        var gameEngine = gameEngineService.InitializeAsync(
+            GameEngineType.Foc,
+            gameLocations,
+            engineErrorReporter,
+            null,
+            false,
+            CancellationToken.None).GetAwaiter().GetResult();
+
+        return new GameVerifyPipeline(gameEngine, engineErrorReporter, settings, globalReportSettings, new NullVerifyProgressReporter(), ServiceProvider);
+    }
+
+    private class NullVerifyProgressReporter : IVerifyProgressReporter
+    {
+        public void Report(double progress, string? progressText, ProgressType type, VerifyProgressInfo detailedProgress)
+        {
+            
+        }
     }
 }

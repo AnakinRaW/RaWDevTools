@@ -22,6 +22,8 @@ internal class ReleaseRawPipeline : SequentialPipeline
     private readonly IPhysicalMod _republicAtWar;
     private readonly IGame _empireAtWarGame;
 
+    private ProgressBarReporter? _progressBarReporter;
+
     public ReleaseRawPipeline(
         IPhysicalMod republicAtWar, 
         IGame empireAtWarGame,
@@ -46,8 +48,14 @@ internal class ReleaseRawPipeline : SequentialPipeline
             _logger?.LogWarning("Releasing without Clean build!!!");
             _logger?.LogWarning("Releasing without Clean build!!!");
         }
-
         return base.RunCoreAsync(token);
+    }
+
+    protected override void DisposeResources()
+    {
+        _progressBarReporter?.Dispose();
+        _progressBarReporter = null;
+        base.DisposeResources();
     }
 
     protected override Task<IList<IStep>> BuildSteps()
@@ -55,6 +63,10 @@ internal class ReleaseRawPipeline : SequentialPipeline
         return Task.Run<IList<IStep>>(() =>
         {
             var createArtifactStep = new CreateUploadMetaArtifactsStep(ServiceProvider);
+            
+            var copyStep = new CopyReleaseStep(createArtifactStep, _releaseSettings, ServiceProvider);
+            _progressBarReporter = new(copyStep);
+
             return new List<IStep>
             {
                 // Build
@@ -64,7 +76,7 @@ internal class ReleaseRawPipeline : SequentialPipeline
                 // Build Release artifacts
                 createArtifactStep,
                 // Copy to Release
-                new CopyReleaseStep(createArtifactStep, new ProgressBarReporter(), _releaseSettings, ServiceProvider),
+                copyStep
             };
         });
     }

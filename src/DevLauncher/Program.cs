@@ -4,7 +4,6 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using AET.ModVerify;
 using AET.ModVerify.Reporting.Reporters;
 using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
@@ -209,6 +208,7 @@ internal class Program : CliBootstrapper
         }
         finally
         {
+           
             if (HasErrors || HasWarning)
             {
                 Console.WriteLine("Press any key to exit.");
