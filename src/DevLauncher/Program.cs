@@ -21,6 +21,7 @@ using PG.StarWarsGame.Engine;
 using PG.StarWarsGame.Files.ALO;
 using PG.StarWarsGame.Files.DAT;
 using PG.StarWarsGame.Files.MEG;
+using PG.StarWarsGame.Files.MTD;
 using PG.StarWarsGame.Files.XML;
 using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Clients.Steam;
@@ -268,6 +269,7 @@ internal class Program : CliBootstrapper
         PetroglyphGameInfrastructure.InitializeServices(serviceCollection);
 
         serviceCollection.SupportDAT();
+        serviceCollection.SupportMTD();
         serviceCollection.SupportMEG();
         serviceCollection.SupportXML();
         serviceCollection.SupportALO();
