@@ -13,7 +13,15 @@ internal class DevLauncherEnvironment(Assembly assembly, IFileSystem fileSystem)
 
     public override string ApplicationName => "Republic at War DevLauncher";
 
-    public override UpdateConfiguration UpdateConfiguration { get; }
+    public override UpdateConfiguration UpdateConfiguration => new()
+    {
+        DownloadLocation = "",
+        RestartConfiguration = new UpdateRestartConfiguration
+        {
+            SupportsRestart = true,
+            PassCurrentArgumentsForRestart = true
+        }
+    };
 
     public override Uri? RepositoryUrl => null;
 
@@ -21,7 +29,7 @@ internal class DevLauncherEnvironment(Assembly assembly, IFileSystem fileSystem)
     {
         new($"https://republicatwar.com/downloads/{ToolPathName}")
     };
-    public override string UpdateRegistryPath => $@"SOFTWARE\{ToolPathName}";
+    public override string UpdateRegistryPath => $@"SOFTWARE\{ToolPathName}\Update";
 
     protected override string ApplicationLocalDirectoryName => ToolPathName;
 }

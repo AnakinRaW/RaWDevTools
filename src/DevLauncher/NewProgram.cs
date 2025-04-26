@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO.Abstractions;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using AnakinRaW.ApplicationBase;
-using AnakinRaW.ApplicationBase.New;
+using AnakinRaW.AppUpdaterFramework;
+using AnakinRaW.AppUpdaterFramework.External;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,13 +35,26 @@ internal class NewProgram : SelfUpdateableAppLifecycle
         return new WindowsRegistry();
     }
 
-    protected override Task<int> RunAppAsync(string[] args, IServiceCollection coreServices)
+    protected override Task<int> RunAppAsync(string[] args, IServiceProvider appServiceProvider)
     {
-        Console.WriteLine("123");
+        var exService = appServiceProvider.GetRequiredService<IExternalUpdaterService>();
+
+        var restartOptions = exService.CreateRestartOptions(true);
+        exService.Launch(restartOptions);
+
+        Console.WriteLine(Environment.CommandLine);
+
+        Console.ReadLine();
+
         return Task.FromResult(0);
     }
 
     protected override void ResetApp()
     {
+    }
+
+    protected override void CreateAppServices(IServiceCollection services)
+    {
+        services.MakeAppUpdateable(ApplicationEnvironment, sp => new JsonManifestLoader(sp));
     }
 }
