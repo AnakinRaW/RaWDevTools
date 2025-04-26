@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using AET.ModVerify.Reporting.Reporters;
@@ -61,15 +60,15 @@ internal class Program : CliBootstrapper
 
     private static readonly CancellationTokenSource ApplicationCancellationTokenSource = new();
 
-    public static int Main(string[] args)
-    {
-        Console.CancelKeyPress += (_, _) => ApplicationCancellationTokenSource.Cancel();
-        return new Program().Run(args);
-    }
+    //public static int Main(string[] args)
+    //{
+    //    Console.CancelKeyPress += (_, _) => ApplicationCancellationTokenSource.Cancel();
+    //    return new Program().Run(args);
+    //}
 
-    protected override IApplicationEnvironment CreateEnvironment(IServiceProvider serviceProvider)
+    protected override ApplicationEnvironment CreateEnvironment(IServiceProvider serviceProvider)
     {
-        return new DevLauncherEnvironment(Assembly.GetExecutingAssembly(), serviceProvider);
+        return null; //return new DevLauncherEnvironment(Assembly.GetExecutingAssembly(), serviceProvider);
     }
 
     protected override IRegistry CreateRegistry()
@@ -111,7 +110,7 @@ internal class Program : CliBootstrapper
     }
 
     protected override void ConfigureLogging(ILoggingBuilder loggingBuilder, IFileSystem fileSystem, 
-        IApplicationEnvironment applicationEnvironment)
+        ApplicationEnvironment applicationEnvironment)
     {
         base.ConfigureLogging(loggingBuilder, fileSystem, applicationEnvironment);
         
