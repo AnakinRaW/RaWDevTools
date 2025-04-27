@@ -15,7 +15,9 @@ internal class DevLauncherEnvironment(Assembly assembly, IFileSystem fileSystem)
 
     public override UpdateConfiguration UpdateConfiguration => new()
     {
-        DownloadLocation = "",
+        DownloadLocation = FileSystem.Path.Combine(ApplicationLocalPath, "downloads"),
+        BackupLocation = FileSystem.Path.Combine(ApplicationLocalPath, "backups"),
+        BackupPolicy = BackupPolicy.Required,
         RestartConfiguration = new UpdateRestartConfiguration
         {
             SupportsRestart = true,

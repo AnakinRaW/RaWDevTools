@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO.Abstractions;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using AnakinRaW.ApplicationBase;
@@ -42,7 +41,7 @@ internal class NewProgram : SelfUpdateableAppLifecycle
         var restartOptions = exService.CreateRestartOptions(true);
         exService.Launch(restartOptions);
 
-        Console.WriteLine(Environment.CommandLine);
+        Console.WriteLine(string.Join(" ", args));
 
         Console.ReadLine();
 
@@ -55,6 +54,6 @@ internal class NewProgram : SelfUpdateableAppLifecycle
 
     protected override void CreateAppServices(IServiceCollection services)
     {
-        services.MakeAppUpdateable(ApplicationEnvironment, sp => new JsonManifestLoader(sp));
+        services.MakeAppUpdateable(UpdatableApplicationEnvironment!, sp => new JsonManifestLoader(sp));
     }
 }
