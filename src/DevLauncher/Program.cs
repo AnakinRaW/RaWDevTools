@@ -1,42 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Abstractions;
-using System.Threading;
-using System.Threading.Tasks;
-using AET.ModVerify.Reporting.Reporters;
-using AET.SteamAbstraction;
-using AnakinRaW.ApplicationBase;
-using AnakinRaW.CommonUtilities.FileSystem;
-using AnakinRaW.CommonUtilities.Hashing;
-using AnakinRaW.CommonUtilities.Registry;
-using AnakinRaW.CommonUtilities.Registry.Windows;
-using AnakinRaW.CommonUtilities.SimplePipeline;
-using CommandLine;
-using CommandLine.Text;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using PG.Commons;
-using PG.StarWarsGame.Engine;
-using PG.StarWarsGame.Files.ALO;
-using PG.StarWarsGame.Files.DAT;
-using PG.StarWarsGame.Files.MEG;
-using PG.StarWarsGame.Files.MTD;
-using PG.StarWarsGame.Files.XML;
-using PG.StarWarsGame.Infrastructure;
-using PG.StarWarsGame.Infrastructure.Clients.Steam;
-using RepublicAtWar.DevLauncher.Options;
-using RepublicAtWar.DevLauncher.Pipelines;
-using RepublicAtWar.DevLauncher.Pipelines.Actions;
-using RepublicAtWar.DevLauncher.Pipelines.Settings;
-using RepublicAtWar.DevLauncher.Services;
-using RepublicAtWar.DevTools.Services;
-using RepublicAtWar.DevTools.Steps.Settings;
-using Serilog;
-using Serilog.Events;
-using Serilog.Filters;
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
-
-namespace RepublicAtWar.DevLauncher;
+﻿namespace RepublicAtWar.DevLauncher;
 
 internal class Program 
 {

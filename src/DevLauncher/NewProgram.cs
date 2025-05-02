@@ -6,7 +6,7 @@ using AnakinRaW.ApplicationBase;
 using AnakinRaW.ApplicationBase.Environment;
 using AnakinRaW.ApplicationBase.Update;
 using AnakinRaW.AppUpdaterFramework;
-using AnakinRaW.AppUpdaterFramework.External;
+using AnakinRaW.AppUpdaterFramework.Product;
 using AnakinRaW.CommonUtilities;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
@@ -48,10 +48,9 @@ internal class NewProgram : SelfUpdateableAppLifecycle
         Console.WriteLine($"Elevated: {CurrentProcessInfo.Current.IsElevated}");
 
 #if NETFRAMEWORK
-        var exService = appServiceProvider.GetRequiredService<IExternalUpdaterService>();
+        var exService = appServiceProvider.GetRequiredService<IProductService>();
 
-        var restartOptions = exService.CreateRestartOptions(true);
-        exService.Launch(restartOptions);
+        Console.WriteLine(exService.GetCurrentInstance());
 #endif
 
 
