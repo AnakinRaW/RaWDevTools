@@ -56,11 +56,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" Condition="$(TargetFramework) == 'net481'"/>
+		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" Condition="$(TargetFramework) == 'net481'" />
 	</ItemGroup>
 
-	<PropertyGroup>
-		<WeaverConfiguration Condition="'$(Configuration)' == 'Release'">
+	<ItemGroup>
+	  <None Update="Properties\Settings.settings">
+	    <Generator>SettingsSingleFileGenerator</Generator>
+	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+	  </None>
+	</ItemGroup>
+
+	<PropertyGroup Condition="$(Configuration) == 'Release'">
+		<WeaverConfiguration>
 			<Weavers>
 				<Costura IncludeDebugSymbols="false" IgnoreSatelliteAssemblies="true" />
 			</Weavers>
