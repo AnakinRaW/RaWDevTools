@@ -6,7 +6,9 @@ using AnakinRaW.ApplicationBase;
 using AnakinRaW.ApplicationBase.Environment;
 using AnakinRaW.ApplicationBase.Update;
 using AnakinRaW.AppUpdaterFramework;
+using AnakinRaW.AppUpdaterFramework.Metadata.Product;
 using AnakinRaW.AppUpdaterFramework.Product;
+using AnakinRaW.AppUpdaterFramework.Updater;
 using AnakinRaW.CommonUtilities;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
@@ -42,21 +44,26 @@ internal class NewProgram : SelfUpdateableAppLifecycle
         return new WindowsRegistry();
     }
 
-    protected override Task<int> RunAppAsync(string[] args, IServiceProvider appServiceProvider)
+    protected override async Task<int> RunAppAsync(string[] args, IServiceProvider appServiceProvider)
     {
         Console.WriteLine(string.Join(" ", args));
         Console.WriteLine($"Elevated: {CurrentProcessInfo.Current.IsElevated}");
 
 #if NETFRAMEWORK
-        var exService = appServiceProvider.GetRequiredService<IProductService>();
 
-        Console.WriteLine(exService.GetCurrentInstance());
+        var ps = appServiceProvider.GetRequiredService<IProductService>();
+        var us = appServiceProvider.GetRequiredService<IUpdateService>();
+
+        //var ip = ps.GetCurrentInstance();
+        //var e = await us.CheckForUpdatesAsync();
+
+        Console.WriteLine();
 #endif
 
 
         Console.ReadLine();
 
-        return Task.FromResult(0);
+        return 0;
     }
 
     protected override void ResetApp()
