@@ -13,6 +13,7 @@ using AnakinRaW.CommonUtilities;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testably.Abstractions;
 
 namespace RepublicAtWar.DevLauncher;
