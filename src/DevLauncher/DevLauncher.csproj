@@ -47,7 +47,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CLI\ApplicationBase.CLI.csproj" />
+		<ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CommandLine\ApplicationBase.CommandLine.csproj" />
 		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\AppUpdaterFramework.Manifest\AppUpdaterFramework.Manifest.csproj" />
 		<ProjectReference Include="..\..\ModVerify\src\ModVerify\ModVerify.csproj" />
 		<ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Engine\PG.StarWarsGame.Engine.csproj" />
@@ -56,7 +56,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" Condition="$(TargetFramework) == 'net481'" />
+		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater.App\ExternalUpdater.App.csproj" Condition="$(TargetFramework) == 'net481'" />
 	</ItemGroup>
 
 	<ItemGroup>
