@@ -160,7 +160,7 @@ internal class Program : SelfUpdateableAppLifecycle
 
     private ILogger SetupFileLogging(string path, LogEventLevel minLevel)
     {
-        var logPath = FileSystem.Path.Combine(path, "ModVerify_log.txt");
+        var logPath = FileSystem.Path.Combine(path, "RawDevLauncher_log.txt");
 
         return new LoggerConfiguration()
             .Enrich.FromLogContext()
