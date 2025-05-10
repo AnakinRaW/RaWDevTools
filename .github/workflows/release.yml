@@ -21,7 +21,7 @@ env:
   SFTP_UPLOADER: AnakinRaW.FtpUploader.dll
   ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher
   ORIGIN_BASE_PART: downloads/RawDevLauncher/
-  BRANCH_NAME: ${{ github.event.inputs.branch || 'stable' }}"
+  BRANCH_NAME: ${{ github.event.inputs.branch || 'stable' }}
 
 jobs:
 
