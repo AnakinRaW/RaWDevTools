@@ -61,8 +61,6 @@ internal class MegCompile(IServiceProvider serviceProvider)
         serviceCollection.AddSingleton<IFileSystem>(new RealFileSystem());
         serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
         serviceCollection.AddSingleton<IRegistry>(new WindowsRegistry());
-        
-        serviceCollection.AddSingleton<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(true, sp));
 
         SteamAbstractionLayer.InitializeServices(serviceCollection);
         SteamPetroglyphStarWarsGameClients.InitializeServices(serviceCollection);
