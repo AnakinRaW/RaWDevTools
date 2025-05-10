@@ -30,13 +30,12 @@ internal class DevLauncherEnvironment(Assembly assembly, IFileSystem fileSystem)
             DownloadLocation = FileSystem.Path.Combine(ApplicationLocalPath, "downloads"),
             BackupLocation = FileSystem.Path.Combine(ApplicationLocalPath, "backups"),
             BackupPolicy = BackupPolicy.Required,
-#if NETFRAMEWORK
+            DownloadRetryCount = 3,
             RestartConfiguration = new UpdateRestartConfiguration
             {
                 SupportsRestart = true,
                 PassCurrentArgumentsForRestart = true
             }
-#endif
         };
     }
 }

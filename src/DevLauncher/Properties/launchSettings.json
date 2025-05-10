@@ -2,7 +2,7 @@
   "profiles": {
     "Build & Run Mod": {
       "commandName": "Project",
-      "commandLineArgs": "verify -o \"some\\path with space\" --externalUpdaterResult Restarted",
+      "commandLineArgs": "--updateManifestUrl C:\\test\\manifest.json",
       "workingDirectory": "C:\\Privat\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
     },
     "DAT2LocFile": {

@@ -38,7 +38,7 @@ public class PackMegFileStep(IPackMegConfiguration config, BuildSettings setting
 
         var megFileName = _fileSystem.Path.GetFileName(megFilePath);
 
-        var updateChecker = _serviceProvider.GetRequiredService<IBinaryRequiresUpdateChecker>();
+        var updateChecker = new TimeStampBasesUpdateChecker(settings.CleanBuild, _serviceProvider);
 
         if (!settings.CleanBuild && !updateChecker.RequiresUpdate(megFilePath, files))
         {

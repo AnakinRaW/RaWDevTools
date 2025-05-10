@@ -1,250 +1,183 @@
-﻿namespace RepublicAtWar.DevLauncher;
+﻿using AET.ModVerify.Reporting.Reporters;
+using AET.SteamAbstraction;
+using AnakinRaW.ApplicationBase;
+using AnakinRaW.ApplicationBase.Environment;
+using AnakinRaW.ApplicationBase.Update;
+using AnakinRaW.AppUpdaterFramework;
+using AnakinRaW.AppUpdaterFramework.Handlers.Interaction;
+using AnakinRaW.CommonUtilities.FileSystem;
+using AnakinRaW.CommonUtilities.Hashing;
+using AnakinRaW.CommonUtilities.Registry;
+using AnakinRaW.CommonUtilities.Registry.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using PG.Commons;
+using PG.StarWarsGame.Engine;
+using PG.StarWarsGame.Files.ALO;
+using PG.StarWarsGame.Files.DAT;
+using PG.StarWarsGame.Files.MEG;
+using PG.StarWarsGame.Files.MTD;
+using PG.StarWarsGame.Files.XML;
+using PG.StarWarsGame.Infrastructure;
+using PG.StarWarsGame.Infrastructure.Clients.Steam;
+using RepublicAtWar.DevLauncher.Services;
+using Serilog;
+using Serilog.Events;
+using Serilog.Filters;
+using System;
+using System.Collections.Generic;
+using System.IO.Abstractions;
+using System.Reflection;
+using System.Threading.Tasks;
+using AnakinRaW.ApplicationBase.Utilities;
+using PG.StarWarsGame.Engine.Xml.Parsers;
+using PG.StarWarsGame.Files.XML.Parsers;
+using RepublicAtWar.DevLauncher.Update;
+using Serilog.Sinks.SystemConsole.Themes;
+using Testably.Abstractions;
+using ILogger = Serilog.ILogger;
 
-internal class Program 
+namespace RepublicAtWar.DevLauncher;
+
+public static class MainClass
 {
-    //private const string EngineXmlParserNamespace = "PG.StarWarsGame.Engine.Xml.Parsers";
-    //private const string XmlParserNamespace = "PG.StarWarsGame.Files.XML.Parsers.Primitives";
+    // In some build scenarios we cannot have the Main method in a class that inherits a type form an embedded assembly.
+    // This might result in FileNotFoundExceptions when the CLR is trying to load the type that contains the Main method.
+    public static Task<int> Main(string[] args)
+    {
+        return new Program().StartAsync(args);
+    }
+}
 
-    //protected override bool AutomaticUpdate => true;
+internal class Program : SelfUpdateableAppLifecycle
+{
+    private static readonly string EngineParserNamespace = typeof(XmlObjectParser<>).Namespace!;
+    private static readonly string ParserNamespace = typeof(PetroglyphXmlFileParser<>).Namespace!;
+    private static readonly string DevLauncherRootNamespace = typeof(Program).Namespace!;
+    private static readonly string DevLauncherUpdateNamespace = typeof(RawDevLauncherUpdater).Namespace!;
+    
+    protected override ApplicationEnvironment CreateAppEnvironment()
+    {
+        return new DevLauncherEnvironment(Assembly.GetExecutingAssembly(), FileSystem);
+    }
 
-    //protected override IEnumerable<string>? AdditionalNamespacesToLogToConsole
-    //{
-    //    get
-    //    {
-    //        yield return "RepublicAtWar";
-    //        yield return "AET.ModVerify";
-    //    }
-    //}
+    protected override IFileSystem CreateFileSystem()
+    {
+        return new RealFileSystem();
+    }
 
-    //private bool HasErrors { get; set; }
+    protected override IRegistry CreateRegistry()
+    {
+        return new WindowsRegistry();
+    }
 
-    //private bool HasWarning { get; set; }
+    protected override async Task<int> RunAppAsync(string[] args, IServiceProvider appServiceProvider)
+    {
+        using (new UnhandledExceptionHandler(appServiceProvider))
+        using (new UnobservedTaskExceptionHandler(appServiceProvider))
+            return await new RawDevLauncher(UpdatableApplicationEnvironment!, appServiceProvider).RunAsync(args);
+    }
 
-    //private static readonly CancellationTokenSource ApplicationCancellationTokenSource = new();
+    protected override void ResetApp(Microsoft.Extensions.Logging.ILogger? logger)
+    {
+        logger?.LogDebug("Resetting Application");
+        var deleteResult = ApplicationEnvironment.ApplicationLocalDirectory.TryDeleteWithRetry();
+        if (!deleteResult)
+            logger?.LogWarning("Failed to delete application local directory.");
+        ApplicationEnvironment.ApplicationLocalDirectory.Create();
+    }
 
-    //public static int Main(string[] args)
-    //{
-    //    Console.CancelKeyPress += (_, _) => ApplicationCancellationTokenSource.Cancel();
-    //    return new Program().Run(args);
-    //}
+    protected override void CreateAppServices(IServiceCollection services, IReadOnlyCollection<string> args)
+    {
+        services.AddLogging(ConfigureLogging);
 
-    //protected override ApplicationEnvironment CreateEnvironment(IServiceProvider serviceProvider)
-    //{
-    //    return null; //return new DevLauncherEnvironment(Assembly.GetExecutingAssembly(), serviceProvider);
-    //}
+        services.AddSingleton<IHashingService>(sp => new HashingService(sp));
 
-    //protected override IRegistry CreateRegistry()
-    //{
-    //    return new WindowsRegistry();
-    //}
+        SteamAbstractionLayer.InitializeServices(services);
+        SteamPetroglyphStarWarsGameClients.InitializeServices(services);
+        PetroglyphGameInfrastructure.InitializeServices(services);
 
-    //protected override int ExecuteAfterUpdate(string[] args, IServiceCollection serviceCollection)
-    //{
-    //    Type[] optionTypes =
-    //    [
-    //        typeof(BuildAndRunOption), 
-    //        typeof(InitializeLocalizationOption),
-    //        typeof(PrepareLocalizationsOption),
-    //        typeof(MergeLocalizationOption),
-    //        typeof(ReleaseRepublicAtWarOption),
-    //        typeof(VerifyOption)
-    //    ];
+        services.SupportDAT();
+        services.SupportMTD();
+        services.SupportMEG();
+        services.SupportXML();
+        services.SupportALO();
+        PetroglyphCommons.ContributeServices(services);
 
-    //    var toolResult = 0;
-    //    var parseResult = new Parser(with =>
-    //    {
-    //        with.IgnoreUnknownArguments = true;
-    //    }).ParseArguments(args, optionTypes);
+        PetroglyphEngineServiceContribution.ContributeServices(services);
+        services.RegisterJsonReporter();
+        services.RegisterTextFileReporter();
 
-    //    parseResult.WithParsed(o =>
-    //    {
-    //        Task.Run(async () =>
-    //        {
-    //            toolResult = await Run((DevToolsOptionBase)o, serviceCollection);
-    //        }).Wait();
-    //    });
-    //    parseResult.WithNotParsed(e =>
-    //    {
-    //        Console.WriteLine(HelpText.AutoBuild(parseResult).ToString());
-    //        toolResult = 0xA0;
-    //    });
-    //    return toolResult;
-    //}
+        services.AddSingleton(sp => new GitService(".", sp));
 
-    //protected override void ConfigureLogging(ILoggingBuilder loggingBuilder, IFileSystem fileSystem, 
-    //    ApplicationEnvironment applicationEnvironment)
-    //{
-    //    base.ConfigureLogging(loggingBuilder, fileSystem, applicationEnvironment);
+        services.MakeAppUpdateable(
+            UpdatableApplicationEnvironment!,
+            sp => new CosturaApplicationProductService(ApplicationEnvironment, sp),
+            sp => new JsonManifestLoader(sp),
+            sc => { sc.AddSingleton<ILockedFileInteractionHandler>(new CosturaLockedFileHandler()); });
+    }
+
+    private void ConfigureLogging(ILoggingBuilder loggingBuilder)
+    {
+        loggingBuilder.ClearProviders();
+
+        // ReSharper disable once RedundantAssignment
+        var logLevel = LogEventLevel.Information;
+#if DEBUG
+        logLevel = LogEventLevel.Debug;
+        loggingBuilder.AddDebug();
+#endif
+
+        var fileLogger = SetupFileLogging(ApplicationEnvironment.ApplicationLocalPath, logLevel);
+        loggingBuilder.AddSerilog(fileLogger);
+
+        var cLogger = new LoggerConfiguration()
+            .WriteTo.Console(
+                logLevel,
+                theme: AnsiConsoleTheme.Code,
+                outputTemplate: "[{Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .Filter.ByIncludingOnly(x =>
+            {
+                if (!x.Properties.TryGetValue("SourceContext", out var value))
+                    return true;
+
+                var source = value.ToString().AsSpan().Trim('\"');
+
+                if (!source.StartsWith(DevLauncherRootNamespace.AsSpan()) && !source.StartsWith("RepublicAtWar.".AsSpan())) 
+                    return false;
+
+                if (source.StartsWith(DevLauncherUpdateNamespace.AsSpan()))
+                    return false;
+                
+                return true;
+
+            })
+            .MinimumLevel.Is(logLevel)
+            .CreateLogger();
         
-    //    SetupXmlParseLogging(loggingBuilder, fileSystem);
+        loggingBuilder.AddSerilog(cLogger);
+    }
 
-    //    loggingBuilder.AddFilter(level =>
-    //    {
-    //        if (level is LogLevel.Warning) 
-    //            HasWarning = true;
-    //        if (level is LogLevel.Error or LogLevel.Critical)
-    //            HasErrors = true;
-    //        return true;
-    //    });
-    //}
+    private ILogger SetupFileLogging(string path, LogEventLevel minLevel)
+    {
+        var logPath = FileSystem.Path.Combine(path, "ModVerify_log.txt");
 
-    //protected override bool ExcludeFromGlobalLogging(LogEvent arg)
-    //{
-    //    return IsXmlParserLogging(arg);
-    //}
+        return new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .MinimumLevel.Is(minLevel)
+            .Filter.ByExcluding(IsXmlParserLogging)
+            .WriteTo.Async(c =>
+            {
+                c.RollingFile(
+                    logPath,
+                    outputTemplate:
+                    "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}");
+            })
+            .CreateLogger();
+    }
 
-    //private void SetupXmlParseLogging(ILoggingBuilder loggingBuilder, IFileSystem fileSystem)
-    //{
-    //    const string xmlParseLogFileName = "XmlParseLog.txt";
-
-    //    fileSystem.File.TryDeleteWithRetry(xmlParseLogFileName);
-
-    //    var logger = new LoggerConfiguration()
-    //        .Enrich.FromLogContext()
-    //        .MinimumLevel.Warning()
-    //        .Filter.ByIncludingOnly(IsXmlParserLogging)
-    //        .WriteTo.File(xmlParseLogFileName, outputTemplate: "[{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
-    //        .CreateLogger();
-
-    //    loggingBuilder.AddSerilog(logger);
-    //}
-
-
-    //private static bool IsXmlParserLogging(LogEvent logEvent)
-    //{
-    //    return Matching.FromSource(XmlParserNamespace)(logEvent) || Matching.FromSource(EngineXmlParserNamespace)(logEvent);
-    //}
-
-
-    //private async Task<int> Run(DevToolsOptionBase options, IServiceCollection serviceCollection)
-    //{
-    //    var services = CreateAppServices(options, serviceCollection);
-    //    var logger = services.GetService<ILoggerFactory>()?.CreateLogger(GetType());
-
-    //    try
-    //    {
-    //        var gameFinderResult = new ModFinderService(services).FindAndAddModInCurrentDirectory();
-
-    //        IPipeline launcherPipeline;
-
-    //        switch (options)
-    //        {
-    //            case BuildAndRunOption buildRun:
-    //                launcherPipeline = CreateBuildRunPipeline(buildRun, gameFinderResult, services);
-    //                break;
-    //            case InitializeLocalizationOption:
-    //                launcherPipeline = new InitializeLocalizationAction(services);
-    //                break;
-    //            case PrepareLocalizationsOption:
-    //                launcherPipeline = new CreateLocalizationDiffsAction(services);
-    //                break;
-    //            case ReleaseRepublicAtWarOption rawRelease:
-    //                launcherPipeline = CreateReleasePipeline(rawRelease, gameFinderResult, services);
-    //                break;
-    //            case MergeLocalizationOption:
-    //                launcherPipeline = new MergeLocalizationsAction(services);
-    //                break;
-    //            case VerifyOption verifyOption:
-    //                launcherPipeline = CreateBuildVerifyPipeline(verifyOption, gameFinderResult, services);
-    //                break;
-    //            default:
-    //                throw new ArgumentException($"The option '{options.GetType().FullName}' is not implemented",
-    //                    nameof(options));
-    //        }
-
-    //        await launcherPipeline.RunAsync(ApplicationCancellationTokenSource.Token);
-
-    //        if (!HasErrors && !HasWarning)
-    //            logger?.LogInformation("DONE");
-    //        if (HasErrors && !HasWarning)
-    //            logger?.LogInformation("DONE with errors");
-    //        else if (HasWarning && !HasErrors)
-    //            logger?.LogInformation("DONE with warnings");
-
-    //        return 0;
-    //    }
-    //    catch (Exception e)
-    //    {
-    //        logger?.LogError(e.Message, e);
-    //        return e.HResult;
-    //    }
-    //    finally
-    //    {
-           
-    //        if (HasErrors || HasWarning)
-    //        {
-    //            Console.WriteLine("Press any key to exit.");
-    //            Console.ReadLine();
-    //        }
-    //    }
-    //}
-
-    //private static IPipeline CreateBuildVerifyPipeline(VerifyOption options, GameFinderResult gameFinderResult, IServiceProvider services)
-    //{
-    //    var buildSettings = new BuildSettings
-    //    {
-    //        WarnAsError = options.WarnAsError,
-    //        CleanBuild = options.CleanBuild
-    //    };
-    //    return new BuildAndVerifyPipeline(gameFinderResult.RepublicAtWar, gameFinderResult.FallbackGame, buildSettings, services);
-    //}
-
-    //private static IPipeline CreateBuildRunPipeline(BuildAndRunOption options, GameFinderResult gameFinderResult, IServiceProvider services)
-    //{
-    //    var buildSettings = new BuildSettings
-    //    {
-    //        CleanBuild = options.CleanBuild,
-    //        WarnAsError = options.WarnAsError
-    //    };
-    //    var launchSettings = new LaunchSettings
-    //    {
-    //        RunGame = !options.SkipRun,
-    //        Debug = options.Debug,
-    //        Windowed = options.Windowed
-    //    };
-    //    return new BuildAndRunPipeline(gameFinderResult.RepublicAtWar, buildSettings, launchSettings, services);
-    //}
-
-    //private static IPipeline CreateReleasePipeline(ReleaseRepublicAtWarOption options, GameFinderResult gameFinderResult, IServiceProvider services)
-    //{
-    //    var buildSettings = new BuildSettings
-    //    {
-    //        CleanBuild = options.CleanBuild,
-    //        WarnAsError = options.WarnAsError
-    //    };
-    //    var releaseSettings = new ReleaseSettings
-    //    {
-    //        UploaderDirectory = options.UploaderDirectory,
-    //        WarnAsError = options.WarnAsError
-    //    }; 
-    //    return new ReleaseRawPipeline(gameFinderResult.RepublicAtWar, gameFinderResult.FallbackGame, buildSettings, releaseSettings, services);
-    //}
-
-    //private static IServiceProvider CreateAppServices(DevToolsOptionBase options, IServiceCollection serviceCollection)
-    //{
-    //    serviceCollection.AddSingleton<IHashingService>(sp => new HashingService(sp));
-    //    serviceCollection.AddSingleton<IRegistry>(_ => new WindowsRegistry());
-
-    //    SteamAbstractionLayer.InitializeServices(serviceCollection);
-    //    SteamPetroglyphStarWarsGameClients.InitializeServices(serviceCollection);
-    //    PetroglyphGameInfrastructure.InitializeServices(serviceCollection);
-
-    //    serviceCollection.SupportDAT();
-    //    serviceCollection.SupportMTD();
-    //    serviceCollection.SupportMEG();
-    //    serviceCollection.SupportXML();
-    //    serviceCollection.SupportALO();
-    //    PetroglyphCommons.ContributeServices(serviceCollection);
-
-    //    PetroglyphEngineServiceContribution.ContributeServices(serviceCollection);
-    //    serviceCollection.RegisterJsonReporter();
-    //    serviceCollection.RegisterTextFileReporter();
-
-    //    serviceCollection.AddSingleton(sp => new GitService(".", options.WarnAsError, sp));
-
-    //    var forceRebuild = options is RaWBuildOption { CleanBuild: true };
-    //    serviceCollection.AddSingleton<IBinaryRequiresUpdateChecker>(sp => new TimeStampBasesUpdateChecker(forceRebuild, sp));
-
-    //    return serviceCollection.BuildServiceProvider();
-    //}
+    private static bool IsXmlParserLogging(LogEvent logEvent)
+    {
+        return Matching.FromSource(ParserNamespace)(logEvent) || Matching.FromSource(EngineParserNamespace)(logEvent);
+    }
 }
