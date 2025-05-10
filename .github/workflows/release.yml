@@ -51,8 +51,9 @@ jobs:
 
   deploy:
     name: Deploy
+    # Only deploy on push to main or manual trigger
     if: |
-      (github.ref == 'refs/heads/main' &&  github.event_name == 'push') || github.event_name == 'workflow_dispatch' # Only deploy on push to main or manual trigger
+      (github.ref == 'refs/heads/main' &&  github.event_name == 'push') || github.event_name == 'workflow_dispatch'
     needs: [build]
     runs-on: ubuntu-latest
     steps:
@@ -86,8 +87,9 @@ jobs:
       - uses: dotnet/nbgv@v0.4.2
         id: nbgv
       - name: Create GitHub release
+# Only create a release on push to main
         if: |
-            github.ref == 'refs/heads/main' &&  github.event_name == 'push' # Only create a release on push to main
+            github.ref == 'refs/heads/main' &&  github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           name: v${{ steps.nbgv.outputs.SemVer2 }}
