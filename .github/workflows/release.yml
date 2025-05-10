@@ -5,6 +5,11 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "The branch to a release to"
+        required: true
     
 env:
   TOOL_PROJ_PATH: ./src/DevLauncher/DevLauncher.csproj
@@ -16,6 +21,7 @@ env:
   SFTP_UPLOADER: AnakinRaW.FtpUploader.dll
   ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher
   ORIGIN_BASE_PART: downloads/RawDevLauncher/
+  BRANCH_NAME: ${{ github.event.inputs.branch || 'stable' }}"
 
 jobs:
 
@@ -46,7 +52,7 @@ jobs:
   deploy:
     name: Deploy
     if: |
-      github.ref == 'refs/heads/main' &&  github.event_name == 'push'
+      (github.ref == 'refs/heads/main' &&  github.event_name == 'push') || github.event_name == 'workflow_dispatch'
     needs: [build]
     runs-on: ubuntu-latest
     steps:
@@ -68,7 +74,7 @@ jobs:
       - name: Build Uploader
         run: dotnet build ${{env.UPLOADER_PROJ_PATH}} --configuration Release --output ./dev
       - name: Create Manifest
-        run: dotnet ./dev/${{env.MANIFEST_CREATOR}} -a binaries/${{env.TOOL_EXE}} --appDataFiles binaries/${{env.UPDATER_EXE}} --origin ${{env.ORIGIN_BASE}} -o ./binaries
+        run: dotnet ./dev/${{env.MANIFEST_CREATOR}} -a binaries/${{env.TOOL_EXE}} --appDataFiles binaries/${{env.UPDATER_EXE}} --origin ${{env.ORIGIN_BASE}} -o ./binaries -b ${{env.BRANCH_NAME}}
       - name: Upload Build
         run: dotnet ./dev/${{env.SFTP_UPLOADER}} -h $host --port $port -u ${{secrets.SFTP_USER}} -p ${{secrets.SFTP_PASSWORD}} --base $base_path -s $source
         env:

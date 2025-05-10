@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace RepublicAtWar.DevTools.Services;
 
-public class TimeStampBasesUpdateChecker(bool forceRebuild, IServiceProvider serviceProvider) : IBinaryRequiresUpdateChecker
+public class TimeStampBasesUpdateChecker(bool forceRebuild, IServiceProvider serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
 

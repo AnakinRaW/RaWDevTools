@@ -7,10 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DevLauncher", "src\DevLaunc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AnakinApps", "AnakinApps", "{4C465CE6-4DB4-4075-A33D-6490579C1B92}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalUpdater.CLI", "ModdingToolBase\src\Updater\ExternalUpdater.CLI\ExternalUpdater.CLI.csproj", "{E0C9A009-EBB3-42DC-80A8-8AF61125537D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalUpdater", "ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj", "{0751622D-9343-4CB0-8D03-A22829A3A9B8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppUpdaterFramework.Manifest", "ModdingToolBase\src\Updater\AppUpdaterFramework.Manifest\AppUpdaterFramework.Manifest.csproj", "{40EDE817-AA59-4F6D-A9E1-A26D2F65FE85}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppUpdaterFramework.Core", "ModdingToolBase\src\Updater\AppUpdaterFramework.Core\AppUpdaterFramework.Core.csproj", "{31463AD9-1BDC-40BA-A192-02F9CFE9BDB9}"
@@ -19,9 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppUpdaterFramework", "Modd
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationBase", "ModdingToolBase\src\AnakinApps\ApplicationBase\ApplicationBase.csproj", "{9F2A24AE-04E9-4CB0-825E-FE6A7BD25614}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationBase.CLI", "ModdingToolBase\src\AnakinApps\ApplicationBase.CLI\ApplicationBase.CLI.csproj", "{37BE75A6-AEF7-4563-B948-D84B3E65D13A}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ApplicationConstants", "ModdingToolBase\src\AnakinApps\ApplicationConstants\ApplicationConstants.shproj", "{B297A13A-8E3A-436C-BA97-8B5F57827FFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationBase.CommandLine", "ModdingToolBase\src\AnakinApps\ApplicationBase.CommandLine\ApplicationBase.CommandLine.csproj", "{37BE75A6-AEF7-4563-B948-D84B3E65D13A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FtpUploader", "ModdingToolBase\src\AnakinApps\FtpUploader\FtpUploader.csproj", "{FBC72463-9948-4030-B67D-BDC8C27E11C9}"
 EndProject
@@ -59,6 +53,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MegCompile", "src\MegCompil
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SeparatedTools", "SeparatedTools", "{5A7785E7-C59E-4F2D-9596-352844693272}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ApplicationBase.Shared", "ModdingToolBase\src\AnakinApps\ApplicationBase.Shared\ApplicationBase.Shared.shproj", "{B297A13A-8E3A-436C-BA97-8B5F57827FFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalUpdater.App", "ModdingToolBase\src\Updater\ExternalUpdater.App\ExternalUpdater.App.csproj", "{846253D9-D766-8852-74B9-E1E04B9F2A81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalUpdater.Core", "ModdingToolBase\src\Updater\ExternalUpdater.Core\ExternalUpdater.Core.csproj", "{EF1942AC-C4E5-A6AA-0328-1DA00E3BE7A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,14 +69,6 @@ Global
 		{1BA491BC-2CD6-4270-9573-5FF9529D8D89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BA491BC-2CD6-4270-9573-5FF9529D8D89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BA491BC-2CD6-4270-9573-5FF9529D8D89}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E0C9A009-EBB3-42DC-80A8-8AF61125537D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E0C9A009-EBB3-42DC-80A8-8AF61125537D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E0C9A009-EBB3-42DC-80A8-8AF61125537D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E0C9A009-EBB3-42DC-80A8-8AF61125537D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0751622D-9343-4CB0-8D03-A22829A3A9B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0751622D-9343-4CB0-8D03-A22829A3A9B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0751622D-9343-4CB0-8D03-A22829A3A9B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0751622D-9343-4CB0-8D03-A22829A3A9B8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{40EDE817-AA59-4F6D-A9E1-A26D2F65FE85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{40EDE817-AA59-4F6D-A9E1-A26D2F65FE85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40EDE817-AA59-4F6D-A9E1-A26D2F65FE85}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -145,19 +137,24 @@ Global
 		{BB759AD8-EEAC-4994-80A8-34E60B2FDA86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB759AD8-EEAC-4994-80A8-34E60B2FDA86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB759AD8-EEAC-4994-80A8-34E60B2FDA86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{846253D9-D766-8852-74B9-E1E04B9F2A81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{846253D9-D766-8852-74B9-E1E04B9F2A81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{846253D9-D766-8852-74B9-E1E04B9F2A81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{846253D9-D766-8852-74B9-E1E04B9F2A81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF1942AC-C4E5-A6AA-0328-1DA00E3BE7A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF1942AC-C4E5-A6AA-0328-1DA00E3BE7A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF1942AC-C4E5-A6AA-0328-1DA00E3BE7A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF1942AC-C4E5-A6AA-0328-1DA00E3BE7A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{E0C9A009-EBB3-42DC-80A8-8AF61125537D} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
-		{0751622D-9343-4CB0-8D03-A22829A3A9B8} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
 		{40EDE817-AA59-4F6D-A9E1-A26D2F65FE85} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
 		{31463AD9-1BDC-40BA-A192-02F9CFE9BDB9} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
 		{61E8C035-B71E-4F93-8D3A-DBCCEDE83A52} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
 		{9F2A24AE-04E9-4CB0-825E-FE6A7BD25614} = {46DB413A-0F73-48A6-9071-9C38916BE6FC}
 		{37BE75A6-AEF7-4563-B948-D84B3E65D13A} = {46DB413A-0F73-48A6-9071-9C38916BE6FC}
-		{B297A13A-8E3A-436C-BA97-8B5F57827FFE} = {46DB413A-0F73-48A6-9071-9C38916BE6FC}
 		{FBC72463-9948-4030-B67D-BDC8C27E11C9} = {266B0025-20CE-4A57-94DF-ABFAB21189AD}
 		{ABBFF195-1A64-442B-8843-8F714ADA5C8F} = {266B0025-20CE-4A57-94DF-ABFAB21189AD}
 		{266B0025-20CE-4A57-94DF-ABFAB21189AD} = {4C465CE6-4DB4-4075-A33D-6490579C1B92}
@@ -171,14 +168,16 @@ Global
 		{C5703F53-DC3D-4B4E-9E18-365124C72793} = {D4C9B8AA-96E5-49F4-B8A4-765144E16548}
 		{50E34854-BF6B-4170-BB4C-74830AB5609B} = {5A7785E7-C59E-4F2D-9596-352844693272}
 		{BB759AD8-EEAC-4994-80A8-34E60B2FDA86} = {5A7785E7-C59E-4F2D-9596-352844693272}
+		{B297A13A-8E3A-436C-BA97-8B5F57827FFE} = {46DB413A-0F73-48A6-9071-9C38916BE6FC}
+		{846253D9-D766-8852-74B9-E1E04B9F2A81} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
+		{EF1942AC-C4E5-A6AA-0328-1DA00E3BE7A1} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DC15751A-BB36-4EF1-BFF0-2DF1E419AC8F}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		ModdingToolBase\src\AnakinApps\ApplicationConstants\ApplicationConstants.projitems*{9f2a24ae-04e9-4cb0-825e-fe6a7bd25614}*SharedItemsImports = 5
-		ModdingToolBase\src\AnakinApps\ApplicationConstants\ApplicationConstants.projitems*{abbff195-1a64-442b-8843-8f714ada5c8f}*SharedItemsImports = 5
-		ModdingToolBase\src\AnakinApps\ApplicationConstants\ApplicationConstants.projitems*{b297a13a-8e3a-436c-ba97-8b5f57827ffe}*SharedItemsImports = 13
-		ModdingToolBase\src\AnakinApps\ApplicationConstants\ApplicationConstants.projitems*{fbc72463-9948-4030-b67d-bdc8c27e11c9}*SharedItemsImports = 5
+		ModdingToolBase\src\AnakinApps\ApplicationBase.Shared\ApplicationBase.Shared.projitems*{9f2a24ae-04e9-4cb0-825e-fe6a7bd25614}*SharedItemsImports = 5
+		ModdingToolBase\src\AnakinApps\ApplicationBase.Shared\ApplicationBase.Shared.projitems*{abbff195-1a64-442b-8843-8f714ada5c8f}*SharedItemsImports = 5
+		ModdingToolBase\src\AnakinApps\ApplicationBase.Shared\ApplicationBase.Shared.projitems*{fbc72463-9948-4030-b67d-bdc8c27e11c9}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
