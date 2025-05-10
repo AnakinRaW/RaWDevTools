@@ -66,7 +66,7 @@
 	  </None>
 	</ItemGroup>
 
-	<PropertyGroup>
+	<PropertyGroup Condition="$(Configuration) == 'Release'">
 		<WeaverConfiguration>
 			<Weavers>
 				<Costura IncludeDebugSymbols="false" IgnoreSatelliteAssemblies="true" />
