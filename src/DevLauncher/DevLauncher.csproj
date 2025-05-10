@@ -7,7 +7,7 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net48</TargetFramework>
+		<TargetFrameworks>net481</TargetFrameworks>
 		<RootNamespace>RepublicAtWar.DevLauncher</RootNamespace>
 		<AssemblyName>RaW-DevLauncher</AssemblyName>
 	</PropertyGroup>
@@ -19,16 +19,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
-		
+		<PackageReference Include="CompuMaster.Text.Diff" Version="2024.11.4.100" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+		<PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
 		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="4.0.35" />
-		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.3.4" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="12.3.8" />
 		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
 		<PackageReference Include="Antlr4BuildTasks" Version="12.10.0" />
 		<PackageReference Include="Costura.Fody" Version="6.0.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="AnakinRaW.CommonUtilities.Registry" Version="12.3.4" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.Registry" Version="12.3.8" />
 		<PackageReference Include="Glob" Version="1.1.9" />
 		<PackageReference Include="IsExternalInit" Version="1.0.3">
 			<PrivateAssets>all</PrivateAssets>
@@ -40,19 +42,32 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+		<PackageReference Include="IndexRange" Version="1.0.3" Condition="$(TargetFramework) == 'net481'">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CLI\ApplicationBase.CLI.csproj" />
-		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater\ExternalUpdater.csproj" />
+		<ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CommandLine\ApplicationBase.CommandLine.csproj" />
+		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\AppUpdaterFramework.Manifest\AppUpdaterFramework.Manifest.csproj" />
 		<ProjectReference Include="..\..\ModVerify\src\ModVerify\ModVerify.csproj" />
 		<ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Engine\PG.StarWarsGame.Engine.csproj" />
 		<ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Files.ALO\PG.StarWarsGame.Files.ALO.csproj" />
 		<ProjectReference Include="..\RawDevTools\RawDevTools.csproj" />
+		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater.App\ExternalUpdater.App.csproj" />
 	</ItemGroup>
 
-	<PropertyGroup>
-		<WeaverConfiguration Condition="'$(Configuration)' == 'Release'">
+
+	<ItemGroup>
+	  <None Update="Properties\Settings.settings">
+	    <Generator>SettingsSingleFileGenerator</Generator>
+	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+	  </None>
+	</ItemGroup>
+
+	<PropertyGroup Condition="$(Configuration) == 'Release'">
+		<WeaverConfiguration>
 			<Weavers>
 				<Costura IncludeDebugSymbols="false" IgnoreSatelliteAssemblies="true" />
 			</Weavers>

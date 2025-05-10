@@ -28,7 +28,7 @@ public class CompileLocalizationStep(BuildSettings settings, IServiceProvider se
         var datFilePath = _fileSystem.Path.ChangeExtension(file, "dat");
         var datFileName = _fileSystem.Path.GetFileName(datFilePath);
 
-        var updateChecker = Services.GetRequiredService<IBinaryRequiresUpdateChecker>();
+        var updateChecker = new TimeStampBasesUpdateChecker(settings.CleanBuild, Services);
         if (!settings.CleanBuild && !updateChecker.RequiresUpdate(datFilePath, new List<string> { file }))
         {
             _logger?.LogDebug($"DAT data '{datFileName}' is already up to date. Skipping build.");

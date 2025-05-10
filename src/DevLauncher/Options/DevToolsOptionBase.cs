@@ -1,9 +1,8 @@
-﻿using AnakinRaW.ApplicationBase.Options;
-using CommandLine;
+﻿using CommandLine;
 
 namespace RepublicAtWar.DevLauncher.Options;
 
-internal abstract class DevToolsOptionBase : UpdaterCommandLineOptions
+internal abstract class DevToolsOptionBase
 {
     [Option("warnAsError")]
     public virtual bool WarnAsError { get; init; }

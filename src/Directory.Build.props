@@ -3,7 +3,7 @@
 	<Import Project="../Directory.Build.props" />
 
 	<PropertyGroup>
-		<Copyright>Copyright © AnakinRaW 2024</Copyright>
+		<Copyright>Copyright © AnakinRaW 2025</Copyright>
 		<Authors>AnakinRaW</Authors>
 		<Company>Republic at War Modding Team</Company>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -12,7 +12,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<LangVersion>latest</LangVersion>
+		<LangVersion>preview</LangVersion>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<EnableNETAnalyzers>True</EnableNETAnalyzers>

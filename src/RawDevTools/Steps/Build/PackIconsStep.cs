@@ -113,7 +113,7 @@ public class PackIconsStep(BuildSettings settings, IServiceProvider serviceProvi
 
         var files = _fileSystem.Directory.EnumerateFiles(IconsDirectory);
 
-        var updateChecker = _serviceProvider.GetRequiredService<IBinaryRequiresUpdateChecker>();
+        var updateChecker = new TimeStampBasesUpdateChecker(settings.CleanBuild, _serviceProvider);
         if (updateChecker.RequiresUpdate(MtCommandBarDataBase, files))
             return true;
 

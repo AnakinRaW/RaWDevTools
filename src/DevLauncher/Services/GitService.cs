@@ -11,13 +11,11 @@ namespace RepublicAtWar.DevLauncher.Services;
 
 internal class GitService
 {
-    private readonly bool _warningAsError;
     private readonly Repository _repository;
     private readonly ILogger? _logger;
 
-    public GitService(string repoPath, bool warningAsError, IServiceProvider serviceProvider)
+    public GitService(string repoPath, IServiceProvider serviceProvider)
     {
-        _warningAsError = warningAsError;
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(GitService));
         _repository = new(repoPath);
         
@@ -78,13 +76,6 @@ internal class GitService
         return (Commit)latestStable.tag.PeeledTarget;
     }
 
-    private void LogOrThrow(string message)
-    {
-        if (_warningAsError)
-            throw new InvalidOperationException(message);
-        _logger?.LogWarning(message);
-    }
-
     public void Fetch()
     {
         var startInfo = new ProcessStartInfo
@@ -101,6 +92,6 @@ internal class GitService
         };
 
         if (!Process.Start(startInfo)!.WaitForExit(3000))
-            LogOrThrow("Unable to fetch from origin.");
+            throw new InvalidOperationException("Unable to fetch from origin.");
     }
 }
