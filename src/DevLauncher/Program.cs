@@ -151,7 +151,7 @@ internal class Program : SelfUpdateableAppLifecycle
         // ReSharper disable once RedundantAssignment
         var logLevel = LogEventLevel.Information;
 #if DEBUG
-        logLevel = LogEventLevel.Information;
+        logLevel = LogEventLevel.Debug;
         loggingBuilder.AddDebug();
 #endif
 
