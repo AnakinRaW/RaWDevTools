@@ -14,7 +14,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
-using RepublicAtWar.DevLauncher.Utilities;
+using AnakinRaW.ApplicationBase;
 
 namespace RepublicAtWar.DevLauncher.Pipelines.Actions;
 
@@ -173,23 +173,7 @@ internal class CreateLocalizationDiffsAction(IServiceProvider serviceProvider) :
             CompuMaster.Text.Diffs.DumpDiffToConsole(newText, oldText, true);
             Console.WriteLine();
 
-
-            var keepEntry = ConsoleUtilities.UserQuestionOnSameLine("Keep? [y/n]: ", (string input, out bool keep) =>
-            {
-                if (input.Equals("y", StringComparison.OrdinalIgnoreCase))
-                {
-                    keep = true;
-                    return true;
-                }
-                if (input.Equals("n", StringComparison.OrdinalIgnoreCase))
-                {
-                    keep = false;
-                    return true;
-                }
-
-                keep = false;
-                return false;
-            });
+            var keepEntry = ConsoleUtilities.UserYesNoQuestion("Keep?");
 
             diffFile.Add(key, keepEntry ? TempDiffEntriesFile.DiffAction.Keep : TempDiffEntriesFile.DiffAction.Ignore);
             if (!keepEntry)

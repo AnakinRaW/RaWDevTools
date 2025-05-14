@@ -13,39 +13,38 @@ using ConsoleUtilities = AnakinRaW.ApplicationBase.ConsoleUtilities;
 namespace RepublicAtWar.DevLauncher.Update;
 
 internal sealed class RawDevLauncherUpdater(UpdatableApplicationEnvironment environment, IServiceProvider serviceProvider)
-    : ApplicationUpdater(serviceProvider)
+    : ApplicationUpdater(environment, serviceProvider)
 {
     public async Task AutoUpdateApplication(ProductBranch branch)
     {
         using (ConsoleUtilities.HorizontalLineSeparatedBlock())
         {
-            IUpdateCatalog updateCatalog;
+            var currentAction = "checking for update";
             try
             {
-                updateCatalog = await CheckForUpdateAsync(branch);
+                var updateCatalog = await CheckForUpdateAsync(branch);
+
+                if (updateCatalog.Action != UpdateCatalogAction.Update)
+                    return;
+
+                currentAction = "updating";
+                await UpdateAsync(updateCatalog);
             }
             catch (Exception e)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"Error while checking for update: {e.Message}");
+                Console.WriteLine($"Error while {currentAction}: {e.Message}");
                 Logger?.LogError(e, $"Unable to check for updates: {e.Message}");
                 Console.ResetColor();
-                return;
             }
-
-            if (updateCatalog.Action != UpdateCatalogAction.Update)
-                return;
-            await UpdateAsync(updateCatalog);
-
         }
     }
 
     public override async Task<IUpdateCatalog> CheckForUpdateAsync(ProductBranch branch, CancellationToken token = default)
     {
-        var currentProduct = ProductService.GetCurrentInstance();
-        var updateReference = new ProductReference(currentProduct.Name, null, branch);
+        var updateReference = ProductService.CreateProductReference(null, branch);
 
-        Console.WriteLine($"Checking update for {currentProduct.Name}...");
+        Console.WriteLine($"Checking update for {updateReference.Name}...");
         var updateCatalog = await UpdateService.CheckForUpdatesAsync(updateReference, token);
 
         if (updateCatalog is null)
@@ -71,7 +70,7 @@ internal sealed class RawDevLauncherUpdater(UpdatableApplicationEnvironment envi
     public override async Task UpdateAsync(IUpdateCatalog updateCatalog, CancellationToken token = default)
     {
         Console.WriteLine("Updating...");
-
+        
         UpdateResult? updateResult;
         try
         {
@@ -88,7 +87,7 @@ internal sealed class RawDevLauncherUpdater(UpdatableApplicationEnvironment envi
             throw;
         }
         
-        var resultHandler = new RawDevLauncherUpdateResultHandler(environment, ServiceProvider);
+        var resultHandler = new RawDevLauncherUpdateResultHandler(Environment, ServiceProvider);
 
         await resultHandler.Handle(updateResult);
     }

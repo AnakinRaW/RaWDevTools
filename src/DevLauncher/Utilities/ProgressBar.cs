@@ -46,10 +46,16 @@ internal sealed class ProgressBar : IDisposable, IProgress<double>
             if (_disposed)
                 return;
 
-            var progressBlockCount = (int)(_currentProgress * BlockCount);
-            var percent = _marquee ? string.Empty : $"{(int)(_currentProgress * 100),3} %";
-            var text =
-                $"[{new string('#', progressBlockCount)}{new string('-', BlockCount - progressBlockCount)}] {percent} {Animation[_animationIndex++ % Animation.Length]}";
+            string text;
+            if (_marquee)
+                text = $"{Animation[_animationIndex++ % Animation.Length]}";
+            else
+            {
+                var progressBlockCount = (int)(_currentProgress * BlockCount);
+                var percent = $"{(int)(_currentProgress * 100),3} %";
+                text = $"[{new string('#', progressBlockCount)}{new string('-', BlockCount - progressBlockCount)}] {percent} {Animation[_animationIndex++ % Animation.Length]}";
+            }
+
             UpdateText(text);
 
             ResetTimer();
