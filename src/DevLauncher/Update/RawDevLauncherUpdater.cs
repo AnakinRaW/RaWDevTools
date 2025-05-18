@@ -40,7 +40,7 @@ internal sealed class RawDevLauncherUpdater(UpdatableApplicationEnvironment envi
         }
     }
 
-    public override async Task<IUpdateCatalog> CheckForUpdateAsync(ProductBranch branch, CancellationToken token = default)
+    public override async Task<UpdateCatalog> CheckForUpdateAsync(ProductBranch branch, CancellationToken token = default)
     {
         var updateReference = ProductService.CreateProductReference(null, branch);
 
@@ -67,7 +67,7 @@ internal sealed class RawDevLauncherUpdater(UpdatableApplicationEnvironment envi
         return updateCatalog;
     }
 
-    public override async Task UpdateAsync(IUpdateCatalog updateCatalog, CancellationToken token = default)
+    public override async Task UpdateAsync(UpdateCatalog updateCatalog, CancellationToken token = default)
     {
         Console.WriteLine("Updating...");
         
