@@ -21,7 +21,7 @@ env:
   SFTP_UPLOADER: AnakinRaW.FtpUploader.dll
   ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher
   ORIGIN_BASE_PART: downloads/RawDevLauncher/
-  BRANCH_NAME: ${{ github.event.inputs.branch || 'stable' }}"
+  BRANCH_NAME: ${{ github.event.inputs.branch || 'stable' }}
 
 jobs:
 
@@ -51,6 +51,7 @@ jobs:
 
   deploy:
     name: Deploy
+    # Only deploy on push to main or manual trigger
     if: |
       (github.ref == 'refs/heads/main' &&  github.event_name == 'push') || github.event_name == 'workflow_dispatch'
     needs: [build]
@@ -86,6 +87,9 @@ jobs:
       - uses: dotnet/nbgv@v0.4.2
         id: nbgv
       - name: Create GitHub release
+# Only create a release on push to main
+        if: |
+            github.ref == 'refs/heads/main' &&  github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           name: v${{ steps.nbgv.outputs.SemVer2 }}
