@@ -10,5 +10,5 @@ internal sealed class ReleaseRepublicAtWarOption : RaWBuildOption
     public override bool WarnAsError { get; init; } = true;
 
     [Option("uploaderDir", Required = true)]
-    public string UploaderDirectory { get; init; }
+    public required string UploaderDirectory { get; init; }
 }

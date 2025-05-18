@@ -35,11 +35,7 @@ public class PackIconsStep(BuildSettings settings, IServiceProvider serviceProvi
             _logger?.LogWarning("No Icons directory found.");
             return;
         }
-
-        // TODO: Currently not required since ModCompile.exe already does this
-        //if (!RequiresBuild())
-        //    return;
-
+        
         if (settings.CleanBuild)
         {
             try

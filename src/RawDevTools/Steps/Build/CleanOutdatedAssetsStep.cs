@@ -17,6 +17,7 @@ public class CleanOutdatedAssetsStep(IPhysicalMod mod, IServiceProvider serviceP
 
     protected override void RunCore(CancellationToken token)
     {
+        Logger?.LogInformation("Cleaning outdated assets...");
         var matcher = new Matcher();
         matcher.AddInclude("Data/Audio/SFX/sfx2d_*.meg");
 
@@ -25,5 +26,7 @@ public class CleanOutdatedAssetsStep(IPhysicalMod mod, IServiceProvider serviceP
             Logger?.LogDebug($"Deleting old asset '{fileToDelete}'");
             _fileSystem.File.DeleteWithRetry(fileToDelete);
         }
+
+        Logger?.LogInformation("Finished cleaning outdated assets.");
     }
 }

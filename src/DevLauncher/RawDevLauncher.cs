@@ -27,8 +27,18 @@ internal sealed class RawDevLauncher(UpdatableApplicationEnvironment application
 
     public async Task<int> RunAsync(IReadOnlyList<string> args)
     {
-        _logger?.LogDebug("Command line arguments: " + string.Join(" ", args));
+        var option = ParseArguments(args);
+        
+        if (option is null)
+            return 0xA0;
 
+        await UpdateLauncher(args).ConfigureAwait(false);
+
+        return await RunCore(option).ConfigureAwait(false);
+    }
+    
+    private async Task UpdateLauncher(IReadOnlyList<string> args)
+    {
         var skipUpdate = false;
         _looseArgumentParser.ParseArguments<SkipUpdateOption>(args).WithParsed(su => skipUpdate = su.SkipUpdate);
 
@@ -39,40 +49,36 @@ internal sealed class RawDevLauncher(UpdatableApplicationEnvironment application
             _looseArgumentParser.ParseArguments<ApplicationUpdateOptions>(args).WithParsed(updateOptions => options = updateOptions);
 
             var updater = new RawDevLauncherUpdater(applicationEnvironment, serviceProvider);
-            var branch = updater.CreateBranch(options?.BranchName, options?.ManifestUrl);
+            var branchName = updater.GetBranchNameFromRegistry(options?.BranchName, true);
+            var branch = updater.CreateBranch(branchName, options?.ManifestUrl);
+            
             await updater.AutoUpdateApplication(branch);
         }
         else
         {
             _logger?.LogDebug("Skipping update routine.");
         }
+    }
 
+    private DevToolsOptionBase? ParseArguments(IReadOnlyList<string> args)
+    {
         Type[] optionTypes =
         [
             typeof(BuildAndRunOption),
-                typeof(InitializeLocalizationOption),
-                typeof(PrepareLocalizationsOption),
-                typeof(MergeLocalizationOption),
-                typeof(ReleaseRepublicAtWarOption),
-                typeof(VerifyOption)
+            typeof(InitializeLocalizationOption),
+            typeof(PrepareLocalizationsOption),
+            typeof(MergeLocalizationOption),
+            typeof(ReleaseRepublicAtWarOption),
+            typeof(VerifyOption)
         ];
 
-        var toolResult = 0;
         var parseResult = _looseArgumentParser.ParseArguments(args, optionTypes);
 
-        await parseResult.WithParsedAsync(async o =>
-        {
-            toolResult = await RunCore((DevToolsOptionBase)o);
-        });
+        if (parseResult.Value is DevToolsOptionBase devToolsOption)
+            return devToolsOption;
 
-        await parseResult.WithNotParsedAsync(_ =>
-        {
-            Console.WriteLine(HelpText.AutoBuild(parseResult).ToString());
-            toolResult = 0xA0;
-            return Task.CompletedTask;
-        });
-
-        return toolResult;
+        Console.WriteLine(HelpText.AutoBuild(parseResult).ToString());
+        return null;
     }
 
     private async Task<int> RunCore(DevToolsOptionBase options)

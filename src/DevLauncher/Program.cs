@@ -1,6 +1,5 @@
 ﻿using AET.ModVerify.Reporting.Reporters;
 using AET.SteamAbstraction;
-using AnakinRaW.AppUpdaterFramework;
 using AnakinRaW.AppUpdaterFramework.Handlers.Interaction;
 using AnakinRaW.CommonUtilities.Hashing;
 using AnakinRaW.CommonUtilities.Registry;
@@ -29,6 +28,7 @@ using AnakinRaW.ApplicationBase;
 using AnakinRaW.ApplicationBase.Environment;
 using AnakinRaW.ApplicationBase.Update;
 using AnakinRaW.ApplicationBase.Utilities;
+using AnakinRaW.AppUpdaterFramework.Json;
 using AnakinRaW.CommonUtilities.FileSystem;
 using PG.StarWarsGame.Engine.Xml.Parsers;
 using PG.StarWarsGame.Files.XML.Parsers;
@@ -75,7 +75,34 @@ internal class Program : SelfUpdateableAppLifecycle
     {
         using (new UnhandledExceptionHandler(appServiceProvider))
         using (new UnobservedTaskExceptionHandler(appServiceProvider))
-            return await new RawDevLauncher(UpdatableApplicationEnvironment!, appServiceProvider).RunAsync(args);
+            return await RunAppCoreAsync(args, appServiceProvider).ConfigureAwait(false);
+    }
+
+    private async Task<int> RunAppCoreAsync(string[] args, IServiceProvider appServiceProvider)
+    {
+        var logger = appServiceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
+        try
+        {
+            var returnCode = await new RawDevLauncher(UpdatableApplicationEnvironment!, appServiceProvider)
+                .RunAsync(args);
+            logger?.LogInformation($"RaW DevLauncher finished with code: {returnCode}");
+            return returnCode;
+        }
+        catch (Exception e)
+        {
+            ConsoleUtilities.WriteApplicationFatalError(ApplicationEnvironment.ApplicationName);
+            logger?.LogError(e, e.Message);
+            return e.HResult;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+
+            Console.WriteLine();
+            ConsoleUtilities.WriteHorizontalLine('-');
+            Console.Write("Press ENTER to exit.");
+            Console.ReadLine();
+        }
     }
 
     protected override void ResetApp(Microsoft.Extensions.Logging.ILogger? logger)
@@ -150,7 +177,6 @@ internal class Program : SelfUpdateableAppLifecycle
                     return false;
                 
                 return true;
-
             })
             .MinimumLevel.Is(logLevel)
             .CreateLogger();
