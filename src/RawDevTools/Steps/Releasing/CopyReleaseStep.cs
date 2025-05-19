@@ -108,7 +108,7 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
                     new CopyProgress(this),
                     ShallCopyFile, 4,
                     token);
-            }, default)
+            }, CancellationToken.None)
             .Wait(token);
         
         _logger?.LogInformation($"Copied assets to SteamUploader at '{assetCopyPath}'");
