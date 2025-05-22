@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Semver;
 
-namespace RepublicAtWar.DevTools.Steps.Release;
+namespace RepublicAtWar.DevTools.Steps.Releasing;
 
 public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : SynchronizedStep(serviceProvider)
 {
@@ -19,9 +19,9 @@ public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : S
 
     private readonly IDictionary<string, string> _replacementVariables = new Dictionary<string, string>();
 
-    internal string? SteamTitle { get; private set; }
+    internal string SteamTitle { get; private set; } = null!;
 
-    internal string? SteamJsonName { get; private set; }
+    internal string SteamJsonName { get; private set; } = null!;
 
     protected override void RunSynchronized(CancellationToken token)
     {

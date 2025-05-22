@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Engine;
@@ -10,7 +9,7 @@ using PG.StarWarsGame.Infrastructure;
 
 namespace RepublicAtWar.DevTools.Steps.Build.Meg.Config;
 
-public sealed class RawLocalizedSFX2DMegConfiguration : RawPackMegConfiguration
+public sealed class RawLocalizedSfx2DMegConfiguration : RawPackMegConfiguration
 {
     private readonly Lazy<Func<string, string>?> _lazyLocalizeFileName;
     private readonly LanguageType _language;
@@ -26,7 +25,8 @@ public sealed class RawLocalizedSFX2DMegConfiguration : RawPackMegConfiguration
 
     public override bool FileNamesOnly => true;
 
-    public RawLocalizedSFX2DMegConfiguration(LanguageType language,
+    public RawLocalizedSfx2DMegConfiguration(
+        LanguageType language,
         bool languageSupported,
         IPhysicalPlayableObject physicalGameObject,
         IServiceProvider serviceProvider) : base(physicalGameObject, serviceProvider)
@@ -47,11 +47,9 @@ public sealed class RawLocalizedSFX2DMegConfiguration : RawPackMegConfiguration
 
     private IEnumerable<string> GetFilesToPack()
     {
-        var fs = ServiceProvider.GetRequiredService<IFileSystem>();
+        var path = FileSystem.Path.Combine("Data\\Audio\\Units\\", _language.ToString());
 
-        var path = fs.Path.Combine("Data\\Audio\\Units\\", _language.ToString());
-
-        if (!fs.Directory.Exists(path))
+        if (!FileSystem.Directory.Exists(path))
         {
             if (IsLanguageSupported)
                 throw new DirectoryNotFoundException($"Unable to find SFX directory: '{path}'");
@@ -60,7 +58,7 @@ public sealed class RawLocalizedSFX2DMegConfiguration : RawPackMegConfiguration
             path = $"Data\\Audio\\Units\\{LanguageType.English}";
         }
 
-        if (!fs.Directory.Exists(path))
+        if (!FileSystem.Directory.Exists(path))
             throw new DirectoryNotFoundException($"Unable to find SFX directory: '{path}'");
 
         return new List<string>

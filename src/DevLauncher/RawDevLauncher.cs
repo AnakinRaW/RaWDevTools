@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using AnakinRaW.ApplicationBase.Environment;
+﻿using AnakinRaW.ApplicationBase.Environment;
 using AnakinRaW.ApplicationBase.Update.Options;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using CommandLine;
@@ -16,6 +12,10 @@ using RepublicAtWar.DevLauncher.Pipelines.Settings;
 using RepublicAtWar.DevLauncher.Update;
 using RepublicAtWar.DevTools.Services;
 using RepublicAtWar.DevTools.Steps.Settings;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RepublicAtWar.DevLauncher;
 
@@ -36,7 +36,7 @@ internal sealed class RawDevLauncher(UpdatableApplicationEnvironment application
 
         return await RunCore(option).ConfigureAwait(false);
     }
-    
+
     private async Task UpdateLauncher(IReadOnlyList<string> args)
     {
         var skipUpdate = false;

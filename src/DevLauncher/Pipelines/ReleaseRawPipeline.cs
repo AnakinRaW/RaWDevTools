@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using PG.StarWarsGame.Infrastructure.Games;
 using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Utilities;
-using RepublicAtWar.DevTools.Steps.Release;
+using RepublicAtWar.DevTools.Steps.Releasing;
 using RepublicAtWar.DevTools.Steps.Settings;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;

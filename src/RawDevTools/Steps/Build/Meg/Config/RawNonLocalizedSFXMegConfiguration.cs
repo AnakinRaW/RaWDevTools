@@ -4,7 +4,7 @@ using PG.StarWarsGame.Infrastructure;
 
 namespace RepublicAtWar.DevTools.Steps.Build.Meg.Config;
 
-public class RawNonLocalizedSFXMegConfiguration(
+public class RawNonLocalizedSfxMegConfiguration(
     IPhysicalPlayableObject physicalGameObject,
     IServiceProvider serviceProvider)
     : RawPackMegConfiguration(physicalGameObject, serviceProvider)

@@ -32,7 +32,7 @@ internal class PackSfxMegPipeline(IPhysicalMod mod, BuildSettings settings, ISer
                 continue;
 
             steps.Add(new PackMegFileStep(
-                new RawLocalizedSFX2DMegConfiguration(focLanguage, isRaWSupported, mod, ServiceProvider), settings,
+                new RawLocalizedSfx2DMegConfiguration(focLanguage, isRaWSupported, mod, ServiceProvider), settings,
                 ServiceProvider));
         }
 

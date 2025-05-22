@@ -12,7 +12,7 @@ using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 using RepublicAtWar.DevTools.Steps.Settings;
 
-namespace RepublicAtWar.DevTools.Steps.Release;
+namespace RepublicAtWar.DevTools.Steps.Releasing;
 
 public class CopyReleaseStep : PipelineStep, IProgressStep
 {
