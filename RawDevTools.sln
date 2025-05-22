@@ -55,9 +55,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalUpdater.Core", "Mod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationBase.CommandLine", "ModdingToolBase\src\AnakinApps\ApplicationBase.CommandLine\ApplicationBase.CommandLine.csproj", "{8768819D-B0C2-4487-3B3A-84A90F36BAB7}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ApplicationBase.Shared", "ModdingToolBase\src\AnakinApps\ApplicationBase.Shared\ApplicationBase.Shared.shproj", "{B297A13A-8E3A-436C-BA97-8B5F57827FFE}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppUpdaterFramework.Attributes", "ModdingToolBase\src\Updater\AppUpdaterFramework.Attributes\AppUpdaterFramework.Attributes.csproj", "{1AA3A6D5-5492-26C3-E36C-54AB5997D2CF}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ApplicationBase.Shared", "ModdingToolBase\src\AnakinApps\ApplicationBase.Shared\ApplicationBase.Shared.shproj", "{B297A13A-8E3A-436C-BA97-8B5F57827FFE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -169,8 +169,8 @@ Global
 		{846253D9-D766-8852-74B9-E1E04B9F2A81} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
 		{EF1942AC-C4E5-A6AA-0328-1DA00E3BE7A1} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
 		{8768819D-B0C2-4487-3B3A-84A90F36BAB7} = {46DB413A-0F73-48A6-9071-9C38916BE6FC}
-		{B297A13A-8E3A-436C-BA97-8B5F57827FFE} = {46DB413A-0F73-48A6-9071-9C38916BE6FC}
 		{1AA3A6D5-5492-26C3-E36C-54AB5997D2CF} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
+		{B297A13A-8E3A-436C-BA97-8B5F57827FFE} = {46DB413A-0F73-48A6-9071-9C38916BE6FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DC15751A-BB36-4EF1-BFF0-2DF1E419AC8F}

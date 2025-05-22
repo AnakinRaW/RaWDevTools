@@ -59,7 +59,7 @@ internal sealed class BuildPipeline(IPhysicalMod mod, BuildSettings settings, IS
     {
         yield return new PackMegFileStep(new RawAiPackMegConfiguration(mod, ServiceProvider), _settings, ServiceProvider);
         yield return new PackMegFileStep(new RawCustomMapsPackMegConfiguration(mod, ServiceProvider), _settings, ServiceProvider);
-        yield return new PackMegFileStep(new RawNonLocalizedSFXMegConfiguration(mod, ServiceProvider), _settings, ServiceProvider);
+        yield return new PackMegFileStep(new RawNonLocalizedSfxMegConfiguration(mod, ServiceProvider), _settings, ServiceProvider);
         yield return new PackIconsStep(_settings, ServiceProvider);
         yield return new CompileLocalizationStep(_settings, ServiceProvider);
 
@@ -72,7 +72,7 @@ internal sealed class BuildPipeline(IPhysicalMod mod, BuildSettings settings, IS
                 continue;
 
             yield return new PackMegFileStep(
-                new RawLocalizedSFX2DMegConfiguration(focLanguage, isRaWSupported, mod, ServiceProvider),
+                new RawLocalizedSfx2DMegConfiguration(focLanguage, isRaWSupported, mod, ServiceProvider),
                 _settings,
                 ServiceProvider);
         }

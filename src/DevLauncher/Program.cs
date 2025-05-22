@@ -1,39 +1,41 @@
 ﻿using AET.ModVerify.Reporting.Reporters;
 using AET.SteamAbstraction;
+using AnakinRaW.ApplicationBase;
+using AnakinRaW.ApplicationBase.Environment;
+using AnakinRaW.ApplicationBase.Update;
+using AnakinRaW.ApplicationBase.Utilities;
 using AnakinRaW.AppUpdaterFramework.Handlers.Interaction;
+using AnakinRaW.AppUpdaterFramework.Json;
+using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.Hashing;
 using AnakinRaW.CommonUtilities.Registry;
 using AnakinRaW.CommonUtilities.Registry.Windows;
+using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.Commons;
 using PG.StarWarsGame.Engine;
+using PG.StarWarsGame.Engine.Xml.Parsers;
 using PG.StarWarsGame.Files.ALO;
 using PG.StarWarsGame.Files.DAT;
 using PG.StarWarsGame.Files.MEG;
 using PG.StarWarsGame.Files.MTD;
 using PG.StarWarsGame.Files.XML;
+using PG.StarWarsGame.Files.XML.Parsers;
 using PG.StarWarsGame.Infrastructure;
 using PG.StarWarsGame.Infrastructure.Clients.Steam;
+using RepublicAtWar.DevLauncher.Options;
 using RepublicAtWar.DevLauncher.Services;
+using RepublicAtWar.DevLauncher.Update;
 using Serilog;
 using Serilog.Events;
 using Serilog.Filters;
+using Serilog.Sinks.SystemConsole.Themes;
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading.Tasks;
-using AnakinRaW.ApplicationBase;
-using AnakinRaW.ApplicationBase.Environment;
-using AnakinRaW.ApplicationBase.Update;
-using AnakinRaW.ApplicationBase.Utilities;
-using AnakinRaW.AppUpdaterFramework.Json;
-using AnakinRaW.CommonUtilities.FileSystem;
-using PG.StarWarsGame.Engine.Xml.Parsers;
-using PG.StarWarsGame.Files.XML.Parsers;
-using RepublicAtWar.DevLauncher.Update;
-using Serilog.Sinks.SystemConsole.Themes;
 using Testably.Abstractions;
 using ILogger = Serilog.ILogger;
 
@@ -116,7 +118,15 @@ internal class Program : SelfUpdateableAppLifecycle
 
     protected override void CreateAppServices(IServiceCollection services, IReadOnlyCollection<string> args)
     {
-        services.AddLogging(ConfigureLogging);
+        var verboseLogging = false;
+
+        using var parser = new Parser(s =>
+        {
+            s.IgnoreUnknownArguments = true;
+        });
+        parser.ParseArguments<VerboseLoggingOption>(args).WithParsed(o => verboseLogging = o.VerboseLogging);
+
+        services.AddLogging(builder => ConfigureLogging(builder, verboseLogging));
 
         services.AddSingleton<IHashingService>(sp => new HashingService(sp));
 
@@ -144,7 +154,7 @@ internal class Program : SelfUpdateableAppLifecycle
             sc => { sc.AddSingleton<ILockedFileInteractionHandler>(new CosturaLockedFileHandler()); });
     }
 
-    private void ConfigureLogging(ILoggingBuilder loggingBuilder)
+    private void ConfigureLogging(ILoggingBuilder loggingBuilder, bool verbose)
     {
         loggingBuilder.ClearProviders();
 
@@ -154,6 +164,9 @@ internal class Program : SelfUpdateableAppLifecycle
         logLevel = LogEventLevel.Debug;
         loggingBuilder.AddDebug();
 #endif
+
+        if (verbose)
+            logLevel = LogEventLevel.Verbose;
 
         var fileLogger = SetupFileLogging(ApplicationEnvironment.ApplicationLocalPath, logLevel);
         loggingBuilder.AddSerilog(fileLogger);

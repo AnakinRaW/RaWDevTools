@@ -9,11 +9,19 @@ namespace RepublicAtWar.DevTools.Steps.Build.Meg.Config;
 
 public abstract class RawPackMegConfiguration : IPackMegConfiguration
 {
-    protected ILogger? Logger { get; }
-
-    protected IServiceProvider ServiceProvider { get; }
-
+    protected readonly ILogger? Logger;
     protected readonly IFileSystem FileSystem;
+    protected readonly IServiceProvider ServiceProvider;
+
+    public abstract IEnumerable<string> FilesToPack { get; }
+
+    public abstract string FileName { get; }
+
+    public virtual bool FileNamesOnly => false;
+
+    public IDirectoryInfo VirtualRootDirectory { get; }
+
+    public virtual Func<string, string>? ModifyFileNameAction => null;
 
     protected RawPackMegConfiguration(IPhysicalPlayableObject physicalGameObject,
         IServiceProvider serviceProvider)
@@ -23,13 +31,4 @@ public abstract class RawPackMegConfiguration : IPackMegConfiguration
         FileSystem = serviceProvider.GetRequiredService<IFileSystem>();
         VirtualRootDirectory = physicalGameObject.Directory;
     }
-
-    public abstract IEnumerable<string> FilesToPack { get; }
-
-    public abstract string FileName { get; }
-
-    public virtual bool FileNamesOnly => false;
-
-    public IDirectoryInfo VirtualRootDirectory { get; }
-    public virtual Func<string, string>? ModifyFileNameAction => null;
 }
