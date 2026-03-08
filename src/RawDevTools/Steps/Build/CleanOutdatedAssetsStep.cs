@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Abstractions;
 using System.Threading;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,18 +16,21 @@ public class CleanOutdatedAssetsStep(IPhysicalMod mod, IServiceProvider serviceP
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
 
-    protected override void RunCore(CancellationToken token)
+    protected override Task RunCoreAsync(CancellationToken token)
     {
-        Logger?.LogInformation("Cleaning outdated assets...");
-        var matcher = new Matcher();
-        matcher.AddInclude("Data/Audio/SFX/sfx2d_*.meg");
-
-        foreach (var fileToDelete in matcher.GetResultsInFullPath(mod.Directory.FullName))
+        return Task.Run(() =>
         {
-            Logger?.LogDebug($"Deleting old asset '{fileToDelete}'");
-            _fileSystem.File.DeleteWithRetry(fileToDelete);
-        }
+            Logger?.LogInformation("Cleaning outdated assets...");
+            var matcher = new Matcher();
+            matcher.AddInclude("Data/Audio/SFX/sfx2d_*.meg");
 
-        Logger?.LogInformation("Finished cleaning outdated assets.");
+            foreach (var fileToDelete in matcher.GetResultsInFullPath(mod.Directory.FullName))
+            {
+                Logger?.LogDebug($"Deleting old asset '{fileToDelete}'");
+                _fileSystem.File.DeleteWithRetry(fileToDelete);
+            }
+
+            Logger?.LogInformation("Finished cleaning outdated assets.");
+        }, CancellationToken.None);
     }
 }

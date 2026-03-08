@@ -107,16 +107,19 @@ internal class Program : SelfUpdateableAppLifecycle
         }
     }
 
-    protected override void ResetApp(Microsoft.Extensions.Logging.ILogger? logger)
+    protected override void ResetApp()
     {
-        logger?.LogDebug("Resetting Application");
+        Logger?.LogDebug("Resetting Application");
+
+        base.ResetApp();
+
         var deleteResult = ApplicationEnvironment.ApplicationLocalDirectory.TryDeleteWithRetry();
         if (!deleteResult)
-            logger?.LogWarning("Failed to delete application local directory.");
+            Logger?.LogWarning("Failed to delete application local directory.");
         ApplicationEnvironment.ApplicationLocalDirectory.Create();
     }
 
-    protected override void CreateAppServices(IServiceCollection services, IReadOnlyCollection<string> args)
+    protected override void CreateAppServices(IServiceCollection services, IReadOnlyList<string> args)
     {
         var verboseLogging = false;
 

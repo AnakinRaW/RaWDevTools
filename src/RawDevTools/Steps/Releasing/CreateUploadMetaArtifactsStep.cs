@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using AET.Modinfo.Model;
 using AET.Modinfo.Spec;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Semver;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RepublicAtWar.DevTools.Steps.Releasing;
 
-public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : SynchronizedStep(serviceProvider)
+public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CreateUploadMetaArtifactsStep));
@@ -23,7 +25,12 @@ public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : S
 
     internal string SteamJsonName { get; private set; } = null!;
 
-    protected override void RunSynchronized(CancellationToken token)
+    protected override Task RunCoreAsync(CancellationToken token)
+    {
+        return Task.Run(() => RunCore(token), CancellationToken.None);
+    }
+
+    private void RunCore(CancellationToken token)
     {
         _logger?.LogInformation("Creating Modinfo, Steam json and splashes...");
 
@@ -32,7 +39,7 @@ public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : S
         _replacementVariables.Add("version-minor", ToMinorOnly(version));
 
         var baseInfo = ModinfoData.Parse(_fileSystem.File.ReadAllText("modinfo-base.json"));
-        
+
         IModinfo releaseInfo;
         string steamDescription;
         if (version.IsPrerelease)

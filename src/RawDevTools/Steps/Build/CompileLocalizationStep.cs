@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Threading;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,12 +16,16 @@ public class CompileLocalizationStep(BuildSettings settings, IServiceProvider se
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CompileLocalizationStep));
 
-    protected override void RunCore(CancellationToken token)
+    protected override Task RunCoreAsync(CancellationToken token)
     {
-        var localizationFiles = _fileSystem.Directory.EnumerateFiles("Data\\Text", "MasterTextFile_*.txt");
+        return Task.Run(() =>
+        {
+            var localizationFiles = _fileSystem.Directory
+                .EnumerateFiles("Data\\Text", "MasterTextFile_*.txt");
 
-        foreach (var localizationFile in localizationFiles)
-            CompileDatFromLocalizationFile(localizationFile);
+            foreach (var localizationFile in localizationFiles)
+                CompileDatFromLocalizationFile(localizationFile);
+        }, CancellationToken.None);
     }
 
     private void CompileDatFromLocalizationFile(string file)

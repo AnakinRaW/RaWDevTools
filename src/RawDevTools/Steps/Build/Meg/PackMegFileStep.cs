@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -25,7 +26,12 @@ public class PackMegFileStep(IPackMegConfiguration config, BuildSettings setting
 
     private readonly IPackMegConfiguration _config = config ?? throw new ArgumentNullException(nameof(config));
 
-    protected override void RunCore(CancellationToken token)
+    protected override Task RunCoreAsync(CancellationToken token)
+    {
+        return Task.Run(() => RunCore(token), CancellationToken.None);
+    }
+
+    private void RunCore(CancellationToken token)
     {
         var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
         foreach (var fileToPack in _config.FilesToPack)

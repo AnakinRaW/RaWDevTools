@@ -38,32 +38,14 @@ internal class ReleaseRawPipeline : SequentialPipeline
         _empireAtWarGame = empireAtWarGame;
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
     }
-    protected override Task RunCoreAsync(CancellationToken token)
-    {
-        _logger?.LogInformation("Release Republic at War");
 
-        if (!_buildSettings.CleanBuild)
-        {
-            _logger?.LogWarning("Releasing without Clean build!!!");
-            _logger?.LogWarning("Releasing without Clean build!!!");
-            _logger?.LogWarning("Releasing without Clean build!!!");
-        }
-        return base.RunCoreAsync(token);
-    }
 
-    protected override void DisposeResources()
-    {
-        _progressBarReporter?.Dispose();
-        _progressBarReporter = null;
-        base.DisposeResources();
-    }
-
-    protected override Task<IList<IStep>> BuildSteps()
+    protected override Task<IList<IStep>> CreateRunnerSteps(CancellationToken token)
     {
         return Task.Run<IList<IStep>>(() =>
         {
             var createArtifactStep = new CreateUploadMetaArtifactsStep(ServiceProvider);
-            
+
             var copyStep = new CopyReleaseStep(createArtifactStep, _releaseSettings, ServiceProvider);
             _progressBarReporter = new(copyStep);
 
@@ -78,6 +60,27 @@ internal class ReleaseRawPipeline : SequentialPipeline
                 // Copy to Release
                 copyStep
             };
-        });
+        }, CancellationToken.None);
+    }
+
+    protected override void OnExecuteStarted()
+    {
+        base.OnExecuteStarted();
+
+        _logger?.LogInformation("Release Republic at War");
+
+        if (!_buildSettings.CleanBuild)
+        {
+            _logger?.LogWarning("Releasing without Clean build!!!");
+            _logger?.LogWarning("Releasing without Clean build!!!");
+            _logger?.LogWarning("Releasing without Clean build!!!");
+        }
+    }
+
+    protected override void DisposeResources()
+    {
+        _progressBarReporter?.Dispose();
+        _progressBarReporter = null;
+        base.DisposeResources();
     }
 }

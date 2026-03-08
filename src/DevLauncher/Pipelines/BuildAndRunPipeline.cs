@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
@@ -22,7 +23,7 @@ internal class BuildAndRunPipeline(
     private readonly BuildSettings _buildSettings = buildSettings ?? throw new ArgumentNullException(nameof(buildSettings));
     private readonly LaunchSettings _launchSettings = launchSettings ?? throw new ArgumentNullException(nameof(launchSettings));
 
-    protected override Task<IList<IStep>> BuildSteps()
+    protected override Task<IList<IStep>> CreateRunnerSteps(CancellationToken token)
     {
         return Task.FromResult<IList<IStep>>(new List<IStep>
         {
