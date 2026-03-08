@@ -4,6 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
+using AET.Modinfo.Spec;
+using PG.StarWarsGame.Engine.Localization;
+using RepublicAtWar.DevTools.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
@@ -28,6 +31,23 @@ public class CleanOutdatedAssetsStep(IPhysicalMod mod, IServiceProvider serviceP
             {
                 Logger?.LogDebug("Deleting old asset '{File}'", fileToDelete);
                 _fileSystem.File.DeleteWithRetry(fileToDelete);
+            }
+
+            var republicAtWarService = new RepublicAtWarService(Services);
+            foreach (var (language, support) in republicAtWarService.GetSupportedLanguages())
+            {
+                if (language == LanguageType.English)
+                    continue;
+
+                if (support.HasFlag(LanguageSupportLevel.Speech))
+                    continue;
+
+                var targetDir = _fileSystem.Path.Combine(mod.Directory.FullName, "Data\\Audio\\Speech", language.ToString());
+                if (_fileSystem.Directory.Exists(targetDir))
+                {
+                    Logger?.LogDebug("Deleting (unsupported) localized speech directory '{Directory}'", targetDir);
+                    _fileSystem.Directory.Delete(targetDir, true);
+                }
             }
 
             Logger?.LogInformation("Finished cleaning outdated assets.");

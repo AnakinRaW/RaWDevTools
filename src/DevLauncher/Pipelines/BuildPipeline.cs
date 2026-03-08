@@ -22,7 +22,6 @@ internal sealed class BuildPipeline : SequentialPipeline
     private readonly BuildSettings _settings;
     private readonly IPhysicalMod _mod;
 
-
     public BuildPipeline(IPhysicalMod mod, BuildSettings settings, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _mod = mod;
@@ -52,6 +51,7 @@ internal sealed class BuildPipeline : SequentialPipeline
         yield return new PackMegFileStep(new RawNonLocalizedSfxMegConfiguration(_mod, ServiceProvider), _settings, ServiceProvider);
         yield return new PackIconsStep(_settings, ServiceProvider);
         yield return new CompileLocalizationStep(_settings, ServiceProvider);
+        yield return new LocalizeUnsupportedSpeechStep(_mod, _settings, ServiceProvider);
         
         foreach (var supportedLanguage in _republicAtWarService.GetSupportedLanguages())
         {
