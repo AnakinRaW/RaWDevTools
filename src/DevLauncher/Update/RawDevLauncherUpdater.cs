@@ -34,7 +34,7 @@ internal sealed class RawDevLauncherUpdater(UpdatableApplicationEnvironment envi
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine($"Error while {currentAction}: {e.Message}");
-                Logger?.LogError(e, $"Unable to check for updates: {e.Message}");
+                Logger?.LogError(e, "Unable to check for updates: {Message}", e.Message);
                 Console.ResetColor();
             }
         }

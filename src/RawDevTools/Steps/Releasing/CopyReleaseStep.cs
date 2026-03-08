@@ -108,7 +108,7 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
             4,
             token);
 
-        _logger?.LogInformation($"Copied assets to SteamUploader at '{assetCopyPath}'");
+        _logger?.LogInformation("Copied assets to SteamUploader at '{Path}'", assetCopyPath);
     }
 
     private bool ShallCopyFile(string fileToCopy)

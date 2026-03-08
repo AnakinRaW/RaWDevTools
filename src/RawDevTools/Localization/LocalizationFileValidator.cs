@@ -121,7 +121,7 @@ internal class LocalizationFileValidator
         {
             LogOrThrow($"Unrecognized language '{language}'");
             // If we don't throw, we return English
-            _logger?.LogWarning($"Language '{language}' is not supported. Fallback to English!");
+            _logger?.LogWarning("Language '{Language}' is not supported. Fallback to English!", language);
         }
         return languageType;
     }

@@ -48,11 +48,11 @@ public class PackMegFileStep(IPackMegConfiguration config, BuildSettings setting
 
         if (!settings.CleanBuild && !updateChecker.RequiresUpdate(megFilePath, files))
         {
-            _logger?.LogDebug($"MEG data '{megFileName}' is already up to date. Skipping build.");
+            _logger?.LogDebug("MEG data '{MegFile}' is already up to date. Skipping build.", megFileName);
             return;
         }
 
-        _logger?.LogInformation($"Writing MEG data '{megFileName}'...");
+        _logger?.LogInformation("Writing MEG data '{MegFile}'...", megFileName);
 
         using var megBuilder = new EmpireAtWarMegBuilder(_config.VirtualRootDirectory.FullName, _serviceProvider);
 
@@ -76,6 +76,6 @@ public class PackMegFileStep(IPackMegConfiguration config, BuildSettings setting
         }
 
         megBuilder.Build(new MegFileInformation(megFilePath, MegFileVersion.V1), true);
-        _logger?.LogInformation($"Finished writing MEG data '{megFileName}'...");
+        _logger?.LogInformation("Finished writing MEG data '{MegFile}'...", megFileName);
     }
 }

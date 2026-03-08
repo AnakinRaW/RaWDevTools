@@ -87,7 +87,7 @@ internal class Program : SelfUpdateableAppLifecycle
         {
             var returnCode = await new RawDevLauncher(UpdatableApplicationEnvironment!, appServiceProvider)
                 .RunAsync(args);
-            logger?.LogInformation($"RaW DevLauncher finished with code: {returnCode}");
+            logger?.LogInformation("RaW DevLauncher finished with code: {ExitCode}", returnCode);
             return returnCode;
         }
         catch (Exception e)
@@ -109,7 +109,7 @@ internal class Program : SelfUpdateableAppLifecycle
 
     protected override void ResetApp()
     {
-        Logger?.LogDebug("Resetting Application");
+        Logger?.LogDebug("Resetting Application...");
 
         base.ResetApp();
 

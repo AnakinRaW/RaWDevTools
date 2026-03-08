@@ -36,11 +36,11 @@ public class CompileLocalizationStep(BuildSettings settings, IServiceProvider se
         var updateChecker = new TimeStampBasesUpdateChecker(settings.CleanBuild, Services);
         if (!settings.CleanBuild && !updateChecker.RequiresUpdate(datFilePath, new List<string> { file }))
         {
-            _logger?.LogDebug($"DAT data '{datFileName}' is already up to date. Skipping build.");
+            _logger?.LogDebug("DAT data '{DatFile}' is already up to date. Skipping build.", datFileName);
             return;
         }
 
-        _logger?.LogInformation($"Writing DAT data '{datFileName}'...");
+        _logger?.LogInformation("Writing DAT data '{DatFile}'...", datFileName);
 
         var locFileService = new LocalizationFileService(Services, settings.WarnAsError);
 
@@ -51,6 +51,6 @@ public class CompileLocalizationStep(BuildSettings settings, IServiceProvider se
 
         locFileService.CompileLocalizationFile(localizationFile, datFilePath, true);
         
-        _logger?.LogInformation($"Finished writing DAT data for language {localizationFile.Language}");
+        _logger?.LogInformation("Finished writing DAT data for language {Language}", localizationFile.Language);
     }
 }

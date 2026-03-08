@@ -26,7 +26,7 @@ public class CleanOutdatedAssetsStep(IPhysicalMod mod, IServiceProvider serviceP
 
             foreach (var fileToDelete in matcher.GetResultsInFullPath(mod.Directory.FullName))
             {
-                Logger?.LogDebug($"Deleting old asset '{fileToDelete}'");
+                Logger?.LogDebug("Deleting old asset '{File}'", fileToDelete);
                 _fileSystem.File.DeleteWithRetry(fileToDelete);
             }
 

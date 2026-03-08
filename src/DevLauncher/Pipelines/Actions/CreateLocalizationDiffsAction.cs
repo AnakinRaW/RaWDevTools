@@ -44,7 +44,7 @@ internal class CreateLocalizationDiffsAction(IServiceProvider serviceProvider) :
             if (locFile.Language == LanguageType.English)
                 continue;
 
-            Logger?.LogInformation($"Creating Diff for data '{langFile}'");
+            Logger?.LogInformation("Creating Diff for data '{LangFile}'", langFile);
 
             var masterText = _localizationFileService.CreateModelFromLocalizationFile(locFile);
 
