@@ -7,14 +7,13 @@ using AnakinRaW.AppUpdaterFramework.Configuration;
 
 namespace RepublicAtWar.DevLauncher;
 
-internal class DevLauncherEnvironment(Assembly assembly, IFileSystem fileSystem) : UpdatableApplicationEnvironment(assembly, fileSystem)
+internal class DevLauncherEnvironment(Assembly assembly, IFileSystem fileSystem)
+    : UpdatableApplicationEnvironment(assembly, fileSystem)
 {
     private const string ToolPathName = "RawDevLauncher";
 
     public override string ApplicationName => "Republic at War DevLauncher";
     
-    public override Uri? RepositoryUrl => null;
-
     public override ICollection<Uri> UpdateMirrors { get; } = new List<Uri>
     {
         new($"https://republicatwar.com/downloads/{ToolPathName}")

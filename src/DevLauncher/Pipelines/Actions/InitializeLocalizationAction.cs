@@ -31,7 +31,7 @@ internal class InitializeLocalizationAction(IServiceProvider serviceProvider) : 
 
     protected override void RunAction(CancellationToken cancellationToken)
     {
-        Logger?.LogInformation($"Processing data '{EnglishDAT}'");
+        Logger?.LogInformation("Processing data '{DatFile}'", EnglishDAT);
 
         var englishMtfPath = _fileSystem.Path.Combine("Data\\Text", EnglishDAT);
         var englishMasterText = _datFileService.LoadAs(englishMtfPath, DatFileType.OrderedByCrc32).Content;
@@ -40,7 +40,7 @@ internal class InitializeLocalizationAction(IServiceProvider serviceProvider) : 
 
         foreach (var datFile in datFiles)
         {
-            Logger?.LogInformation($"Processing data '{_fileSystem.Path.GetFileName(datFile)}'");
+            Logger?.LogInformation("Processing data '{FileName}'", _fileSystem.Path.GetFileName(datFile));
 
             var language = _localizationFileService.LanguageNameFromFileName(datFile.AsSpan());
 

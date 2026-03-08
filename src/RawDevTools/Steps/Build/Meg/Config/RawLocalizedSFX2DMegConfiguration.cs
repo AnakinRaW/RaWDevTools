@@ -54,7 +54,7 @@ public sealed class RawLocalizedSfx2DMegConfiguration : RawPackMegConfiguration
             if (IsLanguageSupported)
                 throw new DirectoryNotFoundException($"Unable to find SFX directory: '{path}'");
 
-            Logger?.LogDebug($"Unsupported Language {_language} - Switching to English");
+            Logger?.LogDebug("Unsupported Language {Language} - Switching to English", _language);
             path = $"Data\\Audio\\Units\\{LanguageType.English}";
         }
 
@@ -71,7 +71,7 @@ public sealed class RawLocalizedSfx2DMegConfiguration : RawPackMegConfiguration
     {
         var newFileName = _gameLanguageManager.LocalizeFileName(fileName, _language, out var localized);
         if (!localized)
-            Logger?.LogWarning($"Unable to localize file '{fileName}'");
+            Logger?.LogWarning("Unable to localize file '{File}'", fileName);
         return newFileName;
     }
 }

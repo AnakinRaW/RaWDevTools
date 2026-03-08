@@ -52,7 +52,8 @@ public class ModFinderService
         if (focDetectionResult.GameLocation is null)
             throw new GameException("Unable to find game installation: Wrong install path?");
 
-        _logger?.LogInformation($"Found game {focDetectionResult.GameIdentity} at '{focDetectionResult.GameLocation.FullName}'");
+        _logger?.LogInformation("Found game {GameIdentity} at '{Name}'",
+            focDetectionResult.GameIdentity, focDetectionResult.GameLocation.FullName);
 
         var foc = _gameFactory.CreateGame(focDetectionResult, CultureInfo.InvariantCulture);
 
@@ -69,7 +70,8 @@ public class ModFinderService
         var eawDetectionResult = gd.Detect(GameType.Eaw);
         if (eawDetectionResult.GameLocation is null)
             throw new GameException("Unable to find Empire at War installation.");
-        _logger?.LogInformation($"Found game {eawDetectionResult.GameIdentity} at '{eawDetectionResult.GameLocation.FullName}'");
+        _logger?.LogInformation("Found game {GameIdentity} at '{Name}'",
+            eawDetectionResult.GameIdentity, eawDetectionResult.GameLocation.FullName);
 
         var eaw = _gameFactory.CreateGame(eawDetectionResult, CultureInfo.InvariantCulture);
 

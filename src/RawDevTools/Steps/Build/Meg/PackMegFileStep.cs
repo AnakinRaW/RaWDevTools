@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -25,7 +26,12 @@ public class PackMegFileStep(IPackMegConfiguration config, BuildSettings setting
 
     private readonly IPackMegConfiguration _config = config ?? throw new ArgumentNullException(nameof(config));
 
-    protected override void RunCore(CancellationToken token)
+    protected override Task RunCoreAsync(CancellationToken token)
+    {
+        return Task.Run(() => RunCore(token), CancellationToken.None);
+    }
+
+    private void RunCore(CancellationToken token)
     {
         var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
         foreach (var fileToPack in _config.FilesToPack)
@@ -42,11 +48,11 @@ public class PackMegFileStep(IPackMegConfiguration config, BuildSettings setting
 
         if (!settings.CleanBuild && !updateChecker.RequiresUpdate(megFilePath, files))
         {
-            _logger?.LogDebug($"MEG data '{megFileName}' is already up to date. Skipping build.");
+            _logger?.LogDebug("MEG data '{MegFile}' is already up to date. Skipping build.", megFileName);
             return;
         }
 
-        _logger?.LogInformation($"Writing MEG data '{megFileName}'...");
+        _logger?.LogInformation("Writing MEG data '{MegFile}'...", megFileName);
 
         using var megBuilder = new EmpireAtWarMegBuilder(_config.VirtualRootDirectory.FullName, _serviceProvider);
 
@@ -70,6 +76,6 @@ public class PackMegFileStep(IPackMegConfiguration config, BuildSettings setting
         }
 
         megBuilder.Build(new MegFileInformation(megFilePath, MegFileVersion.V1), true);
-        _logger?.LogInformation($"Finished writing MEG data '{megFileName}'...");
+        _logger?.LogInformation("Finished writing MEG data '{MegFile}'...", megFileName);
     }
 }

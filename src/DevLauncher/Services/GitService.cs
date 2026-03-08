@@ -91,7 +91,7 @@ internal class GitService
 
         };
 
-        if (!Process.Start(startInfo)!.WaitForExit(3000))
+        if (!Process.Start(startInfo)!.WaitForExit(10000))
             throw new InvalidOperationException("Unable to fetch from origin.");
     }
 }

@@ -8,22 +8,25 @@ using Microsoft.Extensions.Logging;
 
 namespace RepublicAtWar.DevTools.Steps;
 
-public abstract class SingleActionPipeline(IServiceProvider serviceProvider, bool warningAsError) : SequentialPipeline(serviceProvider)
+public abstract class SingleActionPipeline(IServiceProvider serviceProvider, bool warningAsError) 
+    : SequentialPipeline(serviceProvider)
 {
-    protected override Task<IList<IStep>> BuildSteps()
+   
+    private class SimpleRunnerStep(Action<CancellationToken> action, IServiceProvider serviceProvider) 
+        : PipelineStep(serviceProvider)
+    {
+        protected override Task RunCoreAsync(CancellationToken token)
+        {
+            return Task.Run(() => action(token), CancellationToken.None);
+        }
+    }
+
+    protected override Task<IList<IStep>> CreateRunnerSteps(CancellationToken token)
     {
         return Task.FromResult<IList<IStep>>(new List<IStep>
         {
             new SimpleRunnerStep(RunAction, ServiceProvider)
         });
-    }
-
-    private class SimpleRunnerStep(Action<CancellationToken> action, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
-    {
-        protected override void RunCore(CancellationToken token)
-        {
-            action(token);
-        }
     }
 
     protected abstract void RunAction(CancellationToken cancellationToken);
