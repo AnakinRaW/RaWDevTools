@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using AET.Modinfo.Model;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using PG.StarWarsGame.Infrastructure.Clients.Arguments;
@@ -14,11 +15,12 @@ internal class LaunchStep(LaunchSettings options, IPhysicalMod mod, IServiceProv
 {
     private readonly IPhysicalMod _mod = mod ?? throw new ArgumentNullException(nameof(mod));
 
-    protected override void RunCore(CancellationToken token)
+    protected override Task RunCoreAsync(CancellationToken token)
     {
         var launcher = new GameLauncher(options, _mod, Services);
         var args = CreateGameArgs();
         launcher.Launch(args);
+        return Task.CompletedTask;
     }
 
     private ArgumentCollection CreateGameArgs()

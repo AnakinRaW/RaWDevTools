@@ -1,5 +1,4 @@
-﻿using AET.ModVerify.Reporting.Reporters;
-using AET.SteamAbstraction;
+﻿using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
 using AnakinRaW.ApplicationBase.Environment;
 using AnakinRaW.ApplicationBase.Update;
@@ -87,7 +86,7 @@ internal class Program : SelfUpdateableAppLifecycle
         {
             var returnCode = await new RawDevLauncher(UpdatableApplicationEnvironment!, appServiceProvider)
                 .RunAsync(args);
-            logger?.LogInformation($"RaW DevLauncher finished with code: {returnCode}");
+            logger?.LogInformation("RaW DevLauncher finished with code: {ExitCode}", returnCode);
             return returnCode;
         }
         catch (Exception e)
@@ -107,16 +106,19 @@ internal class Program : SelfUpdateableAppLifecycle
         }
     }
 
-    protected override void ResetApp(Microsoft.Extensions.Logging.ILogger? logger)
+    protected override void ResetApp()
     {
-        logger?.LogDebug("Resetting Application");
+        Logger?.LogDebug("Resetting Application...");
+
+        base.ResetApp();
+
         var deleteResult = ApplicationEnvironment.ApplicationLocalDirectory.TryDeleteWithRetry();
         if (!deleteResult)
-            logger?.LogWarning("Failed to delete application local directory.");
+            Logger?.LogWarning("Failed to delete application local directory.");
         ApplicationEnvironment.ApplicationLocalDirectory.Create();
     }
 
-    protected override void CreateAppServices(IServiceCollection services, IReadOnlyCollection<string> args)
+    protected override void CreateAppServices(IServiceCollection services, IReadOnlyList<string> args)
     {
         var verboseLogging = false;
 
@@ -142,8 +144,6 @@ internal class Program : SelfUpdateableAppLifecycle
         PetroglyphCommons.ContributeServices(services);
 
         PetroglyphEngineServiceContribution.ContributeServices(services);
-        services.RegisterJsonReporter();
-        services.RegisterTextFileReporter();
 
         services.AddSingleton(sp => new GitService(".", sp));
 

@@ -19,8 +19,8 @@ namespace RepublicAtWar.DevTools.Services;
 
 public class LocalizationFileService(IServiceProvider serviceProvider, bool warningAsError = false)
 {
-    private const string EnglishDAT = "MasterTextFile_English.DAT";
-    private const string EnglishText = "MasterTextFile_English.txt";
+    internal const string EnglishDAT = "MasterTextFile_English.DAT";
+    internal const string EnglishText = "MasterTextFile_English.txt";
 
     private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
@@ -104,7 +104,8 @@ public class LocalizationFileService(IServiceProvider serviceProvider, bool warn
         {
             var result = builder.AddEntry(entry.Key, entry.Value);
             if (!result.Added)
-                _logger?.LogWarning($"Unable to add KEY '{entry.Key}' to the DAT for language {localizationFile.Language}: {result.Message}");
+                _logger?.LogWarning("Unable to add KEY '{Key}' to the DAT for language {Language}: {Message}", 
+                    entry.Key, localizationFile.Language, result.Message);
         }
 
         builder.Build(new DatFileInformation { FilePath = _fileSystem.Path.GetFullPath(datFile) }, overwrite);

@@ -48,7 +48,8 @@ internal class MegCompile(IServiceProvider serviceProvider)
     private async Task Run()
     {
         var gameFinderResult = new ModFinderService(serviceProvider).FindAndAddModInCurrentDirectory();
-        var pipeline = new PackSfxMegPipeline(gameFinderResult.RepublicAtWar, new BuildSettings { CleanBuild = true }, serviceProvider);
+        var pipeline = new PackSfxMegPipeline(gameFinderResult.RepublicAtWar, 
+            new BuildSettings { CleanBuild = true }, serviceProvider);
         await pipeline.RunAsync();
     }
 

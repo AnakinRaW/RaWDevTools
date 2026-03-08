@@ -69,7 +69,6 @@ internal sealed class RawDevLauncher(UpdatableApplicationEnvironment application
             typeof(PrepareLocalizationsOption),
             typeof(MergeLocalizationOption),
             typeof(ReleaseRepublicAtWarOption),
-            typeof(VerifyOption)
         ];
 
         var parseResult = _looseArgumentParser.ParseArguments(args, optionTypes);
@@ -106,9 +105,6 @@ internal sealed class RawDevLauncher(UpdatableApplicationEnvironment application
                 case MergeLocalizationOption:
                     launcherPipeline = new MergeLocalizationsAction(serviceProvider);
                     break;
-                case VerifyOption verifyOption:
-                    launcherPipeline = CreateBuildVerifyPipeline(verifyOption, gameFinderResult, serviceProvider);
-                    break;
                 default:
                     throw new ArgumentException($"The option '{options.GetType().FullName}' is not implemented",
                         nameof(options));
@@ -125,16 +121,6 @@ internal sealed class RawDevLauncher(UpdatableApplicationEnvironment application
             _logger?.LogError(e.Message, e);
             return e.HResult;
         }
-    }
-
-    private static IPipeline CreateBuildVerifyPipeline(VerifyOption options, GameFinderResult gameFinderResult, IServiceProvider services)
-    {
-        var buildSettings = new BuildSettings
-        {
-            WarnAsError = options.WarnAsError,
-            CleanBuild = options.CleanBuild
-        };
-        return new BuildAndVerifyPipeline(gameFinderResult.RepublicAtWar, gameFinderResult.FallbackGame, buildSettings, services);
     }
 
     private static IPipeline CreateBuildRunPipeline(BuildAndRunOption options, GameFinderResult gameFinderResult, IServiceProvider services)

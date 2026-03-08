@@ -75,10 +75,10 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
         return matcher;
     }
 
-    protected override void RunCore(CancellationToken token)
+    protected override async Task RunCoreAsync(CancellationToken token)
     {
-        _buildArtifactsStep.Wait();
-
+        await _buildArtifactsStep;
+        
         _logger?.LogInformation("Copying Release to SteamUploader ...");
 
         if (!_fileSystem.Directory.Exists(_settings.UploaderDirectory))
@@ -101,17 +101,14 @@ public class CopyReleaseStep : PipelineStep, IProgressStep
         var steamJsonFile = _buildArtifactsStep.SteamJsonName;
         _fileSystem.File.Copy(steamJsonFile, _fileSystem.Path.Combine(uploaderWsContentPath, steamJsonFile), true);
 
-        Task.Run(async () =>
-            {
-                await new DirectoryCopier(_fileSystem).CopyDirectoryAsync(source, 
-                    assetCopyPath, 
-                    new CopyProgress(this),
-                    ShallCopyFile, 4,
-                    token);
-            }, CancellationToken.None)
-            .Wait(token);
-        
-        _logger?.LogInformation($"Copied assets to SteamUploader at '{assetCopyPath}'");
+        await new DirectoryCopier(_fileSystem).CopyDirectoryAsync(source,
+            assetCopyPath,
+            new CopyProgress(this),
+            ShallCopyFile, 
+            4,
+            token);
+
+        _logger?.LogInformation("Copied assets to SteamUploader at '{Path}'", assetCopyPath);
     }
 
     private bool ShallCopyFile(string fileToCopy)

@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities;
 using AnakinRaW.CommonUtilities.FileSystem;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
@@ -28,7 +29,12 @@ public class PackIconsStep(BuildSettings settings, IServiceProvider serviceProvi
     private const string DummyMasterTextFileXml = "Data\\Text\\MasterTextFile.xml";
     private const string ModCompileExe = "ModCompile.exe";
 
-    protected override void RunCore(CancellationToken token)
+    protected override Task RunCoreAsync(CancellationToken token)
+    {
+        return Task.Run(() => RunCore(token), CancellationToken.None);
+    }
+
+    private void RunCore(CancellationToken token)
     {
         if (!_fileSystem.Directory.Exists(IconsDirectory))
         {
