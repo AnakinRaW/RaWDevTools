@@ -14,7 +14,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace RepublicAtWar.DevTools.Steps.Releasing;
 
-public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
+public class CreateUploadMetaArtifactsStep(SemVersion version, IServiceProvider serviceProvider) : PipelineStep(serviceProvider)
 {
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(CreateUploadMetaArtifactsStep));
@@ -34,7 +34,6 @@ public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : P
     {
         _logger?.LogInformation("Creating Modinfo, Steam json and splashes...");
 
-        var version = SemVersion.Parse(_fileSystem.File.ReadAllText("version.txt"), SemVersionStyles.Strict);
         _replacementVariables.Add("version", version.ToString());
         _replacementVariables.Add("version-minor", ToMinorOnly(version));
 
@@ -44,10 +43,6 @@ public class CreateUploadMetaArtifactsStep(IServiceProvider serviceProvider) : P
         string steamDescription;
         if (version.IsPrerelease)
         {
-            Console.WriteLine("Building a preview version!!!");
-            Console.WriteLine("Building a preview version!!!");
-            Console.WriteLine("Building a preview version!!!");
-
             releaseInfo = ModinfoData.Parse(_fileSystem.File.ReadAllText("modinfo-beta.json"));
             steamDescription = _fileSystem.File.ReadAllText("SteamText-Beta.txt");
             _fileSystem.File.Copy("splash-beta.png", "splash.png", true);

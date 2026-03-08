@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using AET.Modinfo.Model;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +8,12 @@ using PG.StarWarsGame.Infrastructure.Mods;
 using RepublicAtWar.DevLauncher.Utilities;
 using RepublicAtWar.DevTools.Steps.Releasing;
 using RepublicAtWar.DevTools.Steps.Settings;
+using Semver;
+using System;
+using System.Collections.Generic;
+using System.IO.Abstractions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RepublicAtWar.DevLauncher.Pipelines;
 
@@ -21,8 +24,11 @@ internal class ReleaseRawPipeline : SequentialPipeline
     private readonly ReleaseSettings _releaseSettings;
     private readonly IPhysicalMod _republicAtWar;
     private readonly IGame _empireAtWarGame;
+    private readonly IFileSystem _fileSystem;
 
     private ProgressBarReporter? _progressBarReporter;
+
+    private SemVersion _modVersion = null!;
 
     public ReleaseRawPipeline(
         IPhysicalMod republicAtWar, 
@@ -37,14 +43,16 @@ internal class ReleaseRawPipeline : SequentialPipeline
         _republicAtWar = republicAtWar ?? throw new ArgumentNullException(nameof(republicAtWar));
         _empireAtWarGame = empireAtWarGame;
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
+        _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
     }
-
 
     protected override Task<IList<IStep>> CreateRunnerSteps(CancellationToken token)
     {
+        _modVersion = SemVersion.Parse(_fileSystem.File.ReadAllText("version.txt"), SemVersionStyles.Strict);
+
         return Task.Run<IList<IStep>>(() =>
         {
-            var createArtifactStep = new CreateUploadMetaArtifactsStep(ServiceProvider);
+            var createArtifactStep = new CreateUploadMetaArtifactsStep(_modVersion, ServiceProvider);
 
             var copyStep = new CopyReleaseStep(createArtifactStep, _releaseSettings, ServiceProvider);
             _progressBarReporter = new(copyStep);
@@ -55,6 +63,9 @@ internal class ReleaseRawPipeline : SequentialPipeline
                 new RunPipelineStep(new BuildPipeline(_republicAtWar, _buildSettings, ServiceProvider), ServiceProvider),
                 // Verify
                 // new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _empireAtWarGame, ServiceProvider), ServiceProvider),
+               
+                new VerifyLocalizationStep(_republicAtWar, _buildSettings, _modVersion.IsPrerelease, ServiceProvider),
+                
                 // Build Release artifacts
                 createArtifactStep,
                 // Copy to Release
@@ -67,13 +78,22 @@ internal class ReleaseRawPipeline : SequentialPipeline
     {
         base.OnExecuteStarted();
 
-        _logger?.LogInformation("Release Republic at War");
+        _logger?.LogInformation("Releasing {Raw}...", "Republic at War");
 
         if (!_buildSettings.CleanBuild)
         {
             _logger?.LogWarning("Releasing without Clean build!!!");
             _logger?.LogWarning("Releasing without Clean build!!!");
             _logger?.LogWarning("Releasing without Clean build!!!");
+        }
+
+        if (_modVersion.IsPrerelease)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine("Building a preview version!!!");
+            Console.WriteLine("Building a preview version!!!");
+            Console.WriteLine("Building a preview version!!!");
+            Console.ResetColor();
         }
     }
 
