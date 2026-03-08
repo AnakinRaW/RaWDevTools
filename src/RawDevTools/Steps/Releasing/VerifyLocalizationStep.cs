@@ -164,6 +164,15 @@ public class VerifyLocalizationStep(
 
         var hasErrors = VerifyEnglishFilesLocalizable(reportBuilder, englishFiles, "Speech");
 
+        var nonMp3Files = englishFiles.Where(f => !_fileSystem.Path.GetExtension(f).Equals(".mp3", StringComparison.OrdinalIgnoreCase)).ToList();
+        if (nonMp3Files.Any())
+        {
+            reportBuilder.AppendLine("The following English files in Speech are not .mp3 files:");
+            foreach (var f in nonMp3Files)
+                reportBuilder.AppendLine($"  - {f}");
+            hasErrors = true;
+        }
+
         foreach (var language in supportedLanguages)
         {
             if (language == LanguageType.English)
@@ -261,6 +270,15 @@ public class VerifyLocalizationStep(
 
         var hasErrors = VerifyEnglishFilesLocalizable(reportBuilder, englishFiles, "SFX");
         
+        var nonWavFiles = englishFiles.Where(f => !_fileSystem.Path.GetExtension(f).Equals(".wav", StringComparison.OrdinalIgnoreCase)).ToList();
+        if (nonWavFiles.Any())
+        {
+            reportBuilder.AppendLine("The following English files in SFX are not .wav files:");
+            foreach (var f in nonWavFiles)
+                reportBuilder.AppendLine($"  - {f}");
+            hasErrors = true;
+        }
+
         foreach (var language in supportedLanguages)
         {
             if (language == LanguageType.English)
