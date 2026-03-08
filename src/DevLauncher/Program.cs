@@ -1,5 +1,4 @@
-﻿using AET.ModVerify.Reporting.Reporters;
-using AET.SteamAbstraction;
+﻿using AET.SteamAbstraction;
 using AnakinRaW.ApplicationBase;
 using AnakinRaW.ApplicationBase.Environment;
 using AnakinRaW.ApplicationBase.Update;
@@ -145,8 +144,6 @@ internal class Program : SelfUpdateableAppLifecycle
         PetroglyphCommons.ContributeServices(services);
 
         PetroglyphEngineServiceContribution.ContributeServices(services);
-        services.RegisterJsonReporter();
-        services.RegisterTextFileReporter();
 
         services.AddSingleton(sp => new GitService(".", sp));
 

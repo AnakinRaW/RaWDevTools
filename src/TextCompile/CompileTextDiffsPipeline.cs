@@ -1,19 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline;
 using RepublicAtWar.DevTools.Steps.Settings;
 
 namespace RepublicAtWar.TextCompile;
 
-internal class CompileTextDiffsPipeline(BuildSettings settings, IServiceProvider serviceProvider, bool failFast = true)
-    : SequentialPipeline(serviceProvider, failFast)
+internal class CompileTextDiffsPipeline : SequentialPipeline
 {
-    protected override Task<IList<IStep>> BuildSteps()
+    private readonly BuildSettings _settings;
+
+    public CompileTextDiffsPipeline(BuildSettings settings, IServiceProvider serviceProvider) : base(serviceProvider)
+    {
+        _settings = settings;
+        FailFast = true;
+    }
+
+    protected override Task<IList<IStep>> CreateRunnerSteps(CancellationToken token)
     {
         IList<IStep> steps = new List<IStep>
         {
-            new MergeDiffIntoDatStep(ServiceProvider, settings)
+            new MergeDiffIntoDatStep(ServiceProvider, _settings)
         };
         return Task.FromResult(steps);
     }

@@ -60,7 +60,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\ModdingToolBase\src\AnakinApps\ApplicationBase.CommandLine\ApplicationBase.CommandLine.csproj" />
 		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\AppUpdaterFramework.Manifest\AppUpdaterFramework.Manifest.csproj" />
-		<ProjectReference Include="..\..\ModVerify\src\ModVerify\ModVerify.csproj" />
 		<ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Engine\PG.StarWarsGame.Engine.csproj" />
 		<ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Files.ALO\PG.StarWarsGame.Files.ALO.csproj" />
 		<ProjectReference Include="..\RawDevTools\RawDevTools.csproj" />

@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using AnakinRaW.CommonUtilities.SimplePipeline.Steps;
 using Microsoft.Extensions.DependencyInjection;
 using PG.StarWarsGame.Engine.Localization;
@@ -19,7 +20,7 @@ internal class MergeDiffIntoDatStep(IServiceProvider serviceProvider, BuildSetti
 
     private readonly LocalizationFileService _localizationFileService = new(serviceProvider, buildSettings.WarnAsError);
 
-    protected override void RunCore(CancellationToken token)
+    protected override Task RunCoreAsync(CancellationToken token)
     {
         var diffFiles = _fileSystem.Directory.EnumerateFiles("Data\\Text", "Diff_MasterTextFile_*.txt");
         var textFiles = _fileSystem.Directory.EnumerateFiles("Data\\Text", "MasterTextFile_*.txt");
@@ -33,6 +34,8 @@ internal class MergeDiffIntoDatStep(IServiceProvider serviceProvider, BuildSetti
             var locFile = _localizationFileService.ReadLocalizationFile(textFile);
             _localizationFileService.CompileLocalizationFile(locFile, datFile , true);
         }
+
+        return Task.CompletedTask;
     }
 
     private void MergeDiffIntoDatOrText(string diffFile)
