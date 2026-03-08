@@ -19,8 +19,8 @@ namespace RepublicAtWar.DevTools.Services;
 
 public class LocalizationFileService(IServiceProvider serviceProvider, bool warningAsError = false)
 {
-    private const string EnglishDAT = "MasterTextFile_English.DAT";
-    private const string EnglishText = "MasterTextFile_English.txt";
+    internal const string EnglishDAT = "MasterTextFile_English.DAT";
+    internal const string EnglishText = "MasterTextFile_English.txt";
 
     private readonly IServiceProvider _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     private readonly IFileSystem _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();

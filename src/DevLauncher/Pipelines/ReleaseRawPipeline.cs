@@ -44,6 +44,8 @@ internal class ReleaseRawPipeline : SequentialPipeline
         _empireAtWarGame = empireAtWarGame;
         _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
         _fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
+
+        FailFast = true;
     }
 
     protected override Task<IList<IStep>> CreateRunnerSteps(CancellationToken token)
@@ -64,7 +66,7 @@ internal class ReleaseRawPipeline : SequentialPipeline
                 // Verify
                 // new RunPipelineStep(new VerifyPipeline(_options, _republicAtWar, _empireAtWarGame, ServiceProvider), ServiceProvider),
                
-                new VerifyLocalizationStep(_republicAtWar, _buildSettings, _modVersion.IsPrerelease, ServiceProvider),
+                new VerifyLocalizationStep(_republicAtWar, _modVersion.IsPrerelease, ServiceProvider),
                 
                 // Build Release artifacts
                 createArtifactStep,
@@ -78,7 +80,7 @@ internal class ReleaseRawPipeline : SequentialPipeline
     {
         base.OnExecuteStarted();
 
-        _logger?.LogInformation("Releasing {Raw}...", "Republic at War");
+        _logger?.LogInformation("Releasing {Raw} v{Version}...", "Republic at War", _modVersion);
 
         if (!_buildSettings.CleanBuild)
         {
