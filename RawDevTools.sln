@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.4.11519.219 insiders
+VisualStudioVersion = 18.4.11519.219
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DevLauncher", "src\DevLauncher\DevLauncher.csproj", "{1BA491BC-2CD6-4270-9573-5FF9529D8D89}"
 EndProject
@@ -56,6 +56,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppUpdaterFramework.Attributes", "ModdingToolBase\src\Updater\AppUpdaterFramework.Attributes\AppUpdaterFramework.Attributes.csproj", "{1AA3A6D5-5492-26C3-E36C-54AB5997D2CF}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ApplicationBase.Shared", "ModdingToolBase\src\AnakinApps\ApplicationBase.Shared\ApplicationBase.Shared.shproj", "{B297A13A-8E3A-436C-BA97-8B5F57827FFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PG.StarWarsGame.Files.TED", "ModVerify\src\PetroglyphTools\PG.StarWarsGame.Files.TED\PG.StarWarsGame.Files.TED.csproj", "{212FFB5F-5633-36E6-60AF-726B3D896401}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PG.StarWarsGame.Files.ChunkFiles.Test", "ModVerify\src\PetroglyphTools\PG.StarWarsGame.Files.ChunkFiles.Test\PG.StarWarsGame.Files.ChunkFiles.Test.csproj", "{54B5A952-93A5-E3C3-033C-D21E627F1B81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PG.StarWarsGame.Files.TED.Test", "ModVerify\src\PetroglyphTools\PG.StarWarsGame.Files.TED.Test\PG.StarWarsGame.Files.TED.Test.csproj", "{FB7CF887-FAF3-797F-7BBD-B10B550ADAF5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -139,6 +145,18 @@ Global
 		{1AA3A6D5-5492-26C3-E36C-54AB5997D2CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1AA3A6D5-5492-26C3-E36C-54AB5997D2CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1AA3A6D5-5492-26C3-E36C-54AB5997D2CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{212FFB5F-5633-36E6-60AF-726B3D896401}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{212FFB5F-5633-36E6-60AF-726B3D896401}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{212FFB5F-5633-36E6-60AF-726B3D896401}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{212FFB5F-5633-36E6-60AF-726B3D896401}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54B5A952-93A5-E3C3-033C-D21E627F1B81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54B5A952-93A5-E3C3-033C-D21E627F1B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54B5A952-93A5-E3C3-033C-D21E627F1B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54B5A952-93A5-E3C3-033C-D21E627F1B81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB7CF887-FAF3-797F-7BBD-B10B550ADAF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB7CF887-FAF3-797F-7BBD-B10B550ADAF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB7CF887-FAF3-797F-7BBD-B10B550ADAF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB7CF887-FAF3-797F-7BBD-B10B550ADAF5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -164,6 +182,9 @@ Global
 		{8768819D-B0C2-4487-3B3A-84A90F36BAB7} = {46DB413A-0F73-48A6-9071-9C38916BE6FC}
 		{1AA3A6D5-5492-26C3-E36C-54AB5997D2CF} = {3E986062-E81F-4833-A127-24FA73FBCB1B}
 		{B297A13A-8E3A-436C-BA97-8B5F57827FFE} = {46DB413A-0F73-48A6-9071-9C38916BE6FC}
+		{212FFB5F-5633-36E6-60AF-726B3D896401} = {FF4C3704-0C74-40B5-A38D-AF29B6385D85}
+		{54B5A952-93A5-E3C3-033C-D21E627F1B81} = {FF4C3704-0C74-40B5-A38D-AF29B6385D85}
+		{FB7CF887-FAF3-797F-7BBD-B10B550ADAF5} = {FF4C3704-0C74-40B5-A38D-AF29B6385D85}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DC15751A-BB36-4EF1-BFF0-2DF1E419AC8F}
