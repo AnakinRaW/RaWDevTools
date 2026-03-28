@@ -14,7 +14,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.Commons;
 using PG.StarWarsGame.Engine;
-using PG.StarWarsGame.Engine.Xml.Parsers;
 using PG.StarWarsGame.Files.ALO;
 using PG.StarWarsGame.Files.DAT;
 using PG.StarWarsGame.Files.MEG;
@@ -35,6 +34,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading.Tasks;
+using PG.StarWarsGame.Engine.Xml;
 using Testably.Abstractions;
 using ILogger = Serilog.ILogger;
 
@@ -52,8 +52,8 @@ public static class MainClass
 
 internal class Program : SelfUpdateableAppLifecycle
 {
-    private static readonly string EngineParserNamespace = typeof(XmlObjectParser<>).Namespace!;
-    private static readonly string ParserNamespace = typeof(PetroglyphXmlFileParser<>).Namespace!;
+    private static readonly string EngineParserNamespace = typeof(PetroglyphStarWarsGameXmlParser).Namespace!;
+    private static readonly string ParserNamespace = typeof(XmlFileParser<>).Namespace!;
     private static readonly string DevLauncherRootNamespace = typeof(Program).Namespace!;
     private static readonly string DevLauncherUpdateNamespace = typeof(RawDevLauncherUpdater).Namespace!;
     
