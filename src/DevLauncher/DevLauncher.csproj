@@ -23,11 +23,11 @@
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 		<PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
-		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="5.0.1" />
-		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="13.0.1" />
+		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="5.0.7" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="13.0.18" />
 		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
 		<PackageReference Include="Antlr4BuildTasks" Version="12.14.0" />
-		<PackageReference Include="AnakinRaW.CommonUtilities.Registry" Version="13.0.1" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.Registry" Version="13.0.18" />
 		<PackageReference Include="Glob" Version="1.1.9" />
 		<PackageReference Include="LibGit2Sharp" Version="0.31.0" />
 		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
@@ -46,7 +46,7 @@
 
 	<!-- Exclude System.Index from all dependencies, excluding Microsoft.Bcl.Memory -->
 	<ItemGroup>
-		<PackageReference Include="Vanara.Core" Version="5.0.0">
+		<PackageReference Include="Vanara.Core" Version="5.0.1">
 			<ExcludeAssets>compile</ExcludeAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
@@ -54,7 +54,7 @@
 			<ExcludeAssets>compile</ExcludeAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Bcl.Memory" Version="10.0.3"/>
+		<PackageReference Include="Microsoft.Bcl.Memory" Version="10.0.5" />
 	</ItemGroup>
 
 	<ItemGroup>

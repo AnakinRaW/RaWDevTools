@@ -5,11 +5,11 @@
       "commandLineArgs": "--verboseBootstrapLogging -verbose",
       "workingDirectory": "C:\\Privat\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
     },
-    "DAT2LocFile": {
-      "commandName": "Project",
-      "commandLineArgs": "initLoc --skipUpdate",
-      "workingDirectory": "C:\\Privat\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
-    },
+    //"DAT2LocFile": {
+    //  "commandName": "Project",
+    //  "commandLineArgs": "initLoc --skipUpdate",
+    //  "workingDirectory": "C:\\Privat\\Steam\\steamapps\\common\\Star Wars Empire at War\\corruption\\Mods\\republic-at-war"
+    //},
     "Diff Localizations": {
       "commandName": "Project",
       "commandLineArgs": "prepareLoc --skipUpdate",
