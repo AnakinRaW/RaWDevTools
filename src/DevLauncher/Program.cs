@@ -101,10 +101,15 @@ internal class Program : SelfUpdateableAppLifecycle
         {
             Log.CloseAndFlush();
 
-            Console.WriteLine();
-            ConsoleUtilities.WriteHorizontalLine('-');
-            Console.Write("Press ENTER to exit.");
-            Console.ReadLine();
+            // Skip the interactive prompt in plain update mode: the host is being driven
+            // by the external updater / a test harness and there is no human at the console.
+            if (!RawDevLauncher.IsUpdateOnlyInvocation(args))
+            {
+                Console.WriteLine();
+                ConsoleUtilities.WriteHorizontalLine('-');
+                Console.Write("Press ENTER to exit.");
+                Console.ReadLine();
+            }
         }
     }
 
