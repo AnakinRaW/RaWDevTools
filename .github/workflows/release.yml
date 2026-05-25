@@ -16,7 +16,7 @@ env:
   PUBLISH_SCRIPT: ./ModdingToolBase/scripts/Publish-Release.ps1
   TOOL_EXE: RaW-DevLauncher.exe
   UPDATER_EXE: AnakinRaW.ExternalUpdater.exe
-  EMBEDDED_TRUST_CERT: src/DevLauncher/Resources/Certs/rawdev-trust.cer
+  EMBEDDED_TRUST_CERT: src/DevLauncher/Resources/Certs/anakinraw-trust.cer
   ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher
   SFTP_BASE_PATH: downloads/RawDevLauncher/
   BRANCH_NAME: ${{ github.event.inputs.branch || 'stable' }}
