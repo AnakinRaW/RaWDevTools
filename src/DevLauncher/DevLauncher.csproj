@@ -25,9 +25,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Resources\Certs\rawdev-trust.cer" 
-		                  LogicalName="RaW-DevLauncher.Resources.Certs.rawdev-trust.cer" 
-		                  Condition="Exists('Resources\Certs\rawdev-trust.cer')" />
+		<EmbeddedResource Include="Resources\Certs\anakinraw-trust.cer"
+		                  LogicalName="RaW-DevLauncher.Resources.Certs.anakinraw-trust.cer"
+		                  Condition="Exists('Resources\Certs\anakinraw-trust.cer')" />
 	</ItemGroup>
 
 	<ItemGroup>

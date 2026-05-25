@@ -52,7 +52,7 @@ public static class MainClass
 
 internal class Program : SelfUpdateableAppLifecycle
 {
-    private const string EmbeddedTrustCertResource = "RaW-DevLauncher.Resources.Certs.rawdev-trust.cer";
+    private const string EmbeddedTrustCertResource = "RaW-DevLauncher.Resources.Certs.anakinraw-trust.cer";
 
     private static readonly string EngineParserNamespace = typeof(PetroglyphStarWarsGameXmlParser).Namespace!;
     private static readonly string ParserNamespace = typeof(XmlFileParser<>).Namespace!;
