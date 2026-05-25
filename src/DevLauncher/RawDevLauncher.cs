@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using AnakinRaW.AppUpdaterFramework.Metadata.Product;
 
 namespace RepublicAtWar.DevLauncher;
 
@@ -50,7 +51,16 @@ internal sealed class RawDevLauncher(UpdatableApplicationEnvironment application
 
             var updater = new RawDevLauncherUpdater(applicationEnvironment, serviceProvider);
             var branchName = updater.GetBranchNameFromRegistry(options?.BranchName, true);
-            var branch = updater.CreateBranch(branchName, options?.ManifestUrl);
+
+            ProductBranch branch;
+            if (options is not null)
+            {
+                branch = !string.IsNullOrEmpty(options.ServerUrl)
+                    ? updater.CreateBranchFromServerUrl(options.ServerUrl!, branchName)
+                    : updater.CreateBranch(branchName, options.ManifestUrl);
+            }
+            else 
+                branch = updater.CreateBranch(branchName);
             
             await updater.AutoUpdateApplication(branch);
         }

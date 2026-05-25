@@ -18,6 +18,18 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
+	<!-- Set /p:LocalDeploy=true (e.g. from deploy-local.ps1) to compile in the local-deploy dev
+	     trust cert pickup path. Off by default; release builds never see it. -->
+	<PropertyGroup Condition="'$(LocalDeploy)' == 'true'">
+		<DefineConstants>$(DefineConstants);LOCAL_DEPLOY</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\Certs\rawdev-trust.cer" 
+		                  LogicalName="RaW-DevLauncher.Resources.Certs.rawdev-trust.cer" 
+		                  Condition="Exists('Resources\Certs\rawdev-trust.cer')" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="CompuMaster.Text.Diff" Version="2025.12.29" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
@@ -64,14 +76,6 @@
 		<ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Files.ALO\PG.StarWarsGame.Files.ALO.csproj" />
 		<ProjectReference Include="..\RawDevTools\RawDevTools.csproj" />
 		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater.App\ExternalUpdater.App.csproj" />
-	</ItemGroup>
-
-
-	<ItemGroup>
-	  <None Update="Properties\Settings.settings">
-	    <Generator>SettingsSingleFileGenerator</Generator>
-	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-	  </None>
 	</ItemGroup>
 
 	<PropertyGroup Condition="$(Configuration) == 'Release'">

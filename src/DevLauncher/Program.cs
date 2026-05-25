@@ -52,6 +52,8 @@ public static class MainClass
 
 internal class Program : SelfUpdateableAppLifecycle
 {
+    private const string EmbeddedTrustCertResource = "RaW-DevLauncher.Resources.Certs.rawdev-trust.cer";
+
     private static readonly string EngineParserNamespace = typeof(PetroglyphStarWarsGameXmlParser).Namespace!;
     private static readonly string ParserNamespace = typeof(XmlFileParser<>).Namespace!;
     private static readonly string DevLauncherRootNamespace = typeof(Program).Namespace!;
@@ -104,6 +106,20 @@ internal class Program : SelfUpdateableAppLifecycle
             Console.Write("Press ENTER to exit.");
             Console.ReadLine();
         }
+    }
+
+    protected override void RegisterTrustedCertificates(IServiceProvider appServices)
+    {
+        if (!IsUpdateableApplication)
+            return;
+
+        string? devCertPath = null;
+#if DEBUG || LOCAL_DEPLOY
+        devCertPath = System.IO.Path.GetFullPath(
+            System.IO.Path.Combine(AppContext.BaseDirectory, "..", "dev-trust.cer"));
+#endif
+        appServices.GetRequiredService<CertificateManager>()
+            .RegisterTrustedCertificates(typeof(Program).Assembly, [EmbeddedTrustCertResource], devCertPath);
     }
 
     protected override void ResetApp()
