@@ -14,7 +14,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PG.Commons;
 using PG.StarWarsGame.Engine;
-using PG.StarWarsGame.Engine.Xml.Parsers;
 using PG.StarWarsGame.Files.ALO;
 using PG.StarWarsGame.Files.DAT;
 using PG.StarWarsGame.Files.MEG;
@@ -35,6 +34,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading.Tasks;
+using PG.StarWarsGame.Engine.Xml;
 using Testably.Abstractions;
 using ILogger = Serilog.ILogger;
 
@@ -52,8 +52,10 @@ public static class MainClass
 
 internal class Program : SelfUpdateableAppLifecycle
 {
-    private static readonly string EngineParserNamespace = typeof(XmlObjectParser<>).Namespace!;
-    private static readonly string ParserNamespace = typeof(PetroglyphXmlFileParser<>).Namespace!;
+    private const string EmbeddedTrustCertResource = "RaW-DevLauncher.Resources.Certs.anakinraw-trust.cer";
+
+    private static readonly string EngineParserNamespace = typeof(PetroglyphStarWarsGameXmlParser).Namespace!;
+    private static readonly string ParserNamespace = typeof(XmlFileParser<>).Namespace!;
     private static readonly string DevLauncherRootNamespace = typeof(Program).Namespace!;
     private static readonly string DevLauncherUpdateNamespace = typeof(RawDevLauncherUpdater).Namespace!;
     
@@ -99,11 +101,30 @@ internal class Program : SelfUpdateableAppLifecycle
         {
             Log.CloseAndFlush();
 
-            Console.WriteLine();
-            ConsoleUtilities.WriteHorizontalLine('-');
-            Console.Write("Press ENTER to exit.");
-            Console.ReadLine();
+            // Skip the interactive prompt in plain update mode: the host is being driven
+            // by the external updater / a test harness and there is no human at the console.
+            if (!RawDevLauncher.IsUpdateOnlyInvocation(args))
+            {
+                Console.WriteLine();
+                ConsoleUtilities.WriteHorizontalLine('-');
+                Console.Write("Press ENTER to exit.");
+                Console.ReadLine();
+            }
         }
+    }
+
+    protected override void RegisterTrustedCertificates(IServiceProvider appServices)
+    {
+        if (!IsUpdateableApplication)
+            return;
+
+        string? devCertPath = null;
+#if DEBUG || LOCAL_DEPLOY
+        devCertPath = System.IO.Path.GetFullPath(
+            System.IO.Path.Combine(AppContext.BaseDirectory, "..", "dev-trust.cer"));
+#endif
+        appServices.GetRequiredService<CertificateManager>()
+            .RegisterTrustedCertificates(typeof(Program).Assembly, [EmbeddedTrustCertResource], devCertPath);
     }
 
     protected override void ResetApp()

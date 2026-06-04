@@ -18,27 +18,37 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
+	<!-- Set /p:LocalDeploy=true (e.g. from deploy-local.ps1) to compile in the local-deploy dev
+	     trust cert pickup path. Off by default; release builds never see it. -->
+	<PropertyGroup Condition="'$(LocalDeploy)' == 'true'">
+		<DefineConstants>$(DefineConstants);LOCAL_DEPLOY</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\Certs\anakinraw-trust.cer" LogicalName="RaW-DevLauncher.Resources.Certs.anakinraw-trust.cer" Condition="Exists('Resources\Certs\anakinraw-trust.cer')" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="CompuMaster.Text.Diff" Version="2025.12.29" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 		<PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
-		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="5.0.1" />
-		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="13.0.1" />
+		<PackageReference Include="AlamoEngineTools.SteamAbstraction" Version="5.0.19" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.SimplePipeline" Version="13.0.23" />
 		<PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
 		<PackageReference Include="Antlr4BuildTasks" Version="12.14.0" />
-		<PackageReference Include="AnakinRaW.CommonUtilities.Registry" Version="13.0.1" />
+		<PackageReference Include="AnakinRaW.CommonUtilities.Registry" Version="13.0.23" />
 		<PackageReference Include="Glob" Version="1.1.9" />
 		<PackageReference Include="LibGit2Sharp" Version="0.31.0" />
 		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
 
-		<PackageReference Include="Costura.Fody" Version="6.0.0">
+		<PackageReference Include="Costura.Fody" Version="6.2.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="PolySharp" Version="1.15.0">
+		<PackageReference Include="PolySharp" Version="1.16.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
@@ -46,15 +56,15 @@
 
 	<!-- Exclude System.Index from all dependencies, excluding Microsoft.Bcl.Memory -->
 	<ItemGroup>
-		<PackageReference Include="Vanara.Core" Version="5.0.0">
+		<PackageReference Include="Vanara.Core" Version="5.0.5">
 			<ExcludeAssets>compile</ExcludeAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="IndexRange" Version="1.0.3">
+		<PackageReference Include="IndexRange" Version="1.1.1">
 			<ExcludeAssets>compile</ExcludeAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Bcl.Memory" Version="10.0.3"/>
+		<PackageReference Include="Microsoft.Bcl.Memory" Version="10.0.8" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -64,14 +74,6 @@
 		<ProjectReference Include="..\..\ModVerify\src\PetroglyphTools\PG.StarWarsGame.Files.ALO\PG.StarWarsGame.Files.ALO.csproj" />
 		<ProjectReference Include="..\RawDevTools\RawDevTools.csproj" />
 		<ProjectReference Include="..\..\ModdingToolBase\src\Updater\ExternalUpdater.App\ExternalUpdater.App.csproj" />
-	</ItemGroup>
-
-
-	<ItemGroup>
-	  <None Update="Properties\Settings.settings">
-	    <Generator>SettingsSingleFileGenerator</Generator>
-	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-	  </None>
 	</ItemGroup>
 
 	<PropertyGroup Condition="$(Configuration) == 'Release'">

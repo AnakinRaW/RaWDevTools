@@ -13,84 +13,114 @@ on:
     
 env:
   TOOL_PROJ_PATH: ./src/DevLauncher/DevLauncher.csproj
-  CREATOR_PROJ_PATH: ./ModdingToolBase/src/AnakinApps/ApplicationManifestCreator/ApplicationManifestCreator.csproj
-  UPLOADER_PROJ_PATH: ./ModdingToolBase/src/AnakinApps/FtpUploader/FtpUploader.csproj
+  PUBLISH_SCRIPT: ./ModdingToolBase/scripts/Publish-Release.ps1
   TOOL_EXE: RaW-DevLauncher.exe
   UPDATER_EXE: AnakinRaW.ExternalUpdater.exe
-  MANIFEST_CREATOR: AnakinRaW.ApplicationManifestCreator.dll
-  SFTP_UPLOADER: AnakinRaW.FtpUploader.dll
+  EMBEDDED_TRUST_CERT: src/DevLauncher/Resources/Certs/anakinraw-trust.cer
   ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher
-  ORIGIN_BASE_PART: downloads/RawDevLauncher/
+  SFTP_BASE_PATH: downloads/RawDevLauncher/
   BRANCH_NAME: ${{ github.event.inputs.branch || 'stable' }}
+
+  # Migration-release values. Leave empty for a normal release; populate to enable.
+  #
+  # Origin URL of the next-generation channel, written into the manifest's componentOriginInfo.
+  NEXT_ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher/v2
+
+  # SFTP path the next-generation channel uploads to. Set together with NEXT_ORIGIN_BASE.
+  NEXT_SFTP_BASE_PATH: downloads/RawDevLauncher/v2/
+
+  # Previously-deployed updater used in place of the build-output one for the primary deploy.
+  # Only the old-gen manifest lists this binary; the next-gen manifest still uses the build-output updater.
+  # Requires NEXT_ORIGIN_BASE + NEXT_SFTP_BASE_PATH to be set.
+  COMPAT_UPDATER: tools/v1/AnakinRaW.ExternalUpdater.exe
 
 jobs:
 
-  build:
-    name: Build
+# Builds and tests the solution.
+  test:
+    uses: ./.github/workflows/test.yml
+
+  # End-to-end self-update test
+  integration-test:
+    needs: [test]
+    uses: ./.github/workflows/integration-test.yml
+
+  pack:
+    name: Pack
+    needs: [test]
     runs-on: windows-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: recursive
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-            dotnet-version: 9.0.x
-      - name: Build
-        run: dotnet build ${{ env.TOOL_PROJ_PATH }} --configuration Release --output ./binaries
+        uses: actions/setup-dotnet@v5
+      - name: Create NetFramework Release
+        # use build for .NET Framework to enusre external updater exe is included
+        run:  dotnet build ${{ env.TOOL_PROJ_PATH }} --configuration Release -f net481 --output ./releases/net481 /p:DebugType=None /p:DebugSymbols=false
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: Build Artifacts
-          path: |
-            binaries/${{env.TOOL_EXE}}
-            binaries/${{env.UPDATER_EXE}}
+          name: Binary Releases
+          path: ./releases
+          if-no-files-found: error
           retention-days: 1
 
   deploy:
     name: Deploy
-    # Only deploy on push to main or manual trigger
+    # Stable deploys are gated to 'main'. Non-stable channels (beta, canary, etc.) can be
+    # workflow_dispatched from any branch.
     if: |
-      (github.ref == 'refs/heads/main' &&  github.event_name == 'push') || github.event_name == 'workflow_dispatch'
-    needs: [build]
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.branch != 'stable' || github.ref == 'refs/heads/main'))
+    needs: [pack, integration-test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: recursive
+      - uses: actions/download-artifact@v8
+        with:
+          name: Binary Releases
+          path: ./releases
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-            dotnet-version: 9.0.x
-      - uses: actions/download-artifact@v4
-        with:
-          name: Build Artifacts
-          path: binaries
-      - name: Build Creator
-        run: dotnet build ${{env.CREATOR_PROJ_PATH}} --configuration Release --output ./dev
-      - name: Build Uploader
-        run: dotnet build ${{env.UPLOADER_PROJ_PATH}} --configuration Release --output ./dev
-      - name: Create Manifest
-        run: dotnet ./dev/${{env.MANIFEST_CREATOR}} -a binaries/${{env.TOOL_EXE}} --appDataFiles binaries/${{env.UPDATER_EXE}} --origin ${{env.ORIGIN_BASE}} -o ./binaries -b ${{env.BRANCH_NAME}}
-      - name: Upload Build
-        run: dotnet ./dev/${{env.SFTP_UPLOADER}} ftp --host $host --port $port -u ${{secrets.SFTP_USER}} -p ${{secrets.SFTP_PASSWORD}} --base $base_path -s $source
-        env:
-          host: republicatwar.com
-          port: 1579
-          base_path: ${{env.ORIGIN_BASE_PART}}
-          source: ./binaries
+            dotnet-version: 10.0.x
 
-      - uses: dotnet/nbgv@v0.4.2
+
+      - name: Publish self-update release
+        shell: pwsh
+        run: |
+          & $env:PUBLISH_SCRIPT `
+              -AppExePath                  "./releases/net481/$env:TOOL_EXE" `
+              -UpdaterExePath              "./releases/net481/$env:UPDATER_EXE" `
+              -EmbeddedTrustCertPath       "$env:EMBEDDED_TRUST_CERT" `
+              -Origin                      "$env:ORIGIN_BASE" `
+              -SftpBasePath                "$env:SFTP_BASE_PATH" `
+              -Branch                      "$env:BRANCH_NAME" `
+              -SigningPfxBase64            "${{ secrets.UPDATER_SIGNING_PFX_B64 }}" `
+              -SigningPfxPassword          "${{ secrets.UPDATER_SIGNING_PFX_PASSWORD }}" `
+              -SftpHost                    "republicatwar.com" `
+              -SftpPort                    1579 `
+              -SftpUser                    "${{ secrets.SFTP_USER }}" `
+              -SftpPassword                "${{ secrets.SFTP_PASSWORD }}" `
+              -NextOrigin                  "$env:NEXT_ORIGIN_BASE" `
+              -NextSftpBasePath            "$env:NEXT_SFTP_BASE_PATH" `
+              -CompatibilityUpdaterExePath "$env:COMPAT_UPDATER"
+
+      - uses: dotnet/nbgv@v0.5.1
         id: nbgv
       - name: Create GitHub release
 # Only create a release on push to main
         if: |
             github.ref == 'refs/heads/main' &&  github.event_name == 'push'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: v${{ steps.nbgv.outputs.SemVer2 }}
           tag_name: v${{ steps.nbgv.outputs.SemVer2 }}
