@@ -17,22 +17,22 @@ env:
   TOOL_EXE: RaW-DevLauncher.exe
   UPDATER_EXE: AnakinRaW.ExternalUpdater.exe
   EMBEDDED_TRUST_CERT: src/DevLauncher/Resources/Certs/anakinraw-trust.cer
-  ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher
-  SFTP_BASE_PATH: downloads/RawDevLauncher/
+  ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher/v2
+  SFTP_BASE_PATH: downloads/RawDevLauncher/v2
   BRANCH_NAME: ${{ github.event.inputs.branch || 'stable' }}
 
   # Migration-release values. Leave empty for a normal release; populate to enable.
   #
   # Origin URL of the next-generation channel, written into the manifest's componentOriginInfo.
-  NEXT_ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher/v2
+  # NEXT_ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher/v2
 
   # SFTP path the next-generation channel uploads to. Set together with NEXT_ORIGIN_BASE.
-  NEXT_SFTP_BASE_PATH: downloads/RawDevLauncher/v2/
+  # NEXT_SFTP_BASE_PATH: downloads/RawDevLauncher/v2/
 
   # Previously-deployed updater used in place of the build-output one for the primary deploy.
   # Only the old-gen manifest lists this binary; the next-gen manifest still uses the build-output updater.
   # Requires NEXT_ORIGIN_BASE + NEXT_SFTP_BASE_PATH to be set.
-  COMPAT_UPDATER: tools/v1/AnakinRaW.ExternalUpdater.exe
+  # COMPAT_UPDATER: tools/v1/AnakinRaW.ExternalUpdater.exe
 
 jobs:
 
