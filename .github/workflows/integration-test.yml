@@ -14,6 +14,9 @@ jobs:
         scenario:
           - { name: single, script: ./test-local-update.ps1 }
           - { name: dual,   script: ./test-local-update-dual.ps1 }
+          # Regression guard: server ships a byte-different external updater (same version), which
+          # is installed eagerly and so must be trusted from the signed manifest at launch time.
+          - { name: updater-mismatch, script: ./test-local-update-updater-mismatch.ps1 }
     steps:
       - name: Checkout
         uses: actions/checkout@v6
