@@ -126,3 +126,5 @@ jobs:
           tag_name: v${{ steps.nbgv.outputs.SemVer2 }}
           token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: false
+          files: | 
+            ./releases/net481/$env:TOOL_EXE
