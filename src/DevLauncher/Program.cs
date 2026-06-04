@@ -52,6 +52,8 @@ public static class MainClass
 
 internal class Program : SelfUpdateableAppLifecycle
 {
+    private const string EmbeddedTrustCertResource = "RaW-DevLauncher.Resources.Certs.anakinraw-trust.cer";
+
     private static readonly string EngineParserNamespace = typeof(PetroglyphStarWarsGameXmlParser).Namespace!;
     private static readonly string ParserNamespace = typeof(XmlFileParser<>).Namespace!;
     private static readonly string DevLauncherRootNamespace = typeof(Program).Namespace!;
@@ -99,11 +101,30 @@ internal class Program : SelfUpdateableAppLifecycle
         {
             Log.CloseAndFlush();
 
-            Console.WriteLine();
-            ConsoleUtilities.WriteHorizontalLine('-');
-            Console.Write("Press ENTER to exit.");
-            Console.ReadLine();
+            // Skip the interactive prompt in plain update mode: the host is being driven
+            // by the external updater / a test harness and there is no human at the console.
+            if (!RawDevLauncher.IsUpdateOnlyInvocation(args))
+            {
+                Console.WriteLine();
+                ConsoleUtilities.WriteHorizontalLine('-');
+                Console.Write("Press ENTER to exit.");
+                Console.ReadLine();
+            }
         }
+    }
+
+    protected override void RegisterTrustedCertificates(IServiceProvider appServices)
+    {
+        if (!IsUpdateableApplication)
+            return;
+
+        string? devCertPath = null;
+#if DEBUG || LOCAL_DEPLOY
+        devCertPath = System.IO.Path.GetFullPath(
+            System.IO.Path.Combine(AppContext.BaseDirectory, "..", "dev-trust.cer"));
+#endif
+        appServices.GetRequiredService<CertificateManager>()
+            .RegisterTrustedCertificates(typeof(Program).Assembly, [EmbeddedTrustCertResource], devCertPath);
     }
 
     protected override void ResetApp()

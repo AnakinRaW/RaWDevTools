@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using AnakinRaW.AppUpdaterFramework.Metadata.Product;
 
 namespace RepublicAtWar.DevLauncher;
 
@@ -25,10 +26,25 @@ internal sealed class RawDevLauncher(UpdatableApplicationEnvironment application
     private readonly Parser _looseArgumentParser = new(c => { c.IgnoreUnknownArguments = true; });
     private readonly ILogger? _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(typeof(RawDevLauncher));
 
+    // Verb name from ApplicationUpdateOptions in ModdingToolBase; kept as a literal to avoid
+    // coupling Program's finally block to a reference type just for this check.
+    internal const string UpdateApplicationVerb = "updateApplication";
+
+    internal static bool IsUpdateOnlyInvocation(IReadOnlyList<string> args)
+    {
+        return args.Count > 0 && string.Equals(args[0], UpdateApplicationVerb, StringComparison.Ordinal);
+    }
+
     public async Task<int> RunAsync(IReadOnlyList<string> args)
     {
+        if (IsUpdateOnlyInvocation(args))
+        {
+            await UpdateLauncher(args).ConfigureAwait(false);
+            return 0;
+        }
+
         var option = ParseArguments(args);
-        
+
         if (option is null)
             return 0xA0;
 
@@ -50,7 +66,16 @@ internal sealed class RawDevLauncher(UpdatableApplicationEnvironment application
 
             var updater = new RawDevLauncherUpdater(applicationEnvironment, serviceProvider);
             var branchName = updater.GetBranchNameFromRegistry(options?.BranchName, true);
-            var branch = updater.CreateBranch(branchName, options?.ManifestUrl);
+
+            ProductBranch branch;
+            if (options is not null)
+            {
+                branch = !string.IsNullOrEmpty(options.ServerUrl)
+                    ? updater.CreateBranchFromServerUrl(options.ServerUrl!, branchName)
+                    : updater.CreateBranch(branchName, options.ManifestUrl);
+            }
+            else 
+                branch = updater.CreateBranch(branchName);
             
             await updater.AutoUpdateApplication(branch);
         }
