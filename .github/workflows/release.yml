@@ -22,8 +22,7 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
-  # End-to-end self-update test. Everything lives in a ModdingToolBase script (the suite runs all
-  # scenarios); this job just fires it. scriptsDir comes from update-tooling.jsonc.
+  # End-to-end self-update test.
   integration-test:
     name: Integration test
     needs: [test]
@@ -97,9 +96,7 @@ jobs:
 
       - name: Load app config
         shell: pwsh
-        # Per-app release values come from update-tooling.jsonc. nextOrigin / nextSftpBasePath /
-        # compatUpdater are empty for a normal release; populate them in the config to publish a
-        # cross-API next-generation channel (see Publish-Release.ps1).
+        # Per-app release values come from update-tooling.jsonc.
         run: |
           $c = Get-Content -Raw ./update-tooling.jsonc | ConvertFrom-Json
           "PUBLISH_SCRIPT=$($c.scriptsDir)/Publish-Release.ps1" >> $env:GITHUB_ENV
