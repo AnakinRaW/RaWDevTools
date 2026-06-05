@@ -21,16 +21,6 @@ env:
   SFTP_BASE_PATH: downloads/RawDevLauncher/v2
   BRANCH_NAME: ${{ github.event.inputs.branch || 'stable' }}
 
-  # RESCUE (transitional). Publish THIS external-updater binary instead of the freshly built one.
-  # A client on an old version rejects any updater whose bytes differ from the copy it embeds, so it
-  # cannot self-update once the updater is rebuilt. Serving the exact binary it embeds lets its old
-  # integrity check pass, so it can pull the fixed app exe. The binary MUST be byte-identical to that
-  # client's embedded updater (verified for 3.0.2). This does not change the app, only which updater
-  # is published. CLEAR IT the release after the fleet has moved off the broken version (otherwise a
-  # patched client re-downloads it every launch). Unlike COMPAT_UPDATER below, this needs no next-gen
-  # channel — it simply substitutes the primary updater, so no NEXT_ORIGIN guard applies.
-  RESCUE_UPDATER: tools/AnakinRaW.ExternalUpdater.exe
-
   # Migration-release values. Leave empty for a normal release; populate to enable.
   #
   # Origin URL of the next-generation channel, written into the manifest's componentOriginInfo.
@@ -107,14 +97,9 @@ jobs:
       - name: Publish self-update release
         shell: pwsh
         run: |
-          # RESCUE_UPDATER, when set, replaces the freshly built updater with a pinned binary so old
-          # clients can still self-update (see env comment). Falls back to the build output.
-          $updaterExe = if ($env:RESCUE_UPDATER) { $env:RESCUE_UPDATER } else { "./releases/net481/$env:UPDATER_EXE" }
-          if (-not (Test-Path $updaterExe)) { throw "Updater exe not found at '$updaterExe'." }
-          Write-Host "Publishing updater: $updaterExe"
           & $env:PUBLISH_SCRIPT `
               -AppExePath                  "./releases/net481/$env:TOOL_EXE" `
-              -UpdaterExePath              "$updaterExe" `
+              -UpdaterExePath              "./releases/net481/$env:UPDATER_EXE" `
               -EmbeddedTrustCertPath       "$env:EMBEDDED_TRUST_CERT" `
               -Origin                      "$env:ORIGIN_BASE" `
               -SftpBasePath                "$env:SFTP_BASE_PATH" `
@@ -141,5 +126,5 @@ jobs:
           tag_name: v${{ steps.nbgv.outputs.SemVer2 }}
           token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: false
-          files: | 
-            ./releases/net481/$env:TOOL_EXE
+          files: |
+            ./releases/net481/${{ env.TOOL_EXE }}
