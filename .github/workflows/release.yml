@@ -10,39 +10,11 @@ on:
       branch:
         description: "The branch to a release to"
         required: true
-    
+
 env:
-  TOOL_PROJ_PATH: ./src/DevLauncher/DevLauncher.csproj
-  PUBLISH_SCRIPT: ./ModdingToolBase/scripts/Publish-Release.ps1
-  TOOL_EXE: RaW-DevLauncher.exe
-  UPDATER_EXE: AnakinRaW.ExternalUpdater.exe
-  EMBEDDED_TRUST_CERT: src/DevLauncher/Resources/Certs/anakinraw-trust.cer
-  ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher/v2
-  SFTP_BASE_PATH: downloads/RawDevLauncher/v2
+  # Per-run release channel. Every other per-app value lives in update-tooling.jsonc and is loaded
+  # into the environment by the "Load app config" step in each job below.
   BRANCH_NAME: ${{ github.event.inputs.branch || 'stable' }}
-
-  # RESCUE (transitional). Publish THIS external-updater binary instead of the freshly built one.
-  # A client on an old version rejects any updater whose bytes differ from the copy it embeds, so it
-  # cannot self-update once the updater is rebuilt. Serving the exact binary it embeds lets its old
-  # integrity check pass, so it can pull the fixed app exe. The binary MUST be byte-identical to that
-  # client's embedded updater (verified for 3.0.2). This does not change the app, only which updater
-  # is published. CLEAR IT the release after the fleet has moved off the broken version (otherwise a
-  # patched client re-downloads it every launch). Unlike COMPAT_UPDATER below, this needs no next-gen
-  # channel — it simply substitutes the primary updater, so no NEXT_ORIGIN guard applies.
-  RESCUE_UPDATER: tools/AnakinRaW.ExternalUpdater.exe
-
-  # Migration-release values. Leave empty for a normal release; populate to enable.
-  #
-  # Origin URL of the next-generation channel, written into the manifest's componentOriginInfo.
-  # NEXT_ORIGIN_BASE: https://republicatwar.com/downloads/RawDevLauncher/v2
-
-  # SFTP path the next-generation channel uploads to. Set together with NEXT_ORIGIN_BASE.
-  # NEXT_SFTP_BASE_PATH: downloads/RawDevLauncher/v2/
-
-  # Previously-deployed updater used in place of the build-output one for the primary deploy.
-  # Only the old-gen manifest lists this binary; the next-gen manifest still uses the build-output updater.
-  # Requires NEXT_ORIGIN_BASE + NEXT_SFTP_BASE_PATH to be set.
-  # COMPAT_UPDATER: tools/v1/AnakinRaW.ExternalUpdater.exe
 
 jobs:
 
@@ -50,10 +22,24 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
-  # End-to-end self-update test
+  # End-to-end self-update test.
   integration-test:
+    name: Integration test
     needs: [test]
-    uses: ./.github/workflows/integration-test.yml
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Run self-update integration suite
+        shell: pwsh
+        run: |
+          $c = Get-Content -Raw ./update-tooling.jsonc | ConvertFrom-Json
+          & "$($c.scriptsDir)/Test-LocalUpdateSuite.ps1" -ConfigPath ./update-tooling.jsonc
 
   pack:
     name: Pack
@@ -65,6 +51,11 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
+      - name: Load app config
+        shell: pwsh
+        run: |
+          $c = Get-Content -Raw ./update-tooling.jsonc | ConvertFrom-Json
+          "TOOL_PROJ_PATH=$($c.toolProject)" >> $env:GITHUB_ENV
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
       - name: Create NetFramework Release
@@ -103,26 +94,37 @@ jobs:
         with:
             dotnet-version: 10.0.x
 
+      - name: Load app config
+        shell: pwsh
+        # Per-app release values come from update-tooling.jsonc.
+        run: |
+          $c = Get-Content -Raw ./update-tooling.jsonc | ConvertFrom-Json
+          "PUBLISH_SCRIPT=$($c.scriptsDir)/Publish-Release.ps1" >> $env:GITHUB_ENV
+          "TOOL_EXE=$($c.appExe)"                       >> $env:GITHUB_ENV
+          "UPDATER_EXE=$($c.updaterExe)"                >> $env:GITHUB_ENV
+          "EMBEDDED_TRUST_CERT=$($c.embeddedTrustCert)" >> $env:GITHUB_ENV
+          "ORIGIN_BASE=$($c.origin)"                    >> $env:GITHUB_ENV
+          "SFTP_BASE_PATH=$($c.sftpBasePath)"           >> $env:GITHUB_ENV
+          "SFTP_HOST=$($c.sftpHost)"                    >> $env:GITHUB_ENV
+          "SFTP_PORT=$($c.sftpPort)"                    >> $env:GITHUB_ENV
+          "NEXT_ORIGIN_BASE=$($c.nextOrigin)"           >> $env:GITHUB_ENV
+          "NEXT_SFTP_BASE_PATH=$($c.nextSftpBasePath)"  >> $env:GITHUB_ENV
+          "COMPAT_UPDATER=$($c.compatUpdater)"          >> $env:GITHUB_ENV
 
       - name: Publish self-update release
         shell: pwsh
         run: |
-          # RESCUE_UPDATER, when set, replaces the freshly built updater with a pinned binary so old
-          # clients can still self-update (see env comment). Falls back to the build output.
-          $updaterExe = if ($env:RESCUE_UPDATER) { $env:RESCUE_UPDATER } else { "./releases/net481/$env:UPDATER_EXE" }
-          if (-not (Test-Path $updaterExe)) { throw "Updater exe not found at '$updaterExe'." }
-          Write-Host "Publishing updater: $updaterExe"
           & $env:PUBLISH_SCRIPT `
               -AppExePath                  "./releases/net481/$env:TOOL_EXE" `
-              -UpdaterExePath              "$updaterExe" `
+              -UpdaterExePath              "./releases/net481/$env:UPDATER_EXE" `
               -EmbeddedTrustCertPath       "$env:EMBEDDED_TRUST_CERT" `
               -Origin                      "$env:ORIGIN_BASE" `
               -SftpBasePath                "$env:SFTP_BASE_PATH" `
               -Branch                      "$env:BRANCH_NAME" `
               -SigningPfxBase64            "${{ secrets.UPDATER_SIGNING_PFX_B64 }}" `
               -SigningPfxPassword          "${{ secrets.UPDATER_SIGNING_PFX_PASSWORD }}" `
-              -SftpHost                    "republicatwar.com" `
-              -SftpPort                    1579 `
+              -SftpHost                    "$env:SFTP_HOST" `
+              -SftpPort                    $env:SFTP_PORT `
               -SftpUser                    "${{ secrets.SFTP_USER }}" `
               -SftpPassword                "${{ secrets.SFTP_PASSWORD }}" `
               -NextOrigin                  "$env:NEXT_ORIGIN_BASE" `
@@ -141,5 +143,5 @@ jobs:
           tag_name: v${{ steps.nbgv.outputs.SemVer2 }}
           token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: false
-          files: | 
-            ./releases/net481/$env:TOOL_EXE
+          files: |
+            ./releases/net481/${{ env.TOOL_EXE }}

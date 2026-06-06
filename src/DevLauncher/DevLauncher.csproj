@@ -18,8 +18,8 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
-	<!-- Set /p:LocalDeploy=true (e.g. from deploy-local.ps1) to compile in the local-deploy dev
-	     trust cert pickup path. Off by default; release builds never see it. -->
+	<!-- Set /p:LocalDeploy=true (e.g. from ModdingToolBase's Build-LocalRelease.ps1) to compile in the
+	     local-deploy dev trust cert pickup path. Off by default; release builds never see it. -->
 	<PropertyGroup Condition="'$(LocalDeploy)' == 'true'">
 		<DefineConstants>$(DefineConstants);LOCAL_DEPLOY</DefineConstants>
 	</PropertyGroup>
